@@ -1,22 +1,49 @@
-# Serving Lectures
+# Lập trình Xử lý Dữ liệu — Học kì 1, năm học 2025–2026
 
-This directory contains lecture slides written with Reveal.js that can be served via either GitHub Pages or a local web server.
+**@Giảng viên:** Vui lòng cập nhật các file `lecture-XX.html` cho từng buổi học khi cần. Bạn có thể dùng các bài giảng hiện có làm tham khảo.
 
-## Serving Locally (Recommended for Development)
+## Nội dung học kì
 
-Serving the slides locally allows several advantages, such as the ability to see **speaker notes** and **automatic reloading** when you make changes to the slides.
+| Tuần | Bài giảng |
+|------|-----------|
+| 1 | Bài 1: Giới thiệu |
+| 2 | Bài 2: Luồng điều khiển & Cấu trúc dữ liệu |
+| 3 | Bài 3: Hàm, Module & Xử lý file |
+| 4 | Bài 4: Xử lý lỗi & Lập trình hướng đối tượng |
+| 5 | Bài 5: NumPy — Mảng & Tính toán vector hoá |
+| 6 | Bài 6: Bắt đầu với Pandas |
+| 7 | Bài 7: Nạp, lưu trữ, làm sạch & chuẩn bị dữ liệu |
+| 8 | Bài 8: Xử lý dữ liệu chuỗi thời gian |
+| 9 | Bài 9: Trực quan hoá dữ liệu với Python |
+| 10 | Bài 10.1: Xử lý chuỗi ký tự; Bài 10.2: Pandas — Tổng hợp & Groupby |
 
-1. Install Node.js.
-1. Go to this directory in your terminal and run `npm install` to install dependencies.
-1. Serve the presentation by running `npm start`.
-1. Open your web browser and navigate to http://localhost:8000 to view the slides.
+## Chạy slide
 
-## Serving via GitHub Pages
+Thư mục này chứa slide bài giảng viết bằng Reveal.js, có thể serve qua GitHub Pages hoặc máy chủ web cục bộ.
+Hai cách chạy dưới đây dùng hai cổng mặc định khác nhau theo cấu hình hiện tại: Node.js dùng `8000`, còn Python dùng `8765`.
 
-Nothing special is needed. Just push your changes to the `main` branch, and GitHub Pages will automatically serve the content.
+### Cách 1: Node.js (hỗ trợ ghi chú giảng viên & tự động tải lại)
 
-# Creating New Lectures
+1. Cài [Node.js](https://nodejs.org/).
+2. Trong thư mục `2526-1`, chạy `npm install` để cài dependencies.
+3. Chạy `npm start` để khởi động server (port 8000).
+4. Mở trình duyệt và truy cập http://localhost:8000.
 
-1. Copy `lecture-template.html` to a new file named `lecture-xxx-title.html`, where `xxx` is the lecture number (e.g., `001`, `002`, etc.) and `title` is a short description of the lecture topic (e.g., `introduction`, `data-processing`, etc.).
-1. Edit the new file to update the lecture title, date, and content.
-1. Commit and push the new file to the repository.
+### Cách 2: Python (không cần cài thêm gì)
+
+```bash
+# Nếu đang ở thư mục gốc của repo
+cd 2526-1
+python3 -m http.server 8765
+# Mở http://localhost:8765
+```
+
+### Serve qua GitHub Pages
+
+Không cần cấu hình gì thêm. Chỉ cần push thay đổi lên nhánh `main`, GitHub Pages sẽ tự động serve nội dung.
+
+## Tạo bài giảng mới
+
+1. Copy `lecture-template.html` thành file mới đặt tên theo dạng `lecture-XX-ten-bai.html`.
+2. Chỉnh sửa tiêu đề, ngày và nội dung bài giảng.
+3. Commit và push file mới lên repository.

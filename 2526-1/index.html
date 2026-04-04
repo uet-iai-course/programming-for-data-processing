@@ -1,169 +1,188 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 
 <head>
   <meta charset="UTF-8">
   <meta name="description"
-    content="Course webpage for 'Programming For Data Processing' at IAI, VNU-UET (Semester 1, 2025-2026)">
-  <title>Programming For Data Processing @ IAI, VNU-UET (Semester 1, 2025-2026)</title>
+    content="Lập trình Xử lý Dữ liệu tại Viện Trí tuệ nhân tạo, Trường Đại học Công nghệ, Đại học Quốc gia Hà Nội (Học kì 1, năm học 2025-2026)">
+  <title>Lập trình Xử lý Dữ liệu | Học kì 1, năm học 2025-2026</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
-    integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
-    crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="../index-pages.css">
 </head>
 
 <body>
-  <div class="container mt-4">
-    <div class="text-center mb-4">
-      <h1>
-        Programming For Data Processing
-      </h1>
+  <main class="page-shell page-shell-wide">
+    <section class="hero">
+      <p class="eyebrow">IAI · UET · VNU</p>
+      <h1>Lập trình Xử lý Dữ liệu</h1>
+      <p class="hero-subtitle">Học kì 1 · Năm học 2025-2026</p>
+      <div class="hero-text">
+        <p>
+          Lịch học, slide bài giảng và tài liệu của học phần.
+        </p>
+      </div>
+      <div class="hero-actions">
+        <a class="secondary-link" href="../">
+          <span aria-hidden="true">←</span>
+          <span>Quay lại trang tổng</span>
+        </a>
+        <a class="secondary-link" href="projects/">
+          <span>Dự án</span>
+          <span aria-hidden="true">→</span>
+        </a>
+      </div>
+    </section>
 
-      <h2>Semester 1, 2025-2026</h2>
+    <section>
+      <h2 class="section-title">Lịch giảng dạy</h2>
+      <div class="panel">
+        <div class="table-wrap">
+          <table class="schedule-table">
+            <thead>
+              <tr>
+                <th>Tuần</th>
+                <th>Bài giảng</th>
+                <th>Notebook minh hoạ</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>1</td>
+                <td><a href="lecture-01-introduction.html">Bài 1: Giới thiệu</a></td>
+                <td><span class="muted-text">—</span></td>
+              </tr>
+              <tr>
+                <td>2</td>
+                <td><a href="lecture-02-control-flow-data-structures.html">Bài 2: Luồng điều khiển &amp; Cấu trúc dữ liệu</a></td>
+                <td><span class="muted-text">—</span></td>
+              </tr>
+              <tr>
+                <td>3</td>
+                <td><a href="lecture-03-functions-modules-file-handling.html">Bài 3: Hàm, Module &amp; Xử lý file</a></td>
+                <td><span class="muted-text">—</span></td>
+              </tr>
+              <tr>
+                <td>4</td>
+                <td><a href="lecture-04-error-handling-oop.html">Bài 4: Xử lý lỗi &amp; Lập trình hướng đối tượng</a></td>
+                <td><span class="muted-text">—</span></td>
+              </tr>
+              <tr>
+                <td>5</td>
+                <td><a href="lecture-05-numpy.html">Bài 5: NumPy — Mảng &amp; Tính toán vector hoá</a></td>
+                <td><span class="muted-text">—</span></td>
+              </tr>
+              <tr>
+                <td>6</td>
+                <td><a href="lecture-06-pandas.html">Bài 6: Bắt đầu với Pandas</a></td>
+                <td><span class="muted-text">—</span></td>
+              </tr>
+              <tr>
+                <td>7</td>
+                <td><a href="lecture-07-data-loading-storage-cleaning-preparation.html">Bài 7: Nạp, lưu trữ, làm sạch &amp; chuẩn bị dữ liệu</a></td>
+                <td>
+                  <div class="notebook-list">
+                    <a class="notebook-tag" href="https://colab.research.google.com/drive/1UTjUGtzC51LKByLWhnW2XLYd_qHYMcKX?usp=sharing" target="_blank" rel="noopener">MovieLens1M_Cleaning_Demo.ipynb</a>
+                  </div>
+                  <span class="muted-text" style="font-size:0.82rem">(cần tài khoản VNU)</span>
+                </td>
+              </tr>
+              <tr>
+                <td>8</td>
+                <td><a href="lecture-08-time-series-data-processing.html">Bài 8: Xử lý dữ liệu chuỗi thời gian</a></td>
+                <td>
+                  <div class="notebook-list">
+                    <a class="notebook-tag" href="https://colab.research.google.com/drive/1i7F2tABRWWWcEfu1p-ohmrtFurLpyxPi?usp=sharing" target="_blank" rel="noopener">Lec08-HanoiVietnam.ipynb</a>
+                    <a class="notebook-tag" href="https://colab.research.google.com/drive/1WMyr5o7euEUPOb_V8f5DtQL43X2t_yFu?usp=sharing" target="_blank" rel="noopener">Lec08-HouseholdPowerConsumption.ipynb</a>
+                  </div>
+                  <span class="muted-text" style="font-size:0.82rem">(cần tài khoản VNU)</span>
+                </td>
+              </tr>
+              <tr>
+                <td>9</td>
+                <td><a href="lecture-09-visualization.html">Bài 9: Trực quan hoá dữ liệu với Python</a></td>
+                <td>
+                  <div class="notebook-list">
+                    <a class="notebook-tag" href="https://colab.research.google.com/drive/1n3KFJ0_S79v0UkX5fgtkmIQk5rk-x_0k?usp=sharing" target="_blank" rel="noopener">Lec09-Data-Viz.ipynb</a>
+                  </div>
+                  <span class="muted-text" style="font-size:0.82rem">(cần tài khoản VNU)</span>
+                </td>
+              </tr>
+              <tr>
+                <td>10</td>
+                <td>
+                  <a href="lecture-10-01-string-manipulation.html">Bài 10.1: Xử lý chuỗi ký tự</a><br>
+                  <a href="lecture-10-02-pandas-aggregation-groupby.html">Bài 10.2: Pandas — Tổng hợp &amp; Groupby</a>
+                </td>
+                <td>
+                  <div class="notebook-list">
+                    <a class="notebook-tag" href="https://colab.research.google.com/drive/1AAmDziWfre2DygyfzV6F0b7y8m1q3hzz?usp=sharing" target="_blank" rel="noopener">Lec10-01-String-Manipulation.ipynb</a>
+                    <a class="notebook-tag" href="https://colab.research.google.com/drive/1HGaBe2gphGPK4zjAeAWTwiY29xBXlUMV?usp=sharing" target="_blank" rel="noopener">Lec10-02-Pandas-Aggregation-Groupby.ipynb</a>
+                  </div>
+                  <span class="muted-text" style="font-size:0.82rem">(cần tài khoản VNU)</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
 
-      <h4>Institute for AI, VNU-UET</h4>
-
-      <p>
-        <strong>Instructors:</strong> Nguyễn Tuấn Phong, Đào Việt Anh
-        <br>
-        <strong>Tutors:</strong> Trịnh Ngọc Huỳnh, Phạm Tiến Du
-        <br>
-        <strong>Course Code:</strong> 2526I_AIT2006_[1234]
-      </p>
-    </div>
-
-    <hr>
-
-    <!-- <div class="alert alert-info" role="alert">
-      <strong>Note:</strong>
-      Content is continuously being updated and is <em>subject to change</em>. Please check back later for the latest
-      information.
-    </div> -->
-
-    <div class="mt-3">
-      <h3>External Resources</h3>
-      <ul>
-        <li><strong>Book</strong>: <a href="https://wesmckinney.com/book/">Python for Data Analysis</a> by Wes McKinney
-        </li>
-        <li><strong>Tutorials</strong>: <a href="https://docs.python.org/3/tutorial/index.html">Official Python
-            Tutorial</a>, <a href="https://numpy.org/doc/stable/user/index.html">Official NumPy User Guide</a></li>
-      </ul>
-    </div>
-
-    <div class="mt-4 mb-4">
-      <h3>Lecture Materials</h3>
-      <h5>Part 1: Python Basics</h5>
-      <ol>
-        <li>
-          <a href="lecture-01-introduction.html">Lecture 1: Introduction</a>
-        </li>
-        <li>
-          <a href="lecture-02-control-flow-data-structures.html">Lecture 2: Control Flow & Data
-            Structures</a>
-        </li>
-        <li>
-          <a href="lecture-03-functions-modules-file-handling.html">Lecture 3: Functions, Modules &
-            File Handling</a>
-        </li>
-        <li>
-          <a href="lecture-04-error-handling-oop.html">Lecture 4: Error Handling & Object-Oriented Programming</a>
-        </li>
-      </ol>
-
-      <h5 class="mt-4">Part 2: Data Processing</h5>
-      <ol start="5">
-        <li>
-          <a href="lecture-05-numpy.html">Lecture 5: Numpy: Arrays & Vectorized Computation</a>
-          <br>
-          <strong>Read more about NumPy:</strong>
-          <ul>
-            <li>
-              <a href="https://numpy.org/doc/stable/user/index.html">Official NumPy User Guide</a>
-            </li>
-            <li>
-              <a href="https://wesmckinney.com/book/numpy-basics">NumPy Section in Wes McKinney's Book</a>
-            </li>
-            <li>
-              <a href="https://jalammar.github.io/visual-numpy/">Visualizing NumPy Arrays</a>
+    <section>
+      <h2 class="section-title">Tài liệu học tập</h2>
+      <div class="info-grid">
+        <article class="panel">
+          <h3>Giáo trình</h3>
+          <ul class="book-list">
+            <li class="book-item">
+              <span class="book-title"><a href="https://wesmckinney.com/book/" target="_blank" rel="noopener">Python for Data Analysis</a></span>
+              <span class="book-author">Wes McKinney</span>
             </li>
           </ul>
-        </li>
-        <li>
-          <a href="lecture-06-pandas.html">Lecture 6: Getting Started with Pandas</a>
-        </li>
-        <li>
-          <a href="lecture-07-data-loading-storage-cleaning-preparation.html">Lecture 7: Data Loading, Storage,
-            Cleaning, and Preparation</a>
-          <br>
-          <strong>Live-demo Notebooks:</strong>
-          <ul>
-            <li>
-              <a
-                href="https://colab.research.google.com/drive/1UTjUGtzC51LKByLWhnW2XLYd_qHYMcKX?usp=sharing">MovieLens1M_Cleaning_Demo.ipynb</a>
-              <em>(VNU account required)</em>
+        </article>
+        <article class="panel">
+          <h3>Tài liệu tham khảo</h3>
+          <ul class="book-list">
+            <li class="book-item">
+              <span class="book-title"><a href="https://docs.python.org/3/tutorial/index.html" target="_blank" rel="noopener">Official Python Tutorial</a></span>
+              <span class="book-author">Python Software Foundation</span>
+            </li>
+            <li class="book-item">
+              <span class="book-title"><a href="https://numpy.org/doc/stable/user/index.html" target="_blank" rel="noopener">Official NumPy User Guide</a></span>
+              <span class="book-author">NumPy Developers</span>
+            </li>
+            <li class="book-item">
+              <span class="book-title"><a href="https://jalammar.github.io/visual-numpy/" target="_blank" rel="noopener">Visualizing NumPy Arrays</a></span>
+              <span class="book-author">Jay Alammar</span>
             </li>
           </ul>
-        </li>
-        <li>
-          <a href="lecture-08-time-series-data-processing.html">Lecture 8: Time Series Data Processing</a>
-          <br>
-          <strong>Live-demo Notebooks:</strong>
-          <ul>
-            <li>
-              <a
-                href="https://colab.research.google.com/drive/1i7F2tABRWWWcEfu1p-ohmrtFurLpyxPi?usp=sharing">Lec08-HanoiVietnam.ipynb</a>
-              <em>(VNU account required)</em>
+        </article>
+        <article class="panel">
+          <h3>Dự án</h3>
+          <ul class="book-list">
+            <li class="book-item">
+              <span class="book-title"><a href="projects/project_1.html">Dự án #1: NYC TLC Taxi Trips</a></span>
             </li>
-            <li>
-              <a
-                href="https://colab.research.google.com/drive/1WMyr5o7euEUPOb_V8f5DtQL43X2t_yFu?usp=sharing">Lec08-HouseholdPowerConsumption.ipynb</a>
-              <em>(VNU account required)</em>
+            <li class="book-item">
+              <span class="book-title"><a href="projects/project_2.html">Dự án #2: Vastopolis Epidemic</a></span>
             </li>
-          </ul>
-          <strong>Required Reading:</strong>
-          <ul>
-            <li>
-              <a href="https://wesmckinney.com/book/time-series.html">Time Series Section in Wes McKinney's
-                Book</a>
+            <li class="book-item">
+              <span class="book-title"><a href="projects/project_3.html">Dự án #3: Weather &amp; Air Quality</a></span>
+            </li>
+            <li class="book-item">
+              <span class="book-title"><a href="projects/project_4.html">Dự án #4: Inside Airbnb</a></span>
             </li>
           </ul>
-        </li>
-        <li>
-          <a href="lecture-09-visualization.html">Lecture 9: Data Visualization with Python</a>
-          <br>
-          <strong>Live-demo Notebooks:</strong>
-          <ul>
-            <li>
-              <a
-                href="https://colab.research.google.com/drive/1n3KFJ0_S79v0UkX5fgtkmIQk5rk-x_0k?usp=sharing">Lec09-Data-Viz.ipynb</a>
-              <em>(VNU account required)</em>
-            </li>
-          </ul>
-        </li>
-        <li>
-          <a href="lecture-10-01-string-manipulation.html">Lecture 10.1: String Manipulation</a>
-          <br>
-          <a href="lecture-10-02-pandas-aggregation-groupby.html">Lecture 10.2: Pandas Aggregation &amp; Groupby</a>
-          <br>
-          <strong>Live-demo Notebooks:</strong>
-          <ul>
-            <li>
-              <a
-                href="https://colab.research.google.com/drive/1AAmDziWfre2DygyfzV6F0b7y8m1q3hzz?usp=sharing">Lec10-01-String-Manipulation.ipynb</a>
-              <em>(VNU account required)</em>
-            </li>
-            <li>
-              <a
-                href="https://colab.research.google.com/drive/1HGaBe2gphGPK4zjAeAWTwiY29xBXlUMV?usp=sharing">Lec10-02-Pandas-Aggregation-Groupby.ipynb</a>
-              <em>(VNU account required)</em>
-            </li>
-          </ul>
-        </li>
-      </ol>
-    </div>
-  </div>
+          <p style="margin-top:12px">
+            <a href="https://docs.google.com/spreadsheets/d/19_r16RrdidzZSwnSecebZweOsDqHwmn9cusmhnVBNYQ/edit?usp=sharing" target="_blank" rel="noopener" class="muted-text">Phân công nhóm (cần tài khoản VNU) →</a>
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <p class="footer">
+      Viện Trí tuệ nhân tạo · Trường Đại học Công nghệ · Đại học Quốc gia Hà Nội
+    </p>
+  </main>
 </body>
 
 </html>
