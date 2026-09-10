@@ -104,6 +104,7 @@ Ngoài ra: component `.pipeline` đang quá khổ — GV phải chèn inline `st
 
 ## 10. Slide code & tiêu đề (nối dài mục 5)
 
+- **Tiêu đề viết bằng tiếng Việt tự nhiên**, gọi thẳng chủ đề hoặc kết luận cụ thể; tránh dịch sát cấu trúc câu tiếng Anh. Ví dụ: "Cùng một phép tính, thời gian xử lý khác nhau" → "So sánh tốc độ tính toán" (góp ý GV 10/09/2026).
 - Tiêu đề `<h2>` cắt từ đệm: "chuyện định dạng" → "định dạng"; "CSV 'bằng tay' — một lần để hiểu" → "CSV thủ công"; "Cạm bẫy số 1" → "Cạm bẫy 1"; "máy lọc dữ liệu thủ công" → "lọc dữ liệu thủ công".
 - **Mỗi lệnh một cặp `jp-input`/`jp-output` riêng** — không gộp nhiều lệnh có output vào một cell; sau khi tách, đánh lại `data-jp-n` liên tục.
 - Thuật ngữ viết tắt lần đầu xuất hiện: chú thích trong ngoặc ("QA (quality assurance)").
@@ -125,3 +126,36 @@ plt.rcParams.update({"font.family": "Source Sans Pro", "svg.fonttype": "path",
 - Nền trong suốt (`facecolor="none"`); viền/nhãn dùng `#333` (mực) và `#666`/`#777` (phụ) thay vì đen tuyền; màu nhấn lấy từ `lecture-style.css` (`#1E93AB`, `#E8890C`, `#2E8B57`).
 - Sau khi sinh: đổi `src` trong deck sang `.svg`, `git rm` file PNG cũ, mở deck kiểm hình load được (`img.complete && naturalWidth > 0`) rồi đo tràn.
 - **Đã áp**: buổi 3, 5. **Còn PNG, phải chuyển khi duyệt tới**: buổi 8 (2 hình), 10 (1), 12 (7), 13 (7).
+
+
+## 12. Trọng tâm Bài 3 NumPy (góp ý GV 10/09/2026)
+
+- Sinh viên đầu năm 2, đã học Python và phương pháp luận lập trình. Bài giảng 150 phút tập trung chuyển từ tư duy vòng `for` sang tư duy tính toán trên mảng.
+- Giải thích vì sao NumPy thường nhanh, cấu trúc dữ liệu ndarray và các cơ chế khó như shape, strides, view, broadcasting. Hàm cụ thể dùng làm ví dụ; phần tra cứu API để sinh viên tự học.
+- Nguồn chính: [McKinney, chương 4](https://wesmckinney.com/book/numpy-basics), phần mở đầu và §4.1; đối chiếu thêm tài liệu NumPy cho strides/broadcasting. Mục tiêu là nền tảng và động lực học tiếp.
+- Hình, code và diễn giải phải dùng cùng dữ liệu và ký hiệu. Bài tập shape–strides làm ngay trên lớp theo nhịp dự đoán, vẽ, chạy kiểm chứng và giải thích kết quả.
+
+- Lượt duyệt tiếp Bài 3 (10/09): **khái niệm phải được giải thích trên slide trước khi dùng**, không chỉ trong speaker notes. Viết rõ cách truy cập thuộc tính (`A.itemsize`, `np.dtype(np.float64).itemsize`), đơn vị và ý nghĩa output. Các câu như “phân biệt, cùng giá trị”, “chọn vòng lặp int64” không truyền đạt đủ ý; thay bằng dãy dữ liệu cụ thể và hình chỉ từng bước.
+- Với cơ chế khó, đi từ ví dụ quen thuộc → định nghĩa → các bước thực hiện → bài tập kiểm chứng. Giới hạn dtype phải có ví dụ số; hình ufunc phải giải thích việc chọn đoạn mã theo dtype và cách đọc/ghi từng ô. Đo tràn không thay thế việc rà khả năng hiểu bài.
+
+- GV điều chỉnh phạm vi phần số thực: trong bài NumPy chỉ giữ cách lưu gần đúng, đánh đổi dung lượng/độ chính xác và hệ quả khi so sánh. Không mở thành bài giảng IEEE 754; chi tiết bit để đọc thêm tuỳ chọn.
+
+- Lượt rà văn phong 10/09: tham khảo cách đặt câu hỏi và giải thích bằng ví dụ ở Bài 1 môn Nhận thức, ngôn ngữ và tư duy. Đề bài tập phải nêu rõ dữ liệu, yêu cầu và đối tượng cần tính; bỏ chỉ dẫn số phút. Giữ cột đầu theo Bài 2 (tên môn → tên bài → Bài trước → Tổng quan); cột cuối theo Bài 1–2 (Tổng kết → Làm việc với AI thì sao?, hộp AI làm tốt/AI hay sai → Kiểm chứng thế nào? → Đọc thêm).
+
+- Ví dụ Bài 3 không cần gắn với dự án: dùng mảng số, hàng và cột khi đó là cách giải thích dễ hiểu nhất. Không gượng thêm thành phố, giá hoặc phí. Ngữ cảnh ứng dụng chỉ dùng khi giúp làm rõ kiến thức.
+
+- Định hướng GV: dạy ở tầm tư duy, lập luận và hiểu cơ chế. Không tổ chức bài giảng thành danh sách hàm/API. Mỗi phần bắt đầu bằng câu hỏi hoặc hiện tượng cần giải thích; hàm chỉ là công cụ để thử, tính và kiểm chứng. Ngay cả phần thống kê mới cũng theo nguyên tắc này; bảng tra hàm để tự học.
+
+- GV đặc biệt không thích câu hỏi đối xứng, chung chung kiểu “Các con số cho biết gì — và chưa cho biết gì?”: nghe như dịch sát tiếng Anh. Viết thẳng nội dung cụ thể; slide mở mục đã rõ thì bỏ câu phụ, không cố thêm câu hỏi gợi mở.
+
+- Kiểm tra ngắt dòng tiêu đề bằng mắt và theo dòng thực tế trong trình duyệt: không để một từ lẻ ở dòng cuối. Ưu tiên rút gọn tiêu đề; nếu cần hai dòng, ngắt theo cụm nghĩa. Đo tràn khung không phát hiện được lỗi này.
+
+- Thuật ngữ GV chốt: **index → chỉ mục**. Dùng thống nhất trong tiêu đề, diễn giải và bài tập; tên API/code giữ nguyên. Không áp dụng cho “chỉ số” mang nghĩa khác, như chỉ số dưới trong ký hiệu toán học.
+
+- Không mặc định thêm câu chốt/caption ở cuối mỗi slide. Bỏ câu chỉ kể lại nội dung hình hoặc code; chỉ giữ định nghĩa mới, điều kiện cần hoặc thông tin chưa có trên hình. Tránh nhắc cơ chế chưa được giới thiệu (ví dụ bước byte trước phần strides).
+
+- Mạch mục 3 (GV điều chỉnh): chọn một phần tử → từ chỉ mục đến ô nhớ (cùng ví dụ A[2,1]) → lát cắt → view dùng chung dữ liệu, sửa view → dùng strides giải thích view → bài tập → chuyển vị/reshape → chọn nâng cao.
+
+- Mục 4 viết lại theo góp ý GV: cộng theo cột → cộng theo hàng (thêm chiều bằng None) → quy tắc shape → lỗi (4,) → giữ chiều khi lấy cột → bài tập. Bỏ stride 0 khỏi deck, giữ ở cuối notebook dưới mục đọc thêm. Axis/keepdims và bài tập trung bình chuyển sang mục thống kê.
+
+- GV cho phép mục 5 liên hệ project bằng số liệu giả lập, không cần lấy snapshot thật. Ghi rõ giả lập và đơn vị; vẫn chạy NumPy kiểm tra phép tính. Dùng giá chỗ ở cho mean/median/std, giá qua các kỳ cho axis, lấy mẫu dòng để kiểm tra dữ liệu.

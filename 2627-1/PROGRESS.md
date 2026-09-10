@@ -1,6 +1,15 @@
 # Tiến độ học liệu 2627-1
 
+> **Bài 3 đã publish ngày 10/09/2026:** deck 61 slide, notebook bài giảng và lab mới 8 bài. Main `12b65ab`; Pages build thành công, URL công khai đã kiểm tra khớp nội dung.
+
 > File này do agent duy trì. Đợt 1 (dựng 15 deck + 13 notebook demo + đề BTL) đã xong 05/07/2026 — chi tiết giữ nguyên bên dưới. Đợt 2 (edit-pass văn phong + học liệu giờ thực hành) bắt đầu 07/2026 — trạng thái ở mục ngay dưới đây.
+
+## Bài 3 NumPy — đã duyệt và publish (10/09/2026)
+
+- Deck 61 slide: cấu trúc mảng, vì sao tính nhanh, chỉ mục/lát cắt, broadcasting, thống kê/lấy mẫu. Mở đầu và kết thúc theo mẫu Bài 1–2; mục thống kê dùng giá giả lập liên hệ bài tập lớn.
+- Kiểm tra 960×700: **0/61 slide tràn**, không ảnh hỏng hoặc tiêu đề lẻ dòng. Notebook bài giảng chạy **48 ô code** thành công.
+- Lab mới **8 bài, 40 cell**, có dự đoán, TODO, kiểm tra và khai báo AI. Lời giải tham chiếu qua toàn bộ kiểm tra; notebook sinh viên không chứa đáp án.
+- Publish chọn lọc 32 file: deck, hai notebook, SVG và script tái sinh/số đo. Main `12b65ab`, Pages built; deck, hai notebook và hình mới trả HTTP 200, khớp byte với bản được duyệt (kiểm bằng URL có tham số phiên bản).
 
 ## Trạng thái publish (main — public)
 
@@ -37,6 +46,7 @@
 | 25 | 06/09/2026 | `lecture-01` slide "Lộ trình 15 buổi" → **"Lộ trình 15 bài"** (cột Bài, caption "Mỗi bài"), theo chuẩn "Bài N"; 0/34 tràn. |
 | 26 | 06/09/2026 | **"buổi trước/này/sau/lab/học" → "bài …"** trong 13 deck (02–08, 10–14), 27 notebook (lecture + lab), đề BTL — 39 file, ~134 chỗ (lịch 10 tuần gộp hai bài một buổi nên "buổi trước" sai nghĩa). Không nhấc `lecture-09`, `lecture-template` (chưa từng lên main). Đo tràn 14 deck: 0. |
 | 27 | 10/09/2026 | **BTL: môi trường tái lập và lựa chọn thư viện.** Publish đúng 3 file: `projects/project_airbnb.html`, `lecture-01-tong-quan-va-chinh-sach-ai.html`, `lecture-15-trinh-bay-btl.html`. Yêu cầu `.python-version` ghi Python `3.x.y`, `requirements.txt`/lockfile ghim thư viện, README hướng dẫn dựng môi trường; BTL tự chọn phiên bản và có thể dùng thư viện ngoài pandas. Làm rõ cache/`--skip-llm`, sửa thứ tự LLM trước KPI phụ thuộc LLM. Bài 1 thêm slide `.python-version`; đồng bộ checklist Bài 15. Kiểm: Bài 1 **0/35**, Bài 15 **0/11** slide tràn (960×700); file và tài nguyên hiển thị trên main khớp bản đã kiểm; liên kết nội bộ của 3 trang + index không lỗi; chốt chặn a/b/c sạch. Main `98818e5`, Pages build thành công; 3/3 URL public HTTP 200 và nội dung khớp file đã publish. |
+| 28 | 10/09/2026 | **Bài 3 NumPy, bản duyệt mới:** deck 61 slide, notebook bài giảng, lab 8 bài và hình/script đi kèm (32 file). Kiểm 0/61 slide tràn; 48 ô code bài giảng chạy đúng, lab kiểm bằng lời giải tham chiếu. Chốt chặn không có file nội bộ, chỉ thay học liệu Bài 3; main `12b65ab`, Pages built, 4 URL kiểm trả HTTP 200 và nội dung khớp. |
 
 Chưa public (còn lại trên draft): deck ôn buổi 9 `lecture-09-on-tap-giua-ky.html` (QĐ chỉ thi), `lecture-template.html`, và tài liệu nội bộ (`CLAUDE.md`/`AGENTS.md`/`SLIDE_STYLE_GUIDE.md`/`DECISIONS.md`/`PROGRESS.md`/`EDIT-PASS-NOTES.md`, `private/`). Toàn bộ học liệu hướng tới sinh viên đã public. `2627-1-draft` là nguồn chân lý; publish = nhấc đích danh file đã duyệt (quy trình: CLAUDE.md).
 
@@ -123,3 +133,35 @@ Mỗi deck nội dung kết bằng mục "Làm với AI thì sao?" (đã kiểm 
 3. Soạn **bài tập về nhà hàng tuần + đề thi giữa kỳ** (đợt sau, theo kế hoạch). Riêng **học liệu giờ thực hành + edit-pass văn phong**: đã lên kế hoạch đợt 2 (07/07/2026) — xem `2627-1/EDIT-PASS-NOTES.md`
 4. Duyệt nội dung theo từng buổi → publish chọn lọc lên `main` (quy trình trong CLAUDE.md; KHÔNG merge cả nhánh)
 5. (Khuyến nghị) Trước học kỳ: xem lại quota free tier Gemini trong AI Studio và chạy notebook buổi 11 một lần với API key thật
+
+- Bài 3, lượt sửa ví dụ 10/09/2026: bỏ ngữ cảnh thành phố/giá/phí, dùng phép cộng theo hàng và cột; đồng bộ biến, hình và notebook. Kiểm tra: 0/48 slide tràn, 35 ô code chạy thành công; chưa publish.
+
+- Bổ sung SIMD và nhiều luồng vào Bài 3 (10/09/2026): 2 slide sau cơ chế vòng lặp NumPy; phân biệt SIMD với nhiều luồng, ví dụ x*2 và nhân ma trận qua BLAS; notebook có phần đọc tương ứng và nguồn. Kiểm tra cuối: 0/50 slide tràn, không có hình hỏng hoặc code bị cắt. Chưa publish.
+
+- Lượt tiếp Bài 3 (10/09/2026): GV nhận xét mục 1–2 đã ổn hơn, yêu cầu rà mục 3 và thêm hàm xác suất/thống kê tiêu biểu. Đã sắp shape/indexing → reshape → strides → view/chuyển vị; làm rõ bài tập view. Thêm mục 5 gồm 5 slide nội dung (mean/median, var/std, phân vị, default_rng/integers, random/normal/choice) và slide mở mục, đồng bộ notebook. Kiểm tra: 0/57 slide tràn, hình tải đủ, 41 ô code chạy thành công. Chờ GV xem mục 3 và phần mới; chưa publish.
+
+- Điều chỉnh tiếp phần thống kê theo góp ý GV: bỏ mạch liệt kê API; thay bằng đại diện dữ liệu, độ phân tán, mô phỏng hai xúc xắc và giới hạn của kết luận. 4 slide nội dung + mở mục; danh mục hàm chuyển phụ lục tự học notebook. Kiểm tra 0/56 slide tràn, 43 ô code chạy thành công. Chưa publish.
+
+- Rà toàn bộ Bài 3 theo hướng tư duy và lập luận (10/09/2026): đưa nhu cầu tính toán trước cú pháp; nối cách lưu mảng với giới hạn dtype, quan hệ phần tử với broadcasting; sửa bài tập để yêu cầu dự đoán, giải thích và kiểm chứng. Giữ cấu trúc cột đầu/cuối theo Bài 1–2, đồng bộ notebook; một số output hiện sau lần bấm để dành chỗ dự đoán. Đã xem ảnh toàn bộ 56 slide: 0/56 slide tràn ở 960×700, không có hình hỏng hoặc code bị cắt; 16 cặp code/output khớp và 43 ô code notebook chạy thành công. Chờ GV duyệt, chưa publish.
+
+- Theo yêu cầu GV, thêm một slide nhắc lại thông dịch/biên dịch trong mục 2, trước cơ chế chọn mã theo dtype; nối bytecode CPython và tham chiếu list với vòng lặp số học NumPy đã biên dịch. Đồng bộ phần đọc notebook, dẫn nguồn Python/NumPy trong notes. Đã xem slide mới và kiểm tra 0/57 slide tràn, không hình hỏng/code bị cắt. Chưa publish.
+
+- Thay bảng chữ ở slide thông dịch/biên dịch bằng SVG hai luồng xử lý, mũi tên vòng lặp và cùng ba giá trị 10, 12, 11; chỉ giữ một câu caption. Chi tiết diễn giải giữ trong notes/notebook. Chưa publish.
+
+- Bỏ slide “Một dòng code, mấy lượt tính?” khỏi cuối mục 2: chi tiết mảng trung gian chưa cần cho mạch giải thích tốc độ. Giữ nội dung notebook với nhãn đọc thêm tuỳ chọn.
+
+- Sắp lại mục 3 theo góp ý GV: strides → bài tập địa chỉ → view/lát cắt → sửa qua view → bài tập view → chuyển vị → reshape. Ví dụ indexing giữ/mất chiều chuyển sang broadcasting và đổi thành lấy cột để cộng theo hàng, có hệ quả cụ thể (4,) lỗi so với (4,1) ghép đúng. Đồng bộ thứ tự notebook. Kiểm tra: 0/56 slide tràn, đã xem bố cục các slide đổi; 43 ô code notebook chạy thành công, 16 cặp code/output slide khớp. Chưa publish.
+
+- Bổ sung 3 slide cuối mục 3 về chỉ mục nâng cao: lọc bằng mask (hình), ghép từng cặp chỉ mục so với np.ix_ (hình), bài tập phân biệt view và bản sao khi cùng chọn hai cột. Notebook thêm kiểm chứng và phần đọc thêm gán trực tiếp/stride âm. Đã xem 3 slide mới; 0/59 slide tràn, không tiêu đề lẻ dòng, 47 ô code notebook chạy thành công. Chưa publish.
+
+- GV chỉnh mạch mục 3: giới thiệu chỉ mục/lát cắt trước view. Đổi tên mục thành “Chỉ mục và lát cắt”, thêm 2 slide hình về A[2,1] và A[:2,1:], rồi view → sửa qua view → strides và bài tập → các ứng dụng/chọn nâng cao. Đồng bộ notebook. Đã xem hai hình mới, 0/61 slide tràn, 48 ô code notebook chạy thành công. Chưa publish.
+
+- Duyệt riêng toàn bộ 20 slide có hình theo yêu cầu GV: xem từng ảnh ở 960×700, kiểm nhãn/chữ/mũi tên và phần diễn giải. Bỏ 7 caption lặp, rút 4 caption; giữ định nghĩa cần thiết. Xem lại 11 slide thay đổi sau khi bố cục dịch chuyển. Kiểm cuối: 0/61 slide tràn, không hình hỏng/code cắt/tiêu đề lẻ dòng. Chưa publish.
+
+- Chốt lại mạch mục 3: giữ indexing/slicing trước view; đặt “Từ chỉ mục đến ô nhớ” liền “View bỏ qua các ô bằng cách nào?”, đưa bài tập địa chỉ ra sau cặp giải thích này. Giữ vai trò riêng của hai hình, không thêm slide. Đồng bộ notebook; 0/61 slide tràn.
+
+### Rà soát lab Bài 3 theo deck đã duyệt — 10/09/2026 (draft)
+
+- Viết lại `notebooks/lab-03.ipynb`: 8 bài về cấu trúc/strides, lát cắt, view/bản sao, mask/chỉ mục, broadcasting, sửa phép tính theo hàng, đo thời gian, thống kê và lấy mẫu.
+- Dùng mảng nhỏ tự tạo, giá giả lập có đơn vị; bỏ yêu cầu tải Santiago và các bài where/phân vị/bootstrap khỏi phần lõi. Đề có ô dự đoán, TODO, kiểm tra và khai báo AI; không có đáp án trong notebook sinh viên.
+- Kiểm chứng lời giải tham chiếu cho 7 ô TODO và toàn bộ ô kiểm tra: đạt. Notebook 40 cell, schema hợp lệ, không lưu output. Chưa publish thay đổi lab lên main.
