@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <title>LTXLDL | Bài 3: NumPy — mảng &amp; tính toán vector hoá</title>
+  <title>LTXLDL | Bài 3: NumPy và tư duy vector hoá</title>
 
   <link rel="stylesheet" href="revealjs/dist/reset.css">
   <link rel="stylesheet" href="revealjs/dist/reveal.css" />
@@ -18,553 +18,506 @@
 <body>
   <div class="reveal">
     <div class="slides">
-
-      <!-- ====== Mở bài ====== -->
       <section>
-        <section>
-          <h1>Lập trình <br /> xử lý dữ liệu</h1>
-          <div>
-            <p>Học kì 1, năm học 2026–2027</p>
-            <p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
-          </div>
-        </section>
+<section><h1>Lập trình<br>xử lý dữ liệu</h1><p>Học kì 1, năm học 2026–2027</p><p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p></section>
 
-        <section>
-          <h1>
-            <span class="text-light">Bài 3</span>
-            <br>
-            NumPy — mảng &amp; tính toán vector hoá
-          </h1>
-        </section>
+<section><h1><span class="text-light">Bài 3</span><br>NumPy: mảng và<br>tư duy vector hoá</h1></section>
 
-        <section>
-          <h2>Bài trước</h2>
-          <ul>
-            <li>list/dict/set, comprehension, hàm làm sạch, file.</li>
-            <li>Vấn đề bài trước: "khi thấy mình đang <code>for</code> qua từng dòng dữ liệu — dừng lại".</li>
-          </ul>
-          <p class="text-light">Bài này giới thiệu công cụ thao tác đồng thời trên
-            số lượng lớn giá trị.</p>
-        </section>
+<section><h2>Bài trước</h2>
+<p>Vòng <code>for</code> và comprehension xử lý từng phần tử.</p>
+<p>Với một triệu số cần nhân đôi, <strong>công việc nào phải lặp lại một triệu lần?</strong></p>
+<p>Bài này tìm hiểu cách NumPy tổ chức dữ liệu và thực hiện phép tính trên cả mảng.</p>
+<aside class="notes">Sinh viên đầu năm 2, đã học Python và phương pháp luận lập trình. Không giảng lại cú pháp vòng lặp.</aside>
+</section>
 
-        <section>
-          <h2>Tổng quan</h2>
-          <ol>
-            <li>Vì sao cần NumPy?</li>
-            <li>ndarray: tạo mảng &amp; dtype</li>
-            <li>Vector hoá &amp; broadcasting</li>
-            <li>Thống kê theo trục</li>
-            <li>Lát cắt, view &amp; copy</li>
-            <li>Làm việc với AI thì sao?</li>
-          </ol>
-        </section>
+<section><h2>Tổng quan</h2>
+<ol><li>Cấu trúc mảng NumPy</li><li>Vì sao NumPy tính nhanh?</li><li>Chỉ mục và lát cắt</li><li>Vector hoá và broadcasting</li><li>Thống kê và mô phỏng ngẫu nhiên</li><li>Làm việc với AI thì sao?</li></ol>
+
+</section>
       </section>
-
-      <!-- ====== Phần 1 ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">1.</span><br>Vì sao cần NumPy?</h1>
-          <p class="text-light">Vòng for Python không được thiết kế cho hàng triệu con số.</p>
-        </section>
+<section><h1><span class="text-light">1.</span><br>Cấu trúc mảng<br>NumPy</h1><p class="text-light">Cách lưu dữ liệu quyết định ta có thể tính toán như thế nào?</p>
 
-        <section>
-          <h2>Cùng một phép tính, thời gian xử lý khác nhau</h2>
-          <figure class="fig">
-            <img src="img/lecture-03/speed-comparison.svg" alt="So sánh tốc độ vòng for và NumPy"
-              style="width:82%">
-            <figcaption class="caption">Nhân 5 triệu số với 1.1 rồi cộng tổng: NumPy nhanh hơn cả chục lần —
-              khoảng cách còn lớn hơn với phép toán phức tạp.</figcaption>
-          </figure>
-        </section>
+</section>
 
-        <section>
-          <h2>Khác biệt nằm ở cách xếp dữ liệu</h2>
-          <div class="two-col">
-            <div>
-              <h4>list Python</h4>
-              <ul>
-                <li>Mỗi phần tử là một đối tượng rời rạc trong bộ nhớ.</li>
-                <li>Kiểu tuỳ ý → mỗi bước lặp phải kiểm tra kiểu.</li>
-              </ul>
-            </div>
-            <div>
-              <h4>ndarray NumPy</h4>
-              <ul>
-                <li>Một khối nhớ liền, <strong>cùng một dtype</strong>.</li>
-                <li>Vòng lặp chạy trong C, không qua trình thông dịch.</li>
-              </ul>
-            </div>
-          </div>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Mảng NumPy yêu cầu các phần tử có cùng dtype và cấu trúc xác định;
-            nhờ đó các phép toán có thể được thực hiện nhanh hơn list Python.
-          </div>
-        </section>
-
-        <section data-jp-reset>
-          <h2>Một ndarray trông như thế nào?</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
+<section id="shared-array"><h2>Mảng hai chiều</h2>
+<p><strong>ndarray</strong> là kiểu mảng của NumPy. Ví dụ dưới đây là mảng số nguyên có 4 hàng, 3 cột.</p><pre><code class="language-python" data-trim>
 import numpy as np
+A = np.array([[10, 12, 11],
+              [20, 21, 24],
+              [30, 33, 31],
+              [40, 44, 42]], dtype=np.int64)
+</code></pre><table><thead><tr><th>Thuộc tính</th><th>Giá trị</th><th>Ý nghĩa</th></tr></thead><tbody><tr><td><code>A.shape</code></td><td><code>(4, 3)</code></td><td>4 hàng, 3 cột</td></tr><tr><td><code>A.ndim</code></td><td><code>2</code></td><td>2 chiều</td></tr><tr><td><code>A.dtype</code></td><td><code>int64</code></td><td>Số nguyên 64 bit</td></tr></tbody></table>
+<aside class="notes">Dùng mảng số nhỏ để dễ tính tay. Giữ A nguyên vẹn suốt bài. Các ví dụ sửa dữ liệu đều tạo B=A.copy() trước. Các hình dùng đúng 12 giá trị này.</aside>
+</section>
 
-gia = np.array([1200000, 950000, 2400000, 610000])
-gia.dtype, gia.shape, gia.ndim
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="1"><code class="language-text" data-trim>
-(dtype('int64'), (4,), 1)
-            </code></pre>
-          </div>
-          <p>Ba thuộc tính mô tả một mảng: <strong>dtype</strong> (kiểu chung),
-            <strong>shape</strong> (kích thước từng chiều), <strong>ndim</strong> (số chiều).</p>
-        </section>
+<section id="memory-layout"><h2>Cách lưu dữ liệu của list và ndarray</h2>
+<figure class="fig"><img src="img/lecture-03/memory-layout.svg?v=2" alt="List lưu địa chỉ dẫn tới các đối tượng int; ndarray int64 lưu trực tiếp ba giá trị 10, 12, 11."><figcaption class="caption">Một dtype chung giúp giảm thông tin phải lưu cho từng phần tử.</figcaption></figure>
+<aside class="notes">Sơ đồ mô tả CPython, cách triển khai Python đang dùng. Dãy tham chiếu của list cũng liền nhau. Các đối tượng có thể nằm rải rác, nhiều tham chiếu có thể trỏ cùng một đối tượng. Với dtype=object, ndarray cũng lưu tham chiếu nên không có cách lưu trực tiếp giá trị số như hình dưới. Nguồn: Python Design FAQ; McKinney chương 4 mở đầu.</aside>
+</section>
+
+<section id="array-layout"><h2>Mảng hai chiều trong bộ nhớ</h2>
+<figure class="fig"><img src="img/lecture-03/array-strides.svg?v=5" alt="Shape tổ chức 12 số thành 4 hàng và 3 cột; dtype cho biết mỗi số chiếm 8 byte; các giá trị cùng hàng nằm liền nhau."><figcaption class="caption"><strong>Metadata</strong> là thông tin mô tả mảng, như <code>shape</code> và <code>dtype</code>.</figcaption></figure>
+<aside class="notes">Đây là A mới tạo, lưu theo hàng (C-order). Mảng hai chiều không phải các list lồng nhau. Các kiểu số có kích thước và cách diễn giải bit xác định. Phần 3 sẽ dùng strides để mô tả các bước dịch chuyển và những view không liên tục. Nguồn: NumPy internals.</aside>
+</section>
+
+<section id="array-bytes"><h2>Tính dung lượng từ cách lưu mảng</h2>
+<p><code>A</code> có 4 hàng, 3 cột; mỗi số <code>int64</code> chiếm 8 byte.</p>
+<p><strong>Phần dữ liệu cần: 4 × 3 × 8 = 96 byte.</strong></p>
+<table><thead><tr><th>Kiểm tra bằng NumPy</th><th>Kết quả</th></tr></thead><tbody>
+<tr><td><code>A.itemsize</code>: byte mỗi phần tử</td><td>8</td></tr>
+<tr><td><code>A.nbytes</code>: byte của tất cả phần tử</td><td>96</td></tr>
+</tbody></table>
+<p>Đổi shape từ <code>(4, 3)</code> sang <code>(2, 6)</code> có làm giảm dung lượng dữ liệu không?</p>
+<p class="caption">Chưa tính metadata: thông tin mô tả mảng.</p>
+<aside class="notes">Đây là thuộc tính của mảng, viết A.itemsize, không thêm (). Mỗi số int64 chiếm 64 bit = 8 byte. Dung lượng phần dữ liệu bằng A.size * A.itemsize. Với view, nbytes đếm số byte của các phần tử nhìn thấy, không phải lượng bộ nhớ mới được cấp phát.</aside>
+</section>
+
+<section id="memory-size"><h2>So sánh dung lượng bộ nhớ</h2>
+<figure class="fig"><img src="img/lecture-03/memory-size.svg?v=2" alt="List và ndarray int64 cùng lưu 10.000 giá trị từ 1000 đến 10999. List chiếm 351,6 KiB, ndarray chiếm 78,2 KiB trên máy đo."></figure>
+<aside class="notes">Đo trên CPython 3.12.3, NumPy 2.5.2, máy 64 bit. KiB = 1024 byte. sys.getsizeof(list) tính đối tượng list và vùng tham chiếu; cộng kích thước từng int. Dãy này gồm các giá trị khác nhau và nằm ngoài vùng số nguyên nhỏ dùng chung, nên không đếm một đối tượng nhiều lần. ndarray sở hữu dữ liệu nên sys.getsizeof tính cả metadata và vùng dữ liệu. Đây là kích thước đối tượng, không phải RAM của toàn tiến trình. Số byte gốc và môi trường nằm trong speed-comparison-measurements.json.</aside>
+</section>
+
+
+
+<section id="integer-limits"><h2>Kích thước cố định có giới hạn gì?</h2>
+<p><code>int8</code> dùng 1 byte, chỉ lưu số nguyên từ <strong>−128 đến 127</strong>. Cộng thêm 1 vào 127 sẽ ra sao?</p><div class="jp-cell"><pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
+x8 = np.array([127], dtype=np.int8)
+print(x8 + 1)
+</code></pre><pre class="jp-output fragment" data-jp-n="1"><code class="language-text" data-trim>
+[-128]
+</code></pre></div><p>Kết quả bị <strong>tràn số</strong>. Cần đổi kiểu <strong>trước phép cộng</strong>:</p><div class="jp-cell"><pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
+print(x8.astype(np.int16) + 1)
+</code></pre><pre class="jp-output fragment" data-jp-n="2"><code class="language-text" data-trim>
+[128]
+</code></pre></div>
+<aside class="notes">Đối chiếu Python: 127 + 1 = 128 vì int Python có thể tăng số byte để lưu số lớn. int64 cũng có giới hạn, nhưng dùng int8 để dễ thấy điểm tràn. astype tạo mảng có dtype mới; đổi sau phép cộng không khôi phục kết quả đúng. Nguồn: NumPy basics.types, overflow errors.</aside>
+</section>
+
+<section id="float-precision"><h2>Ít byte hơn, độ chính xác thấp hơn</h2>
+<p>Số byte cố định cũng giới hạn <strong>độ chính xác của số thực</strong>.</p>
+<table><thead><tr><th>Giá trị</th><th>Byte</th><th>Chuỗi hiển thị</th></tr></thead><tbody>
+<tr><td>1/3 trong toán học</td><td>—</td><td><code>0.333333333333…</code></td></tr>
+<tr><td><code>float32</code></td><td>4</td><td><code>0.3333333<span class="text-orange">43267</span></code></td></tr>
+<tr><td><code>float64</code></td><td>8</td><td><code>0.333333333333</code></td></tr>
+</tbody></table>
+<p>Cả hai lưu gần đúng 1/3; phần màu cam cho thấy sai lệch của <code>float32</code>. <code>float64</code> dùng gấp đôi bộ nhớ, lưu giá trị gần 1/3 hơn.</p>
+<p class="caption">Cùng in 12 chữ số sau dấu chấm để so sánh. In nhiều chữ số không có nghĩa là chính xác hơn.</p>
+<aside class="notes">Nối từ giới hạn số nguyên: số byte cố định còn giới hạn độ chính xác của số thực. Trọng tâm là đánh đổi bộ nhớ và độ chính xác; cách in chỉ để đọc ví dụ. .12f điều khiển số chữ số sau dấu chấm khi in, không điều khiển dtype. Các chữ số 43267 không ngẫu nhiên: float32 của 1/3 bằng chính xác 11184811/33554432, viết thập phân là 0.3333333432674407958984375. Chuỗi in 12 số là bản làm tròn thập phân của giá trị này. float64 cũng không bằng đúng 1/3, nhưng sai số nhỏ hơn nên chưa hiện ở 12 số. Không suy ra float32 luôn đúng đúng 7 vị trí sau dấu chấm: độ chính xác liên quan chữ số có nghĩa và độ lớn. Khi cần minh hoạ thêm, notebook in cùng một giá trị float32 bằng .6f và .12f. Nguồn: Python floatingpoint tutorial.</aside>
+</section>
+
+<section id="exercise-bytes"><h2>Bài tập 1: tính dung lượng mảng</h2>
+<p>Một mảng có <strong>1.000.000 hàng, 3 cột</strong>.</p>
+<p>Mỗi phần tử <code>float64</code> chiếm 8 byte; <code>float32</code> chiếm 4 byte.</p>
+<ol><li>Nếu dùng <code>float64</code>, mảng có bao nhiêu byte dữ liệu?</li><li>Nếu dùng <code>float32</code>, tiết kiệm được bao nhiêu byte?</li></ol>
+<p>Chỉ tính phần dữ liệu. <strong>Tiết kiệm bộ nhớ đã đủ để quyết định chọn float32 chưa?</strong></p>
+<aside class="notes">Kết quả: float64 cần 24.000.000 byte; float32 cần 12.000.000 byte, tiết kiệm 12.000.000 byte. Có thể kiểm số byte mỗi phần tử bằng np.dtype(np.float64).itemsize và np.dtype(np.float32).itemsize. Câu hỏi mở rộng sau khi chữa: tại sao với list chỉ biết số phần tử vẫn chưa đủ để tính tổng dung lượng?</aside>
+</section>
+
       </section>
-
-      <!-- ====== Phần 2 ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">2.</span><br>Tạo mảng &amp; dtype</h1>
-          <p class="text-light">Từ list, từ công thức, hoặc từ bộ sinh số ngẫu nhiên.</p>
-        </section>
+<section><h1><span class="text-light">2.</span><br>Vì sao NumPy<br>tính nhanh?</h1><p class="text-light">Vẫn phải nhân từng số. Phần công việc nào có thể giảm?</p>
 
-        <section data-jp-reset>
-          <h2>Ba nguồn mảng thường gặp</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-np.array([[1, 2, 3], [4, 5, 6]])       # từ list (lồng nhau -> 2D)
-np.arange(0, 10, 2)                     # dãy cách đều: 0 2 4 6 8
-np.zeros((3, 4))                        # khung rỗng chờ điền
-            </code></pre>
-          </div>
-          <p>Kèm họ hàng: <span class="inline-code">linspace</span> (chia đều đoạn),
-            <span class="inline-code">ones</span>, <span class="inline-code">full</span>.</p>
-        </section>
+</section>
 
-        <section data-jp-reset>
-          <h2>Số ngẫu nhiên: sinh dữ liệu thử</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-rng = np.random.default_rng(seed=42)     # đặt seed để tái lập kết quả
+<section id="double-values"><h2>Nhân các phần tử với 2</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
+xs = [10, 12, 11]
+print([value * 2 for value in xs])
+</code></pre><pre class="jp-output fragment" data-jp-n="3"><code class="language-text" data-trim>
+[20, 24, 22]
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
+x = np.array(xs, dtype=np.int64)
+print(x * 2)
+</code></pre><pre class="jp-output fragment" data-jp-n="4"><code class="language-text" data-trim>
+[20 24 22]
+</code></pre></div><p>Hai cách cho cùng giá trị. <strong>Cách nào giảm công việc Python phải làm ở mỗi lượt?</strong></p>
+<aside class="notes">Không dùng xs*2 vì với list đó là lặp lại danh sách. Cả hai ví dụ làm cùng một phép biến đổi.</aside>
+</section>
 
-gia_gia_lap = rng.normal(1000, 250, size=5).round()
-gia_gia_lap
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="2"><code class="language-text" data-trim>
-array([1076., 740., 1188., 1235., 512.])
-            </code></pre>
-          </div>
-          <p>Khi chưa có dữ liệu thật, bạn có thể sinh dữ liệu giả để thử pipeline.
-            <strong>Đặt seed</strong> giúp các lần chạy tạo ra cùng một dãy số ngẫu nhiên.</p>
-        </section>
+<section><h2>Python xử lý từng đối tượng số</h2>
+<figure class="fig"><img src="img/lecture-03/python-loop.svg?v=4" alt="Vòng lặp Python nhân các đối tượng số 10,12,11 thành 20,24,22."></figure>
+<aside class="notes">CPython có thể chuyên biệt hoá một số thao tác, nhưng vòng lặp vẫn xử lý đối tượng Python. Không nói rằng mọi lượt đều thực hiện một kiểm tra kiểu đầy đủ như nhau.</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>dtype không chỉ là hình thức</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-diem = np.array(["7.5", "8.0", "9.25"])   # đọc từ CSV: toàn chuỗi!
-diem.dtype
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="3"><code class="language-text" data-trim>
-dtype('&lt;U4')
-            </code></pre>
-          </div>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-diem.astype(float).mean()
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="4"><code class="language-text" data-trim>
-8.25
-            </code></pre>
-          </div>
-          <p><span class="inline-code">astype</span> là cách đổi kiểu cho cả mảng. Chưa đổi kiểu thì
-            <code>mean()</code> trên mảng chuỗi chỉ báo lỗi.</p>
-        </section>
+<section id="ufunc"><h2>Ufunc là gì?</h2>
+<p><strong>ufunc</strong> (universal function) là hàm NumPy áp dụng một phép toán <strong>lên từng phần tử</strong>.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
+print(np.multiply(x, 2))
+</code></pre><pre class="jp-output" data-jp-n="5"><code class="language-text" data-trim>
+[20 24 22]
+</code></pre></div><p><code>x * 2</code> tương đương <code>np.multiply(x, 2)</code>: nhân mỗi phần tử của <code>x</code> với 2.</p>
+<aside class="notes">Giới thiệu định nghĩa trước cơ chế. multiply là một ufunc hai đầu vào; 2 là một số dùng lại cho mọi phần tử. Không cần liệt kê nhiều hàm. Tài liệu còn có generalized ufunc; bài này dùng ufunc số học từng phần tử. Nguồn: https://numpy.org/doc/stable/user/basics.ufuncs.html .</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>reshape: cùng dữ liệu, hình dạng khác</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
-doanh_thu_12_thang = np.arange(1, 13)
+<section id="interpreted-compiled"><h2>Thông dịch và biên dịch</h2>
+<figure class="fig"><img src="img/lecture-03/interpreted-compiled.svg" alt="Mã Python thành bytecode rồi qua vòng lặp của trình thông dịch; mã C của NumPy biên dịch sẵn thành vòng lặp mã máy trên mảng số."><figcaption class="caption">NumPy giảm việc xử lý lệnh và đối tượng Python trong mỗi lượt.</figcaption></figure>
+<aside class="notes">Nhắc lại hai khái niệm qua ví dụ: biên dịch chuyển mã sang dạng khác trước khi thực thi; thông dịch dùng một chương trình để thực hiện các lệnh. CPython cũng biên dịch, nhưng thành bytecode; không nói Python đọc lại từng dòng mã nguồn ở mỗi lượt. Trình thông dịch CPython bản thân cũng là mã máy. Lợi thế ở đây là giảm tầng xử lý lệnh và đối tượng trong vòng lặp số học. NumPy có sẵn các vòng lặp C đã biên dịch khi xây dựng thư viện, không tự biên dịch vòng for của sinh viên lúc gọi x*2. Liên hệ mục 1: list lưu tham chiếu tới đối tượng; mảng dtype số lưu trực tiếp các giá trị cùng kiểu. Phạm vi là CPython thông thường và ufunc dtype số; không khái quát sang dtype=object, các triển khai Python dùng JIT hoặc mọi kích thước bài toán. CPython có chuyên biệt hoá bytecode nên không mô tả mỗi lượt như một kiểm tra kiểu đầy đủ. Nguồn: https://docs.python.org/3/glossary.html#term-bytecode ; https://numpy.org/doc/stable/user/basics.ufuncs.html .</aside>
+</section>
 
-theo_quy = doanh_thu_12_thang.reshape(4, 3)   # 4 quý × 3 tháng
-theo_quy
-            </code></pre>
-            <pre class="jp-output" data-jp-n="5"><code class="language-text" data-trim>
-array([[ 1,  2,  3],
-       [ 4,  5,  6],
-       [ 7,  8,  9],
-       [10, 11, 12]])
-            </code></pre>
-          </div>
-          <p><code>reshape</code> không copy dữ liệu — nó chỉ đổi cách "đọc" khối nhớ. Tổng số
-            phần tử phải khớp (4 × 3 = 12).</p>
-        </section>
+<section id="ufunc-dispatch"><h2>NumPy chọn mã tính toán theo dtype</h2>
+<figure class="fig"><img src="img/lecture-03/ufunc-dispatch.svg" alt="NumPy có sẵn các đoạn mã nhân cho int32, int64 và float64. Với x int64 nhân 2, đoạn mã int64 được dùng."></figure>
+<aside class="notes">Sơ đồ giản lược ba trường hợp, không phải danh sách đầy đủ. Với NumPy hiện tại, x dtype int64 nhân số nguyên Python 2 vẫn có kết quả int64; đổi x sang int32 hoặc float64 lần lượt chọn phép tính tương ứng. Cả dtype đầu vào và quy tắc chuyển kiểu tham gia xác định cách tính. Các đoạn mã có sẵn trong thư viện; không phải NumPy biên dịch vòng for Python lúc gọi. SIMD và CPU dispatch là bước tối ưu khác, không giảng ở hình này. Nguồn: NumPy ufunc basics, type casting rules.</aside>
+</section>
+
+<section id="numpy-loop"><h2>Vòng lặp bên trong NumPy</h2>
+<figure class="fig"><img src="img/lecture-03/numpy-loop.svg?v=2" alt="Ba bước đọc số 10 từ x, nhân với 2, ghi 20 vào y; sau đó dịch 8 byte để làm tiếp với 12 và 11."></figure>
+<aside class="notes">Đây là cách đọc cơ chế, không phải cam kết CPU chỉ xử lý từng số mỗi lệnh. NumPy có thể dùng SIMD ở một số phép và phần cứng. Hai mảng trong ví dụ liên tục, mỗi phần tử 8 byte nên bước x/y là 8 byte. Với view khác, bước truy cập do strides quyết định. Số 2 được dùng lại ở mọi lượt. Vẫn có vòng lặp; Python chỉ gọi phép toán mảng một lần.</aside>
+</section>
+
+<section id="cache"><h2>Các phần tử liền nhau và cache</h2>
+<figure class="fig"><img src="img/lecture-03/memory-cache.svg?v=3" alt="Đọc 10 cần nạp một khối từ RAM vào cache; khi đọc tiếp 12, CPU lấy giá trị đã có trong cache."><figcaption class="caption"><strong>Cache</strong> là bộ nhớ đệm nhanh hơn RAM.</figcaption></figure>
+<aside class="notes">Nối với phép nhân trên mảng vừa học. Hình dùng bốn giá trị đầu trong vùng dữ liệu của A. Chỉ vào đường RAM → cache → CPU ở bước 1; bước 2 chỉ cần cache → CPU. Giả sử khối chứa 10,12,11,20 chưa có trong cache và còn ở đó khi đọc 12. Bốn ô chỉ là minh hoạ, không mô tả kích thước cache line hay căn chỉnh địa chỉ thực tế. Đây là lợi ích của truy cập liên tiếp, không phải đặc quyền của NumPy: bảng tham chiếu của list cũng liên tiếp, nhưng còn phải truy cập các đối tượng số được tham chiếu. Không cần mở thêm bài về các tầng cache. Nguồn: SciPy Lecture Notes, CPU cache effects.</aside>
+</section>
+
+<section id="simd"><h2>SIMD: xử lý nhiều số cùng lúc</h2>
+<p><strong>SIMD</strong> (Single Instruction, Multiple Data): một lệnh máy thực hiện cùng thao tác trên nhiều số.</p>
+<table><thead><tr><th>Cách xử lý</th><th>Minh hoạ nhân với 2</th></tr></thead><tbody>
+<tr><td>Từng số</td><td><code>10 → 20</code>, rồi <code>12 → 24</code>, …</td></tr>
+<tr><td>Theo nhóm</td><td><code>[10, 12, 11, 20]</code><br>↓ × 2<br><code>[20, 24, 22, 40]</code></td></tr>
+</tbody></table>
+<p>Một lõi CPU cũng có thể dùng SIMD. <strong>Không cần chia việc cho nhiều lõi.</strong></p>
+<p class="caption">NumPy tự chọn mã phù hợp với CPU. Việc dùng SIMD còn tuỳ phép toán, dtype, độ dài và cách bố trí mảng.</p>
+<aside class="notes">Hình minh hoạ xử lý theo nhóm, không khẳng định phép nhân bốn int64 chỉ cần một lệnh máy. Trên bản NumPy 2.5.2 của máy đo, LONG_multiply_X86_V3 xử lý nhóm bốn int64 bằng một chuỗi lệnh AVX2 trên thanh ghi 256 bit. SIMD khác với multithreading. Nguồn: https://numpy.org/doc/stable/reference/simd/index.html .</aside>
+</section>
+
+<section id="parallelism"><h2>Khi nào dùng nhiều luồng?</h2>
+<ul><li><code>x * 2</code>: thường một luồng, có thể dùng SIMD.</li><li><code>A @ B</code> (nhân ma trận số thực): có thể dùng nhiều luồng, tuỳ thư viện và cấu hình.</li></ul>
+<p><strong>NumPy vẫn có thể nhanh hơn vòng <code>for</code> Python khi chỉ dùng một luồng.</strong></p>
+<aside class="notes">BLAS là thư viện các phép toán đại số tuyến tính, ví dụ OpenBLAS/MKL; không phải mọi phép toán NumPy đều gọi BLAS. Nhiều luồng và SIMD có thể cùng được dùng. Kết luận riêng về int64 nhân 2 dựa trên CPU dispatch và mã máy của NumPy 2.5.2 trên máy đo, không phải cam kết cho mọi bản cài: mảng liên tục 1 triệu phần tử đi qua nhánh SIMD; x=[10,12,11] đi qua nhánh từng số. Không có đo tách phần đóng góp của SIMD trong tỷ lệ tăng tốc. Nguồn: https://numpy.org/doc/stable/reference/global_state.html#number-of-threads-used-for-linear-algebra .</aside>
+</section>
+
+
+
+<section id="speed"><h2>So sánh tốc độ tính toán</h2>
+<figure class="fig"><img src="img/lecture-03/speed-comparison.svg" alt="Ba phép đo: vòng for trên list, vòng for trên ndarray và phép toán NumPy"></figure>
+<aside class="notes">Tách hai yếu tố: cấu trúc dữ liệu và nơi thực hiện vòng lặp. Xem phiên bản, mẫu đo và code trong script; đây không phải cam kết tốc độ trên máy khác.</aside>
+</section>
+
+<section><h2>Bài tập 2: so sánh ba cách nhân đôi</h2>
+<p><code>xs</code> là list số nguyên; <code>x</code> là mảng <code>int64</code> chứa cùng các giá trị.</p>
+<pre><code class="language-python" data-trim>
+a = [v * 2 for v in xs]
+b = [v * 2 for v in x]
+c = x * 2
+</code></pre>
+<ol><li>Cách nào vẫn chạy vòng lặp trong Python?</li><li>Vì sao thay <code>xs</code> bằng <code>x</code> ở cách thứ hai chưa chắc làm chương trình nhanh hơn?</li><li>Dùng notebook đo cả ba cách với 10 phần tử và 1 triệu phần tử. Thứ tự nhanh, chậm có thay đổi không?</li></ol>
+<aside class="notes">Giải thích việc boxing scalar, chi phí lời gọi ufunc và quy mô dữ liệu. Không chấm dựa trên tỷ số chính xác; yêu cầu sinh viên giải thích các bước thực thi.</aside>
+</section>
+
+
       </section>
-
-      <!-- ====== Phần 3 ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">3.</span><br>Vector hoá &amp; broadcasting</h1>
-          <p class="text-light">Viết phép toán cho "cả mảng" như cho một con số.</p>
-        </section>
+<section><h1><span class="text-light">3.</span><br>Chỉ mục và lát cắt</h1><p class="text-light">Chọn phần tử, lấy lát cắt và phân biệt view với bản sao.</p></section>
 
-        <section data-jp-reset>
-          <h2>Phép toán chạy trên từng phần tử — tự động</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-gia = np.array([1200, 950, 2400, 610])   # nghìn đồng
+<section id="index-basics"><h2>Chọn một phần tử</h2>
+<figure class="fig"><img src="img/lecture-03/index-basics.svg" alt="A[2,1] chọn giá trị 33 ở hàng 2, cột 1."></figure>
+</section>
 
-gia_sau_phi = gia * 1.15 + 50            # thêm 15% phí + 50k dọn dẹp
-gia_sau_phi
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="1"><code class="language-text" data-trim>
-array([1430. , 1142.5, 2810. ,  751.5])
-            </code></pre>
-          </div>
-          <p>Không <code>for</code>, không <code>append</code> — công thức viết một lần,
-            áp cho mọi phần tử. Đây chính là <strong>vector hoá</strong>.</p>
-        </section>
+<section id="strides"><h2>Từ chỉ mục đến ô nhớ</h2>
+<figure class="fig"><img src="img/lecture-03/strides-addressing.svg?v=4" alt="A[2,1] là 33, cách đầu vùng dữ liệu 56 byte: hai bước hàng 24 byte và một bước cột 8 byte."></figure>
+<aside class="notes">Mỗi hàng có 3 số × 8 byte. Xuất phát từ ô 10, đi hai hàng tới ô 30, rồi một cột tới ô 33. Độ lệch tính từ phần tử đầu của mảng đang xét; strides dùng byte, không dùng số phần tử. Tiếp nối đúng ví dụ A[2,1] ở slide trước: từ hàng, cột trên hình sang vị trí trong bộ nhớ. Phần view phía sau sẽ dùng lại cách tính này.</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>So sánh cũng vector hoá: mảng bool</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-gia > 1000
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="2"><code class="language-text" data-trim>
-array([ True, False,  True, False])
-            </code></pre>
-          </div>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-(gia > 1000).sum(), (gia > 1000).mean()
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="3"><code class="language-text" data-trim>
-(2, 0.5)
-            </code></pre>
-          </div>
-          <p>Ghi nhớ: <code>sum</code> trên mảng bool = <em>đếm</em>;
-            <code>mean</code> = <em>tỷ lệ</em>.</p>
-        </section>
+<section id="slice-basics"><h2>Lấy một phần mảng</h2>
+<p>Mỗi chiều dùng lát cắt <code>start:stop:step</code>, <strong>không lấy stop</strong>. Bỏ trống là lấy từ đầu hoặc đến cuối; bước mặc định là 1.</p>
+<figure class="fig"><img src="img/lecture-03/slice-basics.svg" alt="A[:2,1:] lấy hàng 0,1 và cột 1,2, được [[12,11],[21,24]]."></figure>
+<aside class="notes">Nhắc lại lát cắt trên list rồi áp riêng cho hàng và cột. Trước khi sang slide view, hỏi lát cắt chọn những ô nào; chưa nói đến offset hay strides. Bước khác 1 sẽ minh hoạ bằng A[:,::2] sau phần strides.</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Boolean indexing: lọc bằng mặt nạ</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-gia_tho = np.array([1200, -5, 950, 0, 2400])
+<section><h2>Lấy một phần mảng có cần sao chép?</h2>
+<figure class="fig"><img src="img/lecture-03/slicing-selection.svg?v=5" alt="Bốn ô 12, 11, 21, 24 được chọn trong A và tạo thành view 2 × 2."><figcaption class="caption"><strong>View</strong> dùng chung dữ liệu với mảng gốc.</figcaption></figure>
+<aside class="notes">Metadata mới: shape (2,2), strides (24,8), offset 8 byte so với A. Kiểm chứng ở slide “Sửa view, mảng gốc cũng đổi”. Nguồn: https://numpy.org/doc/stable/user/basics.copies.html .</aside>
+</section>
 
-gia_tho[gia_tho > 0]              # giữ dòng nào mặt nạ = True
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="4"><code class="language-text" data-trim>
-array([1200,  950, 2400])
-            </code></pre>
-          </div>
-          <p>Bài 2 lọc bằng comprehension, bài này lọc bằng <strong>mặt nạ bool</strong> —
-            nhanh hơn, và là cú pháp bạn dùng trong pandas.</p>
-        </section>
+<section><h2>Sửa view, mảng gốc cũng đổi</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>
+B = A.copy()
+V = B[:2, 1:]
+V[0, 0] = 999
+print(B[0])
+</code></pre><pre class="jp-output" data-jp-n="6"><code class="language-text" data-trim>
+[ 10 999  11]
+</code></pre></div><p><code>V[0, 0]</code> và <code>B[0, 1]</code> chỉ cùng một ô dữ liệu. <strong>Nếu cần sửa V mà giữ nguyên B, phải thay đổi cách tạo V thế nào?</strong></p>
+<aside class="notes">A không đổi vì ta làm việc trên B. Nối về aliasing trong Python: hai object ndarray khác nhau vẫn có thể dùng chung byte dữ liệu. np.shares_memory(B,V) trả True; kiểm trong notebook.</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Ghép điều kiện: &amp; | ~ (không phải and/or!)</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
-hop_le = (gia_tho > 0) & (gia_tho < 2000)
-gia_tho[hop_le]
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="5"><code class="language-text" data-trim>
-array([1200,  950])
-            </code></pre>
-          </div>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            Với mảng phải dùng <code>&amp;</code>, <code>|</code>, <code>~</code> và
-            <strong>ngoặc quanh từng vế</strong>. Viết <code>and</code>/<code>or</code> là
-            <code>ValueError</code> — lỗi thường gặp khi bắt đầu dùng pandas.
-          </div>
-        </section>
 
-        <section data-jp-reset>
-          <h2>np.where: if-else cho cả mảng</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>
-nhan = np.where(gia > 1000, "cao", "bình dân")
-nhan
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="6"><code class="language-text" data-trim>
-array(['cao', 'bình dân', 'cao', 'bình dân'], dtype='&lt;U8')
-            </code></pre>
-          </div>
-          <p>Một dòng thay cho cả vòng <code>for</code> + <code>if</code>/<code>else</code> —
-            gán nhãn phân khúc hay gắn cờ QA đều có thể dùng mẫu này.</p>
-        </section>
 
-        <section>
-          <h2>Broadcasting: tự động mở rộng mảng nhỏ</h2>
-          <figure class="fig">
-            <img src="img/lecture-03/broadcasting.svg" alt="Broadcasting ma trận (4,3) cộng vector (3,)"
-              style="width:88%">
-            <figcaption class="caption">Cộng ma trận (4,3) với vector (3,): NumPy tự áp vector lên từng hàng —
-              không cần viết vòng lặp, không tốn thêm bộ nhớ.</figcaption>
-          </figure>
-        </section>
+<section><h2>View bỏ qua các ô bằng cách nào?</h2>
+<figure class="fig"><img src="img/lecture-03/strided-view.svg?v=5" alt="A[:,::2] chọn cột 0 và 2, tạo view shape (4,2), strides (24,16)."><figcaption class="caption">Bước sang cột kế tiếp của view: <strong>2 × 8 = 16 byte</strong>.</figcaption></figure>
+<aside class="notes">Nhắc lại strides (24,8) đã dùng để tìm A[2,1]: NumPy vẫn đọc vùng dữ liệu của A, nhưng view chọn điểm bắt đầu, shape và bước dịch riêng. Trong ví dụ này bước cột đổi từ 8 thành 16 byte, bước hàng giữ 24 byte. Chỉ vào bước từ ô 11 sang ô 20. Bước hàng được tính từ đầu hàng, không phải cộng 16 byte liên tục qua cả mảng. Vẽ lưới chỉ mục rồi ánh xạ bằng offset = i × 24 + j × 16.</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Broadcasting trong code</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>
-gia_4tp_3thang = np.array([[10, 12, 11],
-                           [20, 21, 24],
-                           [30, 33, 31],
-                           [40, 44, 42]])
-phu_phi_thang = np.array([1, 2, 3])
+<section><h2>Bài tập 3: tìm vị trí phần tử</h2>
+<p><code>A.shape = (4, 3)</code>, <code>A.strides = (24, 8)</code> (byte).</p>
+<figure class="fig"><img src="img/lecture-03/strides-exercise.svg?v=2" alt="Dãy 10,12,11,20,21,24,30,33,31,40,44,42; mỗi phần tử chiếm 8 byte."></figure>
+<ol><li><code>A[1, 2]</code> cách đầu vùng dữ liệu bao nhiêu byte?</li><li>Phần tử cách đầu vùng dữ liệu 80 byte có giá trị và chỉ mục nào?</li><li>Tạo <code>B = A.astype(np.int32)</code>. Mỗi số còn 4 byte. <code>B.strides</code> bằng bao nhiêu?</li></ol>
+<aside class="notes">40 byte; giá trị 44 tại A[3,1]; strides int32 là (12,4). Hỏi sinh viên vì sao shape không đổi mà stride đổi.</aside>
+</section>
 
-(gia_4tp_3thang + phu_phi_thang)[0]      # hàng đầu: 10+1, 12+2, 11+3
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="7"><code class="language-text" data-trim>
-array([11, 14, 14])
-            </code></pre>
-          </div>
-          <p>Quy tắc nhớ nhanh: hai shape khớp nhau khi mỗi chiều <em>bằng nhau hoặc một bên là 1</em>
-            (so từ phải sang).</p>
-        </section>
+<section><h2>Bài tập 4: xác định các ô của view</h2>
+<pre><code class="language-python" data-trim>
+A = np.array([[10, 12, 11],
+              [20, 21, 24],
+              [30, 33, 31],
+              [40, 44, 42]], dtype=np.int64)
+V = A[::2, 1:]
+</code></pre>
+<ol><li>Viết các giá trị của <code>V</code> và <code>V.shape</code>.</li><li>Tính <code>V.strides</code>. Ô đầu của <code>V</code> cách đầu vùng dữ liệu của <code>A</code> bao nhiêu byte?</li><li>Gán <code>V[1, 0] = 999</code> sẽ đổi ô nào của <code>A</code>? Giải thích bằng vị trí trong bộ nhớ.</li></ol>
+<aside class="notes">Kết quả [[12,11],[33,31]], shape (2,2), strides (48,8), offset 8 byte. V[1,0] ánh xạ đến A[2,1]. Dùng B=A.copy() khi kiểm chứng việc gán để A vẫn giữ nguyên cho các phần sau.</aside>
+</section>
+
+<section><h2>Chuyển vị không di chuyển dữ liệu</h2>
+<figure class="fig"><img src="img/lecture-03/transpose-layout.svg?v=4" alt="A và A.T dùng chung dữ liệu; shape và strides đổi thứ tự."><figcaption class="caption"><code>A.T[i, j]</code> chính là <code>A[j, i]</code>.</figcaption></figure>
+<aside class="notes">Nếu sau đó reshape thành một chiều theo hàng, có thể phải tạo copy. Xem bố trí dữ liệu và dùng np.shares_memory để kiểm tra. Ví dụ trong notebook cho thấy A.T.reshape(-1) không dùng chung dữ liệu với A.</aside>
+</section>
+
+<section id="reshape"><h2>Đổi shape có phải chuyển dữ liệu?</h2>
+<p><code>A</code> có 12 phần tử. Dùng <code>reshape</code> để đọc thành 2 hàng, 6 cột:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>
+R = A.reshape(2, 6)
+print(R)
+</code></pre><pre class="jp-output" data-jp-n="7"><code class="language-text" data-trim>
+[[10 12 11 20 21 24]
+ [30 33 31 40 44 42]]
+</code></pre></div>
+<p><code>R.shape = (2, 6)</code>, <code>R.strides = (48, 8)</code>: mỗi hàng nay có 6 số, nên bước hàng là 48 byte.</p>
+<p>Ở đây, <strong>chỉ thay cách đọc cùng dãy số</strong>; <code>R</code> dùng chung dữ liệu với <code>A</code>. Nếu cách bố trí không phù hợp, <code>reshape</code> có thể phải sao chép.</p>
+<aside class="notes">A đang liên tục theo hàng. reshape mặc định đọc theo thứ tự hàng, không phải chuyển vị. Không khẳng định reshape luôn tạo view. Ví dụ transpose rồi reshape(-1) ở notebook cho thấy có thể cần copy. Nguồn: NumPy copies and views.</aside>
+</section>
+
+<section id="boolean-selection"><h2>Lọc phần tử bằng điều kiện</h2>
+<figure class="fig"><img src="img/lecture-03/boolean-selection.svg?v=2" alt="A % 2 == 0 đánh dấu các số chẵn; A[mask] trả về [10,12,20,24,30,40,44,42], shape (8,)."></figure>
+<aside class="notes">Lọc bằng mảng bool là một dạng chỉ mục nâng cao. Với mask cùng shape A, kết quả một chiều theo thứ tự hàng và là bản sao. Mask hàng A[:,0]>=30 lại chọn cả hàng, cho shape(2,3); thử thêm ở notebook. Ghép điều kiện bằng & hoặc |, đặt mỗi điều kiện trong ngoặc. Nguồn: https://numpy.org/doc/stable/user/basics.indexing.html#boolean-array-indexing .</aside>
+</section>
+
+<section id="index-pairs"><h2>Chọn bằng hai mảng chỉ mục</h2>
+<figure class="fig"><img src="img/lecture-03/index-pairs.svg?v=2" alt="Ghép hàng 0 với cột 1 được 12; ghép hàng 2 với cột 2 được 31. Kết quả [12,31]."></figure>
+<aside class="notes">Đọc từng cặp chỉ mục cùng vị trí. Hai danh sách này chọn hai phần tử, không chọn bốn giao điểm. Có thể đổi thứ tự hoặc lặp lại chỉ mục. Nguồn: https://numpy.org/doc/stable/user/basics.indexing.html#integer-array-indexing .</aside>
+</section>
+
+<section id="index-grid"><h2>Chọn các hàng và cột với np.ix_</h2>
+<figure class="fig"><img src="img/lecture-03/index-grid.svg" alt="Chọn cột 1,2 ở mỗi hàng 0,2: kết quả [[12,11],[33,31]], shape (2,2)."></figure>
+<aside class="notes">So với slide trước, yêu cầu bây giờ là lấy cả hai cột ở mỗi hàng đã chọn. np.ix_ tạo các mảng chỉ mục có shape (2,1) và (1,2); cơ chế broadcasting sẽ học sau. Ở đây chỉ cần đọc đúng bốn ô được chọn.</aside>
+</section>
+
+<section id="selection-copy"><h2>Phân biệt view và bản sao</h2>
+<pre><code class="language-python" data-trim>
+B = A.copy()
+V = B[:, 1:3]       # lát cắt: view
+C = B[:, [1, 2]]    # mảng chỉ mục: bản sao
+C[0, 0] = -9
+V[0, 0] = -1
+</code></pre>
+<p><strong>B[0] có những giá trị nào sau đoạn code này?</strong></p>
+<p>Lấy dữ liệu bằng mảng chỉ mục hoặc mask tạo <strong>bản sao</strong>. Lát cắt cơ bản tạo <strong>view</strong>.</p>
+<aside class="notes">Đáp án [10,-1,11]; C và V ban đầu cùng giá trị nhưng không cùng quan hệ bộ nhớ với B. Kiểm chứng bằng np.shares_memory. Phân biệt lấy dữ liệu với gán trực tiếp: B[:,[1,2]]=-9 vẫn ghi vào B; C=B[:,[1,2]] rồi sửa C không ghi vào B. Không khái quát rằng mọi thao tác có chỉ mục nâng cao đều không sửa gốc. Nguồn: NumPy indexing, assigning values to indexed arrays.</aside>
+</section>
       </section>
-
-      <!-- ====== Phần 4 ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">4.</span><br>Thống kê theo trục</h1>
-          <p class="text-light">Một ma trận, hai hướng tổng hợp.</p>
-        </section>
+<section><h1><span class="text-light">4.</span><br>Broadcasting</h1><p class="text-light">Tính toán với các mảng khác shape.</p></section>
 
-        <section data-jp-reset>
-          <h2>Bộ thống kê cơ bản</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-gia = np.array([1200, 950, 2400, 610, 980])
+<section><h2>Cộng vào từng cột</h2>
+<p>Cột 0 cộng 1, cột 1 cộng 2, cột 2 cộng 3.</p>
+<pre><code class="language-python" data-trim>
+b = np.array([1, 2, 3])
+ket_qua = np.empty_like(A)
+for i in range(4):
+    for j in range(3):
+        ket_qua[i, j] = A[i, j] + b[j]
+</code></pre>
+<p>Sang hàng tiếp theo, vẫn dùng ba số trong <code>b</code>.</p>
+</section>
 
-gia.mean(), np.median(gia), gia.std().round(1)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="1"><code class="language-text" data-trim>
-(1228.0, 980.0, 615.6)
-            </code></pre>
-          </div>
-          <p><code>mean</code> lớn hơn đáng kể so với <code>median</code> cho thấy phân phối bị kéo lệch
-            bởi giá trị lớn (2400). Bài 10 sẽ phân tích hiện tượng này kỹ hơn.</p>
-        </section>
+<section id="broadcasting"><h2>Viết phép cộng trên cả mảng</h2>
+<figure class="fig"><img src="img/lecture-03/broadcast-columns.svg" alt="Mỗi hàng của A cộng cùng dãy 1,2,3; kết quả [[11,14,14],[21,23,27],[31,35,34],[41,46,45]]."></figure>
+<p><strong>Broadcasting</strong> cho phép tính với các mảng khác shape bằng cách dùng lại phần tử: ở đây <code>(4, 3) + (3,)</code>.</p>
+<aside class="notes">Đối chiếu với vòng for: ket_qua[i,j]=A[i,j]+b[j]. Chỉ vào 33+2=35. Không cần tạo bốn bản sao của b; phép cộng tạo mảng kết quả. Nguồn: https://numpy.org/doc/stable/user/basics.broadcasting.html .</aside>
+</section>
 
-        <section>
-          <h2>axis: hướng của phép tổng hợp</h2>
-          <figure class="fig">
-            <img src="img/lecture-03/axis.svg" alt="mean theo axis 0 và axis 1" style="width:92%">
-            <figcaption class="caption">axis=0 "nuốt" chiều hàng → một số mỗi cột; axis=1 "nuốt" chiều cột →
-              một số mỗi hàng.</figcaption>
-          </figure>
-        </section>
+<section id="broadcast-rows"><h2>Cộng vào từng hàng</h2>
+<p>Hàng 0 cộng 10, hàng 1 cộng 20, hàng 2 cộng 30, hàng 3 cộng 40.</p>
+<pre><code class="language-python" data-trim>
+d = np.array([10, 20, 30, 40])
+d_cot = d[:, None]  # thêm một chiều: (4,) → (4, 1)
+</code></pre>
+<table><thead><tr><th><code>d</code></th><th><code>d_cot</code></th></tr></thead><tbody><tr><td><code>[10 20 30 40]</code></td><td><code>[[10]<br> [20]<br> [30]<br> [40]]</code></td></tr></tbody></table>
+<aside class="notes">None tại vị trí cột thêm một chiều có kích thước 1; tương đương np.newaxis. Mỗi hàng có một số để dùng cho cả ba cột. Không gọi mảng (4,) là hàng hay cột: đó là mảng một chiều.</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>axis trong code</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-gia_4tp_3thang.mean(axis=0)   # giá TB mỗi THÁNG (gộp 4 thành phố)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="2"><code class="language-text" data-trim>
-array([25. , 27.5, 27. ])
-            </code></pre>
-          </div>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-gia_4tp_3thang.mean(axis=1)   # giá TB mỗi THÀNH PHỐ (gộp 3 tháng)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="3"><code class="language-text" data-trim>
-array([11. , 21.7, 31.3, 42. ])
-            </code></pre>
-          </div>
-          <p>Ghi nhớ: <strong>axis nào bị nêu tên, chiều đó biến mất</strong> khỏi kết quả.</p>
-        </section>
+<section><h2>Mỗi hàng dùng một số</h2>
+<figure class="fig"><img src="img/lecture-03/broadcast-rows.svg" alt="A+d[:,None] cộng 10,20,30,40 vào từng hàng, kết quả [[20,22,21],[40,41,44],[60,63,61],[80,84,82]]."></figure>
+<p><code>(4, 3) + (4, 1)</code>: số duy nhất trong mỗi hàng của <code>d_cot</code> được dùng cho cả ba cột.</p>
+</section>
 
-        <section data-jp-reset>
-          <h2>argmax / argsort: hỏi "ở đâu?"</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-thang = np.array(["T9", "T12", "T3"])
-gia_tb_thang = np.array([25.0, 27.5, 27.0])
+<section id="broadcast-align"><h2>Quy tắc broadcasting</h2>
+<p>Đặt các shape thẳng về bên phải rồi so sánh từng chiều:</p>
+<table><thead><tr><th></th><th>Hàng</th><th>Cột</th></tr></thead><tbody>
+<tr><td><code>A</code></td><td>4</td><td>3</td></tr>
+<tr><td><code>b</code></td><td>thiếu → coi là 1</td><td>3</td></tr>
+<tr><td><code>d_cot</code></td><td>4</td><td>1</td></tr>
+</tbody></table>
+<ul><li>Kích thước bằng nhau: ghép tương ứng.</li><li>Một bên bằng 1: dùng lại theo chiều đó.</li><li>Các trường hợp khác: không ghép được.</li></ul>
+<aside class="notes">So sánh A với b, rồi A với d_cot, không phải ghép ba hàng trong bảng cùng lúc. Chiều thiếu được coi là 1 khi so sánh; b.shape vẫn là (3,). Quy tắc áp dụng từ chiều cuối cho mảng nhiều chiều; trường hợp kích thước 0 không nằm trong ví dụ này.</aside>
+</section>
 
-thang[gia_tb_thang.argmax()]
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="4"><code class="language-text" data-trim>
-'T12'
-            </code></pre>
-          </div>
-          <p><code>max</code> trả <em>giá trị</em>; <code>argmax</code> trả <em>vị trí</em> —
-            rồi dùng vị trí đó tra sang mảng khác. Cặp hàm này hữu ích khi trả lời
-            các câu hỏi như "tháng nào" hoặc "phòng nào".</p>
-        </section>
+<section id="broadcast-mismatch"><h2>Vì sao A + d bị lỗi?</h2>
+<pre><code class="language-text" data-trim>
+A.shape       (4, 3)
+d.shape          (4,)
+                  ↑
+             3 không khớp 4
+</code></pre>
+<p>NumPy ghép từ chiều cuối, không tự đoán rằng bốn số là dành cho bốn hàng.</p>
+<pre><code class="language-python" data-trim>
+A + d[:, None]  # (4, 3) + (4, 1)
+</code></pre>
+<aside class="notes">Yêu cầu sinh viên chỉ ra ý nghĩa của bốn số trước khi sửa shape. Đổi shape để diễn đạt đúng phép tính, không chỉ để hết lỗi.</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>NaN: giá trị thiếu phiên bản số học</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
-gia = np.array([1200, np.nan, 950])
+<section id="select-row"><h2>Giữ chiều khi lấy một cột</h2>
+<p>Để cộng số đầu mỗi hàng vào cả hàng đó:</p>
+<table><thead><tr><th>Cách lấy</th><th>Shape</th><th>Cộng với A</th></tr></thead><tbody>
+<tr><td><code>A[:, 0]</code></td><td><code>(4,)</code></td><td>Không khớp</td></tr>
+<tr><td><code>A[:, 0:1]</code></td><td><code>(4, 1)</code></td><td>Đúng theo hàng</td></tr>
+</tbody></table>
+<pre><code class="language-python" data-trim>
+ket_qua = A + A[:, 0:1]
+</code></pre>
+<aside class="notes">Nối lại mục chỉ mục/lát cắt: chỉ mục nguyên bỏ chiều, lát cắt giữ chiều. Đây là cách lấy sẵn một cột hai chiều, không cần thêm None.</aside>
+</section>
 
-gia.mean(), np.nanmean(gia)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="5"><code class="language-text" data-trim>
-(nan, 1075.0)
-            </code></pre>
-          </div>
-          <ul>
-            <li>NaN có thể lan truyền qua phép toán; <code>mean()</code> trả NaN là một tín hiệu
-              cần kiểm tra dữ liệu thiếu.</li>
-            <li><code>nanmean</code> chủ động bỏ qua — <em>bạn</em> quyết định, không phải ngẫu nhiên.</li>
-          </ul>
-          <p class="text-light"><code>None</code> (bài 2) → <code>np.nan</code> (bài này) →
-            <code>pd.NA</code> (bài sau): một khái niệm, ba cách biểu diễn.</p>
-        </section>
-
-        <section data-jp-reset>
-          <h2>Phân vị: thước đo ít nhạy với ngoại lai</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>
-gia = rng.lognormal(7, 0.5, size=10_000)   # phân phối giá "lệch phải"
-
-np.percentile(gia, [50, 95, 99]).round()
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="6"><code class="language-text" data-trim>
-array([1089., 2493., 3561.])
-            </code></pre>
-          </div>
-          <p>"Giá vượt P99" là quy tắc gắn cờ ngoại lai phổ biến — bài 10 bạn sẽ tự đề xuất
-            ngưỡng và bảo vệ nó.</p>
-        </section>
+<section><h2>Bài tập 5: cộng theo hàng và cột</h2>
+<p>Cho mảng <code>A</code> có 4 hàng, 3 cột. Tạo <code>B</code> qua hai bước:</p>
+<ol><li>Từ <code>A</code>, cộng lần lượt 1, 2, 3 vào các cột 0, 1, 2.</li><li>Trên kết quả vừa tính, cộng lần lượt 10, 20, 30, 40 vào các hàng 0, 1, 2, 3.</li></ol>
+<p>Ví dụ: <code>B[0, 1] = A[0, 1] + 2 + 10</code>.</p>
+<ul><li>Viết code NumPy không dùng <code>for</code>. Ghi shape các mảng dùng để cộng.</li><li>Với <code>A[0] = [10, 12, 11]</code>, tính <code>B[0]</code>.</li></ul>
+<aside class="notes">Có thể viết hai lệnh hoặc gộp thành A+b+d[:,None], shape (4,3)+(3,)+(4,1). Mỗi ô được cộng cả số theo cột và số theo hàng. Hàng đầu [21,24,24].</aside>
+</section>
       </section>
-
-      <!-- ====== Phần 5 ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">5.</span><br>Lát cắt, view &amp; copy</h1>
-          <p class="text-light">Cạm bẫy bài 2 phiên bản NumPy.</p>
-        </section>
+<section id="statistics"><h1><span class="text-light">5.</span><br>Thống kê và<br>lấy mẫu ngẫu nhiên</h1><p class="text-light">Mô tả giá chỗ ở và lấy mẫu để kiểm tra dữ liệu.</p></section>
 
-        <section data-jp-reset>
-          <h2>Lát cắt 2D: hàng, cột, ô</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-M = gia_4tp_3thang        # (4 thành phố × 3 tháng)
+<section id="mean-median"><h2>Mô tả mức giá chỗ ở</h2>
+<p>Giá mỗi đêm của 5 chỗ ở, đơn vị USD. <strong>Dữ liệu giả lập.</strong></p>
+<table><thead><tr><th>Giá</th><th>Trung bình</th><th>Trung vị</th></tr></thead><tbody>
+<tr><td><code>[40, 50, 60, 70, 80]</code></td><td>60</td><td>60</td></tr>
+<tr><td><code>[40, 50, 60, 70, 380]</code></td><td>120</td><td>60</td></tr>
+</tbody></table>
+<p>Một chỗ ở giá cao kéo trung bình lên 120 USD; bốn chỗ còn lại đều dưới mức này.</p>
+<p><strong>Trong báo cáo bài tập lớn, dùng số nào để mô tả mức giá điển hình?</strong></p>
+<aside class="notes">np.mean(gia), np.median(gia). Trung vị là giá trị giữa sau sắp xếp; nếu số phần tử chẵn thì lấy trung bình hai giá trị giữa. Trung vị hữu ích khi mô tả mức giá điển hình của dãy lệch; mean liên hệ với tổng. Giá cao không tự động là dữ liệu sai. Chỉ so sánh giá cùng đơn vị, thời điểm và loại chỗ ở phù hợp; dữ liệu này hoàn toàn giả lập.</aside>
+</section>
 
-M[0]        # hàng đầu (thành phố 1)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="1"><code class="language-text" data-trim>
-array([10, 12, 11])
-            </code></pre>
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-M[:, 1]     # cột 1 (tháng thứ hai, mọi thành phố)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="2"><code class="language-text" data-trim>
-array([12, 21, 33, 44])
-            </code></pre>
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-M[1, 2]     # một ô
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="3"><code class="language-text" data-trim>
-24
-            </code></pre>
-          </div>
-          <p>Đọc <span class="inline-code">M[hàng, cột]</span>; dấu <span class="inline-code">:</span>
-            = "lấy hết chiều này".</p>
-        </section>
+<section id="variance-std"><h2>Độ phân tán của giá</h2>
+<p>Hai khu vực, mỗi nơi 4 chỗ ở. Giá USD/đêm, <strong>giả lập</strong>.</p>
+<table><thead><tr><th>Khu vực</th><th>Giá</th><th>Trung bình</th><th>Độ lệch chuẩn</th></tr></thead><tbody>
+<tr><td>X</td><td style="white-space: nowrap"><code>[60, 60, 60, 60]</code></td><td>60</td><td>0</td></tr>
+<tr><td>Y</td><td style="white-space: nowrap"><code>[30, 30, 90, 90]</code></td><td>60</td><td>30</td></tr>
+</tbody></table>
+<p>Ở Y, mỗi giá cách trung bình 30 USD. Báo cáo chỉ ghi “trung bình 60 USD” sẽ bỏ mất chênh lệch này.</p>
+<pre><code class="language-python" data-trim>
+np.var([30, 30, 90, 90])  # 900 (USD²)
+np.std([30, 30, 90, 90])  # 30  (USD)
+</code></pre>
+<aside class="notes">Độ lệch [-30,-30,30,30] cộng lại bằng 0. Bình phương rồi lấy trung bình được 900; lấy căn được 30. NumPy mặc định ddof=0. Đây là mô tả bốn giá đã cho; ddof=1 là lựa chọn khi ước lượng phương sai tổng thể từ mẫu, để notebook. Không suy ra phân phối chỉ từ mean/std.</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Lát cắt là view — sửa lát cắt là sửa mảng gốc</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-hang_dau = M[0]          # view — nhìn chung khối nhớ với M
-hang_dau[0] = 999
+<section><h2>Tính trung bình theo hàng và cột</h2>
+<p>Giả sử <code>A</code> là giá USD/đêm: 4 chỗ ở × 3 kỳ thu thập. Dữ liệu giả lập.</p>
+<figure class="fig"><img src="img/lecture-03/axis.svg" alt="Tính trung bình trên A theo axis 0 và axis 1, với shape kết quả tương ứng (3,) và (4,)."><figcaption class="caption"><strong>axis</strong> là chiều được gộp. Kết quả trong hình được làm tròn.</figcaption></figure>
+<aside class="notes">Hỏi những giá trị nào cùng tham gia một kết quả trung bình. Mặc định chiều được tổng hợp biến mất; keepdims giữ chiều đó với kích thước 1 để dùng lại kết quả trong broadcasting.</aside>
+</section>
 
-M[0]
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="4"><code class="language-text" data-trim>
-array([999,  12,  11])
-            </code></pre>
-          </div>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            Muốn có bản độc lập, dùng <code>M[0].copy()</code>. Dữ liệu gốc thay đổi ngoài ý muốn
-            có thể do view; pandas cũng có cảnh báo liên quan
-            (<em>SettingWithCopyWarning</em>).
-          </div>
-        </section>
+<section><h2>Trừ trung bình của từng hàng</h2>
+<p>Mỗi giá lệch bao nhiêu so với giá trung bình của chính chỗ ở đó?</p><div class="jp-cell"><pre class="jp-input" data-jp-n="14"><code class="language-python" data-trim>
+tb_hang = A.mean(axis=1, keepdims=True)
+print(tb_hang.shape)
+</code></pre><pre class="jp-output" data-jp-n="14"><code class="language-text" data-trim>
+(4, 1)
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="15"><code class="language-python" data-trim>
+chenh_lech = A - tb_hang
+print(chenh_lech.round(2))
+</code></pre><pre class="jp-output" data-jp-n="15"><code class="language-text" data-trim>
+[[-1.    1.    0.  ]
+ [-1.67 -0.67  2.33]
+ [-1.33  1.67 -0.33]
+ [-2.    2.    0.  ]]
+</code></pre></div><p><code>keepdims=True</code> giữ chiều 1 để ghép đúng hàng: <code>(4, 3) − (4, 1)</code>.</p>
+<aside class="notes">Nối phép tổng hợp với broadcasting. Cho sinh viên tính hàng đầu [10,12,11] có trung bình 11; chênh lệch [-1,1,0]. round chỉ làm tròn khi in.</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Fancy indexing: chọn theo danh sách vị trí</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
-gia = np.array([1200, 950, 2400, 610, 980])
-top2 = gia.argsort()[-2:][::-1]     # vị trí 2 giá cao nhất
+<section><h2>Bài tập 6: sửa phép trừ</h2>
+<p>Mỗi phần tử cần trừ đi trung bình của hàng chứa nó.</p>
+<p>Ví dụ: hàng <code>[10, 12, 11]</code> có trung bình 11 → kết quả <code>[-1, 1, 0]</code>.</p>
+<pre><code class="language-python" data-trim>
+M = np.array([[10, 12, 11],
+              [20, 21, 24],
+              [30, 33, 31]])
+tb = M.mean(axis=1)
+chenh_lech = M - tb
+</code></pre>
+<p><strong>Code chạy được nhưng tính sai. Hãy sửa và giải thích lỗi.</strong></p>
+<aside class="notes">M shape (3,3), tb shape (3,): broadcasting trừ tb theo cột. Sửa M.mean(axis=1,keepdims=True) để tb shape (3,1). Kiểm tra hàng đầu [-1,1,0] và trung bình mỗi hàng gần 0. Liên hệ slide trước: mỗi hàng là giá một chỗ ở qua ba kỳ, dữ liệu giả lập USD/đêm.</aside>
+</section>
 
-top2, gia[top2]
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="5"><code class="language-text" data-trim>
-(array([2, 0]), array([2400, 1200]))
-            </code></pre>
-          </div>
-          <p>Đưa <em>mảng chỉ số</em> vào ngoặc vuông để lấy nhiều phần tử tuỳ ý trong một lần
-            (kết quả là copy, không phải view).</p>
-        </section>
+
+
+
+
+
+
+<section id="random-sample"><h2>Lấy mẫu để kiểm tra dữ liệu</h2>
+<p>Dữ liệu của bài tập lớn có nhiều dòng. Thay vì chỉ xem các dòng đầu, chọn ngẫu nhiên một số dòng để kiểm tra.</p>
+<pre><code class="language-python" data-trim>
+# Ví dụ nhỏ: 5 giá giả lập, USD/đêm
+gia = np.array([40, 50, 60, 70, 380])
+rng = np.random.default_rng(42)
+chi_muc = rng.choice(len(gia), size=3, replace=False)
+print(gia[chi_muc])
+# [380  40  70]
+</code></pre>
+<p><code>replace=False</code>: mỗi dòng được chọn tối đa một lần.</p>
+<aside class="notes">Chọn chỉ mục để lấy toàn bộ các trường của cùng dòng trong bài tập lớn, không lấy riêng giá rồi mất liên kết. Seed giúp lặp lại phép lấy mẫu trong cùng môi trường và thứ tự gọi; không bảo đảm mẫu đại diện. Tất cả dữ liệu giả lập.</aside>
+</section>
+
+<section id="sampling-limits"><h2>Diễn giải kết quả từ mẫu</h2>
+<p>Vẫn dùng 5 giá giả lập ở slide trước:</p>
+<table><thead><tr><th>Dữ liệu</th><th>Giá trung bình (USD)</th></tr></thead><tbody>
+<tr><td>Cả 5 giá</td><td>120</td></tr>
+<tr><td>3 giá lấy với seed 42</td><td>163,33</td></tr>
+<tr><td>3 giá lấy với seed 7</td><td>170</td></tr>
+</tbody></table>
+<p><strong>Lấy mẫu ngẫu nhiên vẫn có sai số.</strong> Đổi seed có thể đổi kết quả.</p>
+<p>Với bài tập lớn, hãy tính thống kê trên toàn bộ dữ liệu hợp lệ khi có thể; dùng mẫu để đọc và kiểm tra từng dòng.</p>
+<aside class="notes">Ví dụ nhỏ để thấy dao động mẫu, không phải khuyến nghị lấy 3 dòng. Seed 7 chọn [60,70,380]. Nếu dữ liệu nguồn thiếu một nhóm chỗ ở, lấy ngẫu nhiên từ nguồn đó không khôi phục được nhóm bị thiếu. Tái lập phép lấy mẫu khác với bảo đảm tính đại diện.</aside>
+</section>
       </section>
-
-      <!-- ====== Kết ====== -->
       <section>
-        <section>
-          <h2>Tổng kết</h2>
-          <ul>
-            <li>ndarray = khối số cùng dtype — đổi tự do lấy <strong>tốc độ</strong>.</li>
-            <li>Vector hoá: công thức, so sánh, if-else (<code>where</code>) đều chạy cả mảng;
-              bool mask để lọc, <code>&amp; | ~</code> để ghép.</li>
-            <li><code>axis</code>: chiều nào bị gọi tên, chiều đó biến mất; NaN xử lý chủ động
-              bằng họ <code>nan*</code>.</li>
-            <li>Lát cắt là <strong>view</strong> — muốn độc lập phải <code>.copy()</code>.</li>
-          </ul>
-        </section>
+<section><h2>Tổng kết</h2>
+<ul><li><strong>Cách lưu dữ liệu</strong> quyết định chi phí và giới hạn của phép tính.</li><li><strong>Vector hoá</strong> bắt đầu từ quan hệ giữa các phần tử, rồi mới chọn hàm.</li><li><strong>Code chạy được</strong> chưa chứng minh nó tính đúng điều ta muốn.</li><li><strong>Thống kê</strong> cần được diễn giải theo dữ liệu và cách lấy mẫu.</li></ul>
+</section>
 
-        <section>
-          <h2>Làm việc với AI thì sao?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <div class="good-box">
-            <span class="box-title">AI làm tốt</span>
-            AI thường có thể chuyển một vòng lặp sang phép toán NumPy và giải thích
-            lỗi không khớp shape.
-          </div>
-          <div class="warn-box">
-            <span class="box-title">AI hay sai</span>
-            Quên NaN (dùng <code>mean</code> thay <code>nanmean</code> hoặc ngược lại mà không hỏi bạn);
-            broadcasting "chạy được" nhưng ghép nhầm chiều — kết quả sai <em>không báo lỗi</em>.
-          </div>
-        </section>
+<section><h2>Làm việc với AI thì sao?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
+<div class="good-box"><span class="box-title">AI làm tốt</span>Gợi ý cách viết biểu thức, tìm hàm và tạo ví dụ để thử.</div>
+<div class="warn-box"><span class="box-title">AI hay sai</span>Ghép sai hàng/cột; khẳng định “nhanh hơn” mà chưa đo; dùng mô hình không đúng giả định.</div>
+</section>
 
-        <section>
-          <h2>Kiểm chứng thế nào?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <ul>
-            <li>Thử code AI trên <strong>mảng 3×2 nhỏ tự tạo, tự tính tay được</strong> trước khi
-              cho chạy dữ liệu thật.</li>
-            <li>Kiểm tra <code>shape</code> của kết quả: kết quả đã có đúng chiều mong đợi chưa?
-              Sai chiều thường dẫn đến diễn giải sai.</li>
-          </ul>
-        </section>
+<section><h2>Kiểm chứng thế nào?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
+<ul><li><strong>Đúng kết quả?</strong> So với phép tính tay hoặc vòng for trên mảng nhỏ.</li><li><strong>Đúng cơ chế?</strong> Kiểm tra shape, dữ liệu dùng chung và dữ liệu bị sửa.</li><li><strong>Đúng kết luận?</strong> Đo tốc độ; kiểm tra giả định của mô phỏng.</li></ul>
+<p>Yêu cầu AI nêu trường hợp có thể sai, rồi tự kiểm tra.</p>
+</section>
 
-        <section>
-          <h2>Đọc thêm</h2>
-          <ul>
-            <li>McKinney, <em>Python for Data Analysis</em>, 3rd ed. — ch. 4 (NumPy Basics).</li>
-            <li>VanderPlas, <em>Python Data Science Handbook</em>, 2nd ed. — Part 2 (NumPy).</li>
-            <li>📖 Tự học: Jay Alammar, <a href="https://jalammar.github.io/visual-numpy/" target="_blank"
-                rel="noopener"><em>A Visual Intro to NumPy</em></a>.</li>
-          </ul>
-        </section>
+<section><h2>Đọc thêm</h2>
+<ul><li>McKinney, <a href="https://wesmckinney.com/book/numpy-basics"><em>Python for Data Analysis</em>, chương 4</a>: mảng, truy cập bằng chỉ mục và phép toán vector hoá.</li><li>Tài liệu NumPy: <a href="https://numpy.org/doc/stable/reference/simd/index.html">SIMD</a>, <a href="https://numpy.org/doc/stable/reference/global_state.html#number-of-threads-used-for-linear-algebra">nhiều luồng</a>, <a href="https://numpy.org/doc/stable/user/basics.broadcasting.html">broadcasting</a>, <a href="https://numpy.org/doc/stable/user/basics.copies.html">copy và view</a>, <a href="https://numpy.org/doc/stable/user/basics.ufuncs.html">ufunc</a>.</li><li>📖 Tự học: chọn một ví dụ trong §4.2–4.7 của McKinney. Chạy thử, giải thích shape đầu vào và đầu ra.</li></ul>
+</section>
       </section>
 
       <!-- Footer -->
       <div class="footer">
-        LTXLDL (2627-1) · Bài 3: NumPy — mảng &amp; tính toán vector hoá
+        LTXLDL (2627-1) · Bài 3: NumPy và tư duy vector hoá
       </div>
     </div>
   </div>
