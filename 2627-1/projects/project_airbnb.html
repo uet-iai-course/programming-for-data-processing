@@ -1067,12 +1067,14 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
 
       <div class="task-card">
         <h3>1) Quy trình chạy bằng một lệnh</h3>
+        <p>Sau khi cài môi trường theo <code>README.md</code>, một lệnh chạy toàn bộ quy trình, ví dụ:</p>
         <pre><code>python run_pipeline.py --config configs/lisbon.yaml</code></pre>
         <ul>
           <li>Thành phố và mốc chụp nằm trong <strong>tệp cấu hình</strong>, không ghi cứng trong mã.</li>
-          <li>Chạy được trên máy sạch: <code>README.md</code> và <code>requirements.txt</code> đủ phiên bản.</li>
+          <li>Chạy được trên máy sạch theo <a href="#moi-truong">yêu cầu môi trường và thư viện</a> bên dưới.</li>
           <li>Tải dữ liệu và gọi LLM phải có <strong>bộ nhớ đệm (cache)</strong>. Bước LLM có cờ <code>--skip-llm</code>.</li>
-          <li>Hai lần chạy cùng cấu hình phải ra cùng kết quả. Nếu lấy mẫu thì cố định seed.</li>
+          <li>Hai lần chạy với cùng dữ liệu đầu vào, cấu hình, môi trường và kết quả LLM đã lưu phải ra cùng số liệu.
+            Nếu lấy mẫu thì cố định seed và lưu danh sách <code>review_id</code> đã chọn.</li>
         </ul>
         <div class="callout callout--warn">
           <strong>Mốc chụp kiểm chứng (held-out snapshot).</strong> Giảng viên chạy lại quy trình trên một mốc trong kì
@@ -1175,7 +1177,8 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
             phương pháp đối chứng, kèm phân tích kiểu lỗi.</li>
           <li><strong>Chi phí:</strong> đếm số yêu cầu và token; ước tính chi phí nếu xử lý hết đánh giá của thành phố
             theo giá trả phí; mô tả xử lý theo lô, thử lại và bộ nhớ đệm. Cờ <code>--skip-llm</code> đọc kết quả đã lưu
-            trong <code>data/processed/</code>, nên người chấm không cần khoá API.</li>
+            trong <code>data/processed/</code> nếu khớp dữ liệu và cấu hình đang chạy, nên người chấm không cần khoá API.
+            Nếu chưa có kết quả phù hợp, báo "cần kết quả LLM" và vẫn tạo các sản phẩm không phụ thuộc LLM.</li>
           <li><strong>Tích hợp:</strong> ít nhất một KPI và một hình dùng kết quả LLM.</li>
         </ul>
       </div>
@@ -1208,7 +1211,51 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
     <section id="san-pham" class="section-anchor">
       <h2 class="section-title">Sản phẩm bàn giao</h2>
       <div class="panel">
-        <h3 class="subhead" style="margin-top:0">Cấu trúc GitHub repo yêu cầu</h3>
+        <h3 id="moi-truong" class="subhead section-anchor" style="margin-top:0">Môi trường chạy và thư viện</h3>
+        <p>
+          Bài tập lớn dùng <strong>Python 3</strong>. Nhóm tự chọn phiên bản Python và thư viện phù hợp;
+          <strong>không ấn định chung phiên bản pandas/NumPy và không bắt buộc dùng pandas</strong>.
+          Có thể dùng Polars, DuckDB hoặc thư viện khác để thay thế hay kết hợp với pandas.
+          Nhóm cần giải thích lựa chọn, kiểm chứng kết quả và đáp ứng đầy đủ yêu cầu QA, KPI, LLM, trực quan hoá, tái lập.
+          Các phiên bản trong notebook/lab là môi trường của học liệu đó, không phải ràng buộc phiên bản cho bài tập lớn.
+        </p>
+        <p>
+          Để người chấm dựng lại môi trường, nhóm ghi phiên bản Python trong <code>.python-version</code>,
+          phiên bản thư viện trong <code>requirements.txt</code> (hoặc lockfile),
+          và hướng dẫn cài đặt trong <code>README.md</code>. Yêu cầu cụ thể cho từng tệp:
+        </p>
+        <ul class="plain-list">
+          <li><strong><code>.python-version</code> ở gốc repo:</strong> commit tệp chứa đúng một dòng là phiên bản
+            Python đầy đủ <code>3.x.y</code> đã kiểm thử (ví dụ <code>3.12.3</code>).
+            Lấy số phiên bản từ <code>python --version</code>.</li>
+          <li><strong>Môi trường đã kiểm thử trong <code>README.md</code>:</strong> tham chiếu <code>.python-version</code>
+            cho phiên bản Python; ghi hệ điều hành và phiên bản, kiến trúc máy, công cụ cài thư viện và phiên bản đã dùng.</li>
+          <li><strong>Danh sách phụ thuộc đã ghim phiên bản:</strong> <code>requirements.txt</code> dùng
+            <code>==</code> với phiên bản cụ thể, gồm cả các gói phụ thuộc gián tiếp cần để chạy quy trình.
+            Chấp nhận tệp khoá phiên bản (lockfile) tương đương, kèm tệp khai báo dự án và lệnh cài tương ứng.</li>
+          <li><strong>Hướng dẫn cài và chạy trong <code>README.md</code>:</strong> cài Python theo <code>.python-version</code>, tạo môi trường riêng,
+            cài thư viện, rồi chạy quy trình; ghi cả phần mềm/thư viện hệ thống cần thêm nếu có.
+            Nêu lệnh chạy với <code>--skip-llm</code>, cấu hình dùng để chấm lại và các tệp kết quả cần đối chiếu.</li>
+        </ul>
+        <p class="fine-print">
+          <code>.python-version</code> là quy ước được
+          <a href="https://docs.astral.sh/uv/concepts/python-versions/#python-version-files" target="_blank" rel="noopener">uv</a>
+          và <a href="https://github.com/pyenv/pyenv#understanding-python-version-selection" target="_blank" rel="noopener">pyenv</a> hỗ trợ.
+          Có thể tạo tệp bằng trình soạn thảo; khi dùng pip/venv, nhóm vẫn phải chọn đúng Python để tạo môi trường.
+        </p>
+        <p class="fine-print">
+          Với pip, có thể dùng <code>python -m pip freeze &gt; requirements.txt</code> trong môi trường riêng đã chạy thành công.
+          Rà lại tệp trước khi nộp, tránh lẫn gói không dùng hoặc đường dẫn cục bộ của máy nhóm.
+          Tham khảo <a href="https://pip.pypa.io/en/stable/topics/repeatable-installs/" target="_blank" rel="noopener">hướng dẫn ghim phiên bản của pip</a>.
+        </p>
+        <p>
+          <strong>Tự kiểm trước khi nộp:</strong> một thành viên clone repo vào thư mục mới, dựng môi trường mới đúng như
+          đã khai báo, làm theo README và chạy với <code>--skip-llm</code> mà không dùng khoá API.
+          Phải tạo lại được số liệu và hình trong báo cáo từ dữ liệu thô và kết quả LLM đã lưu.
+          Ghi lệnh đã thử và kết quả kiểm tra vào README.
+        </p>
+
+        <h3 class="subhead">Cấu trúc GitHub repo yêu cầu</h3>
         <pre><code>.
 ├── configs/
 │   └── &lt;city&gt;.yaml           # mỗi thành phố một tệp: dataRoot, danh sách mốc chụp, tham số QA/KPI/LLM
@@ -1228,13 +1275,16 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
 ├── reports/                  # report.pdf, slides.pdf, qa_report.csv, từ điển dữ liệu
 ├── notebooks/                # notebook khám phá (nếu có), không phải quy trình chính
 ├── run_pipeline.py           # (hoặc Makefile) một lệnh gọi các mô-đun theo thứ tự
+├── .python-version           # một dòng: phiên bản Python đã kiểm thử (3.x.y)
 ├── .env.example              # tên biến môi trường cho khoá API (KHÔNG chứa khoá thật)
-├── .gitignore                # loại data/raw/, .env và mọi tệp chứa khoá
+├── .gitignore                # loại data/raw/, .venv/, .env và mọi tệp chứa khoá
 ├── AI_USAGE.md               # khai báo AI (bắt buộc)
-├── README.md                 # cài đặt, cách chạy, cách chấm lại
-└── requirements.txt          # thư viện và phiên bản</code></pre>
+├── README.md                 # tham chiếu .python-version; môi trường, cài đặt, cách chạy/chấm lại
+└── requirements.txt          # thư viện ghim phiên bản (hoặc bộ tệp lockfile tương đương)</code></pre>
         <p class="fine-print" style="margin-top:10px"><code>run_pipeline.py</code> chạy các mô-đun theo thứ tự:
-          <strong>tải → QA → KPI → LLM/đối chứng → đánh giá → hình</strong>. Cách chia mô-đun trên chỉ là gợi ý;
+          <strong>tải → QA → LLM/đối chứng → đánh giá → KPI → hình</strong>.
+          Với <code>--skip-llm</code>, bước LLM dùng kết quả đã lưu; nếu thiếu, bỏ qua KPI/hình cần LLM theo quy định ở trên.
+          Cách chia mô-đun trên chỉ là gợi ý;
           nhóm tự thiết kế, miễn chạy bằng một lệnh và tái lập được.</p>
         <h3 class="subhead">Ví dụ <code>configs/&lt;city&gt;.yaml</code></h3>
         <p class="fine-print" style="margin-top:0">Giá trị dưới đây là minh hoạ; nhóm tự quyết.</p>

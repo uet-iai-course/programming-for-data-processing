@@ -118,3 +118,10 @@ Phòng đào tạo đổi lịch 2627-1: **10 tuần × 3 tiết/tuần** (thay 
 
 - GV thấy slide "Buổi trước" ở deck 2 và yêu cầu đổi: **mọi tham chiếu tới đơn vị bài giảng dùng "bài"**, kể cả "bài trước / bài này / bài sau / bài lab / Mục tiêu bài học / Tóm tắt bài học / Bài giảng tiếp theo" — vì lịch 10 tuần gộp hai bài một buổi nên "buổi trước" không còn đúng. Đảo phần "giữ buổi học/này/trước (nghĩa phiên)" của quyết định 17/08.
 - Sweep 42 file: 14 deck (02–15, kể cả 09 chưa lên lịch) + `lecture-template.html` + 14 notebook bài giảng + 13 lab + trang đề BTL; ~150 chỗ. Giữ "buổi" thật sự là phiên: "buổi vấn đáp", "sau buổi học" (lab-14), "buổi học đầu tiên" (ai-policy). Đo tràn 14 deck: 0 slide tràn. Deck 1 slide "Lộ trình 15 bài" đã sửa trước đó (đợt 25).
+
+## Quyết định của giảng viên (10/09/2026: khai báo phiên bản Python cho BTL)
+
+- Repo BTL phải commit `.python-version` ở gốc, chứa một dòng phiên bản Python đầy đủ `3.x.y` mà nhóm đã kiểm thử. `3.12.3` trong đề chỉ là ví dụ; mỗi nhóm tự chọn bản phù hợp.
+- `README.md` tham chiếu `.python-version`, ghi hệ điều hành, kiến trúc máy, công cụ cài thư viện và hướng dẫn dựng môi trường/chạy lại. `requirements.txt` hoặc lockfile ghim phiên bản thư viện.
+- Có thể tạo `.python-version` bằng trình soạn thảo; không bắt buộc dùng uv/pyenv. Khi dùng pip/venv, cần chọn đúng Python lúc tạo môi trường.
+- Đồng bộ yêu cầu trong đề BTL, cây repo mẫu, checklist Bài 15 và phần môi trường Python của Bài 1 trên nhánh draft. Bài 1 thêm slide `.python-version` ngay sau `requirements.txt`; sửa diễn giải để không coi riêng danh sách thư viện là đủ tái lập toàn bộ môi trường.
