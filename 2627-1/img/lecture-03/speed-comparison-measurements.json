@@ -1,0 +1,53 @@
+{
+  "measured_at_utc": "2026-09-10T07:31:23.436316+00:00",
+  "python": "3.12.3",
+  "numpy": "2.5.2",
+  "architecture": "x86_64",
+  "n": 1000000,
+  "dtype": "int64",
+  "expressions": {
+    "for_list": "[x * 2 for x in xs_list]",
+    "for_ndarray": "[x * 2 for x in xs_np]",
+    "numpy": "xs_np * 2"
+  },
+  "setup_timed": false,
+  "warmup": true,
+  "repeat": 5,
+  "number": 1,
+  "statistic": "median",
+  "samples_ms": {
+    "for_list": [
+      59.598033083602786,
+      58.89459885656834,
+      59.63545897975564,
+      60.624622041359544,
+      59.94358705356717
+    ],
+    "for_ndarray": [
+      142.31535280123353,
+      118.0086717940867,
+      115.47777708619833,
+      115.7721490599215,
+      130.32700400799513
+    ],
+    "numpy": [
+      1.728287898004055,
+      0.8804730605334044,
+      0.6618059705942869,
+      0.6594231817871332,
+      0.6581561174243689
+    ]
+  },
+  "medians_ms": {
+    "for_list": 59.63545897975564,
+    "for_ndarray": 118.0086717940867,
+    "numpy": 0.6618059705942869
+  },
+  "memory": {
+    "n": 10000,
+    "list_references_bytes": 80056,
+    "list_objects_bytes": 280000,
+    "array_total_bytes": 80112,
+    "array_data_bytes": 80000
+  }
+}
