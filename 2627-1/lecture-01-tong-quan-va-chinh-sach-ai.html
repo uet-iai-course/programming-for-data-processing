@@ -237,17 +237,36 @@ pip install pandas matplotlib # cài thư viện vào môi trường, không đ�
         </section>
 
         <section data-jp-reset>
-          <h2>requirements.txt: môi trường có thể tái lập</h2>
+          <h2>requirements.txt: phiên bản thư viện</h2>
+          <p>Chạy trong môi trường riêng của dự án:</p>
           <div class="jp-cell jp-plain">
             <pre class="jp-input"><code class="language-bash" data-trim>
-pip freeze > requirements.txt        # tạo bản chụp danh sách thư viện
-pip install -r requirements.txt      # máy khác có thể dựng lại y hệt
+python -m pip freeze > requirements.txt   # lưu phiên bản thư viện
+python -m pip install -r requirements.txt # cài lại thư viện
             </code></pre>
           </div>
+          <p>Phiên bản Python được ghi riêng trong <span class="inline-code">.python-version</span>.</p>
           <div class="key-box">
             <span class="box-title">Quan trọng</span>
             Bài tập lớn phải <em>chạy lại được trên một máy khác</em>, không chỉ trong
             môi trường đã được dùng để phát triển.
+          </div>
+        </section>
+
+        <section data-jp-reset>
+          <h2>.python-version: phiên bản Python</h2>
+          <p>Tạo và commit tệp này ở gốc repo. Nội dung là một dòng ghi phiên bản đã kiểm thử, ví dụ:</p>
+          <div class="jp-cell jp-plain">
+            <pre class="jp-input"><code class="language-text" data-trim>
+3.12.3
+            </code></pre>
+          </div>
+          <p>Chọn đúng Python khi tạo <span class="inline-code">venv</span>;
+            <span class="inline-code">.python-version</span> không tự cài hay đổi Python.</p>
+          <div class="key-box">
+            <span class="box-title">Chạy lại trên máy khác</span>
+            <span class="inline-code">README.md</span> ghi hệ điều hành và hướng dẫn:
+            cài Python → tạo venv → cài thư viện → chạy quy trình.
           </div>
         </section>
 

@@ -49,8 +49,8 @@
               <strong>một lệnh</strong> chạy từ raw đến mọi kết quả.</li>
             <li>☐ <span class="inline-code">configs/</span> — thành phố + snapshot nằm trong config,
               không hard-code.</li>
-            <li>☐ <span class="inline-code">README.md</span> — cài đặt, cách chạy, <em>cách chấm lại</em>;
-              <span class="inline-code">requirements.txt</span> đúng và đủ.</li>
+            <li>☐ <span class="inline-code">.python-version</span> + <span class="inline-code">requirements.txt</span>/lockfile
+              ghim phiên bản; <span class="inline-code">README.md</span> hướng dẫn cài và chạy lại.</li>
             <li>☐ Cache LLM đầy đủ để <span class="inline-code">--skip-llm</span> chạy
               <strong>không cần API key</strong>.</li>
           </ul>
@@ -74,8 +74,10 @@
           <div class="key-box">
             <span class="box-title">Bài kiểm tra "máy sạch"</span>
             Một thành viên clone repo vào thư mục mới (giả lập máy giảng viên), làm đúng theo
-            README từ đầu: tạo venv → cài requirements → chạy <em>một</em> lệnh. Pipeline chạy trót lọt
-            và ra đúng hình/bảng của báo cáo — khi đó nhóm mới thật sự sẵn sàng.
+            README từ đầu: Python theo <span class="inline-code">.python-version</span> → môi trường mới →
+            cài thư viện đã ghim → chạy <em>một</em> lệnh
+            với <span class="inline-code">--skip-llm</span>, không cần khoá API.
+            Đối chiếu số liệu và hình tạo lại với báo cáo.
           </div>
           <p>Khi chấm, pipeline của nhóm sẽ chạy trên <strong>snapshot held-out</strong>
             (bản phát hành trong kỳ hoặc bản không nằm trong danh sách của nhóm) — chỉ đổi config.
