@@ -39,7 +39,7 @@ GRADING = [
 ]
 
 MILESTONES = [
-    ("Mốc 1 — Lập nhóm, tạo repo, nhận thành phố chính + đối chứng (23:59 Chủ nhật 20/09/2026, tuần 2)", "Không cần tag"),
+    ("Mốc 1 — Lập nhóm, tạo repo, nhận thành phố (23:59 Chủ nhật 20/09/2026, tuần 2)", "Không cần tag"),
     ("Mốc 2 — Nộp bản cuối (23:59 Chủ nhật 22/11/2026, tuần 11)", "git tag final"),
     ("Mốc 3 — Vấn đáp ~20 phút/nhóm", "Theo lịch thi của Trường"),
 ]

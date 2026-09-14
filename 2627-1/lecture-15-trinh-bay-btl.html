@@ -76,11 +76,11 @@
             Một thành viên clone repo vào thư mục mới (giả lập máy giảng viên), làm đúng theo
             README từ đầu: Python theo <span class="inline-code">.python-version</span> → môi trường mới →
             cài thư viện đã ghim → chạy <em>một</em> lệnh
-            với <span class="inline-code">--skip-llm</span>, không cần khoá API.
+            đầy đủ, khoá API đặt trong biến môi trường.
             Đối chiếu số liệu và hình tạo lại với báo cáo.
           </div>
-          <p>Khi chấm, pipeline của nhóm sẽ chạy trên <strong>snapshot held-out</strong>
-            (bản phát hành trong kỳ hoặc bản không nằm trong danh sách của nhóm) — chỉ đổi config.
+          <p>Khi chấm, giảng viên chạy <strong>một bộ test chung</strong> trên repo mọi nhóm:
+            dựng môi trường theo README, chạy pipeline trên snapshot giảng viên chọn — kể cả bước LLM — rồi soát tệp đầu ra.
             Hãy tự thử trước với một snapshot nhóm chưa dùng.</p>
         </section>
       </section>

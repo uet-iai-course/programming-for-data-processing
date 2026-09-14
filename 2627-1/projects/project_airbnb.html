@@ -647,8 +647,7 @@
         <article class="fact-card">
           <h3>Nhóm và thành phố</h3>
           <p style="margin-bottom:0">
-            Mỗi nhóm có <strong>4-5 sinh viên</strong> và một thành phố chính (không trùng với nhóm khác).
-            Một thành phố đối chứng (baseline city), lấy từ cùng danh sách và chỉ <strong>khác thành phố chính của nhóm</strong>, cũng được giao <strong>ngay từ đầu kỳ</strong>; đối chứng có thể trùng giữa các nhóm.
+            Mỗi nhóm có <strong>4-5 sinh viên</strong> và một thành phố (không trùng với nhóm khác), giao ngay từ đầu kỳ.
             Phân công chính thức sẽ được đăng trên Canvas Portal.
           </p>
         </article>
@@ -671,7 +670,7 @@
         <li>
           <div class="mark"><span class="n">Mốc 1</span></div>
           <p class="due">Không cần tag · 23:59 Chủ nhật <strong>20/09/2026</strong> (tuần 2)</p>
-          <p>Lập nhóm, tạo repo, nhận thành phố chính và thành phố đối chứng, điền liên kết vào bảng tính.</p>
+          <p>Lập nhóm, tạo repo, nhận thành phố, điền liên kết vào bảng tính.</p>
         </li>
         <li>
           <div class="mark"><span class="n">Mốc 2</span></div>
@@ -725,7 +724,7 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
 
       <h3 class="subhead">Phân công thành phố</h3>
       <p>
-        Thành phố chính mà nhóm được giao sẽ cần phân tích sâu. Thành phố đối chứng dùng cùng KPI, chỉ tổng hợp.
+        Mỗi nhóm một thành phố, phân tích sâu trên bốn mốc chụp.
       </p>
       <p>
         Bốn mốc bản chụp dưới đây là bắt buộc sử dụng với thành phố tương ứng (các mốc cách nhau khoảng một quý). Thành phố thu thập hàng tháng được dùng thêm mốc khác,
@@ -1034,81 +1033,58 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
         <ul>
           <li>Thành phố và mốc chụp nằm trong <strong>tệp cấu hình</strong>, không ghi cứng trong mã.</li>
           <li>Chạy được trên máy sạch theo <a href="#moi-truong">yêu cầu môi trường và thư viện</a> bên dưới.</li>
-          <li>Tải dữ liệu và gọi LLM phải có <strong>bộ nhớ đệm (cache)</strong>. Bước LLM có cờ <code>--skip-llm</code>.</li>
-          <li>Hai lần chạy với cùng dữ liệu đầu vào, cấu hình, môi trường và kết quả LLM đã lưu phải ra cùng số liệu.
-            Nếu lấy mẫu thì cố định seed và lưu danh sách <code>review_id</code> đã chọn.</li>
         </ul>
         <div class="callout callout--warn">
-          <strong>Mốc chụp kiểm chứng (held-out snapshot).</strong> Giảng viên chạy lại quy trình trên một mốc trong kì
-          (khoảng 09-12/2026) hoặc một mốc nhóm chưa xử lý, chỉ sửa tệp cấu hình. Các phần được kiểm chứng bao gồm: tải dữ liệu,
-          QA, KPI và hình từ bảng. Phần phụ thuộc LLM phải <strong>bỏ qua đúng cách</strong> (báo "cần kết quả LLM")
-          và các sản phẩm còn lại vẫn được tạo. Phần phân tích dùng LLM được chấm trên kết quả đã lưu cùng bộ nhãn tay.
-          Giảng viên không gọi lại API.
+          <strong>Bộ test chung.</strong> Khi chấm, giảng viên chạy <em>cùng một bộ kiểm thử</em> trên repo của mọi nhóm:
+          dựng môi trường theo README, chạy quy trình bằng một lệnh trên mốc chụp do giảng viên chọn (có thể là mốc nhóm
+          chưa xử lý, chỉ sửa tệp cấu hình), rồi kiểm tra các tệp đầu ra. <strong>Bước LLM cũng được chạy lại thật</strong>
+          trong lúc test, với khoá API do giảng viên đặt trong biến môi trường; vì vậy mã phải đọc khoá từ biến môi trường
+          và chạy được với khoá bất kỳ. Phần phân tích dùng LLM được chấm thêm trên bộ nhãn tay của nhóm.
         </div>
       </div>
 
       <div class="task-card">
         <h3>2) Thu thập dữ liệu</h3>
         <ul>
-          <li>Tự tải đủ bốn mốc (ba bảng trong <code>data/</code> và tệp GeoJSON) của thành phố chính.
-            Thành phố đối chứng: tải sau khi được giao, cùng bốn loại tệp.
-            Kiểm tệp tồn tại, có dòng và có cột khoá.</li>
-          <li><strong>Không commit dữ liệu thô</strong>: thư mục <code>data/raw/&lt;city&gt;/&lt;snapshot_date&gt;/</code>
-            do script tải tạo ra ngay trên máy và nằm trong <code>.gitignore</code> (dữ liệu thô nặng, tái tạo được bằng
-            cách chạy lại script tải). Chỉ dữ liệu đã xử lý trong <code>data/processed/</code> mới commit, và chỉ khi
-            nhỏ hơn 50 MB.
-          </li>
-          <li>Lập từ điển dữ liệu ngắn cho các cột thực sự dùng: tên, kiểu, đơn vị, khác biệt lược đồ giữa các mốc.</li>
+          <li>Tải đủ bốn mốc của thành phố nhóm bằng script; kiểm tệp tồn tại và có cột khoá.</li>
+          <li>Dữ liệu thô vào <code>data/raw/</code> (gitignore); chỉ commit <code>data/processed/</code> khi dưới 50 MB.</li>
+          <li>Từ điển dữ liệu ngắn cho các cột thực sự dùng.</li>
         </ul>
       </div>
 
       <div class="task-card">
         <h3>3) QA do nhóm tự đề xuất</h3>
         <ul>
-          <li>Mỗi quy tắc có <em>tên → điều kiện → lý do → hành động</em> (gắn cờ, sửa, hoặc loại khỏi KPI).
-            Ưu tiên <strong>gắn cờ</strong>.</li>
-          <li>Phủ các nhóm lỗi chính: giá trị thiếu, ngoại lai (giá, số đêm, toạ độ), trùng trong một mốc và
-            <em>giữa các mốc</em>, kiểu sai (giá chuỗi), danh mục không nhất quán.
-          </li>
-          <li>Báo cáo tác động (số dòng và tỷ lệ; KPI trước và sau QA) xuất ra <code>reports/qa_report.csv</code>.</li>
-          <li>Cùng một bộ quy tắc cho mọi mốc và cho thành phố đối chứng.</li>
+          <li>Mỗi quy tắc: <em>tên → điều kiện → lý do → hành động</em>; ưu tiên <strong>gắn cờ</strong>.</li>
+          <li>Phủ: thiếu, ngoại lai, trùng (trong và giữa các mốc), kiểu sai, danh mục lệch.</li>
+          <li>Xuất <code>reports/qa_report.csv</code> ghi tác động (số dòng; KPI trước và sau). Một bộ quy tắc cho mọi mốc.</li>
         </ul>
       </div>
 
       <div class="task-card">
         <h3>4) KPI: 5-8 chỉ số, gắn với bên liên quan</h3>
-        <p>Mỗi KPI đủ bốn phần: <em>tên → mục tiêu → công thức → đơn vị</em>. Tính <strong>sau QA</strong>.</p>
         <ul>
-          <li>Ít nhất một KPI phân tích theo cả ba chiều: <code>neighbourhood_cleansed</code>, thời gian, đối chứng.
-          </li>
-          <li>Khi so sánh thành phố, phải xử lý tiền tệ hoặc dùng chỉ số không phụ thuộc đơn vị.</li>
-          <li>Ít nhất một KPI dùng kết quả LLM. Xuất <code>data/processed/kpi_*.csv</code> kèm cột
-            <code>snapshot_date</code>.
-          </li>
+          <li>Mỗi KPI: <em>tên → mục tiêu → công thức → đơn vị</em>; tính <strong>sau QA</strong>; ghi rõ tiền tệ.</li>
+          <li>Ít nhất một KPI theo khu vực (<code>neighbourhood_cleansed</code>) và theo thời gian; ít nhất một KPI dùng kết quả LLM.</li>
+          <li>Xuất <code>data/processed/kpi_*.csv</code> có cột <code>snapshot_date</code>.</li>
         </ul>
       </div>
 
       <div class="task-card">
         <h3>5) Trực quan hoá</h3>
         <ul>
-          <li>Phủ đủ <strong>bốn góc phân tích</strong>: không gian (bản đồ GeoJSON), thời gian (qua các mốc chụp),
-            so với thành phố đối chứng, và kết quả LLM. Mỗi góc ít nhất một hình. Số hình do phân tích quyết định:
-            <strong>không thêm hình cho đủ số</strong>, hình nào không phục vụ một kết luận thì bỏ.</li>
-          <li>Tiêu đề nêu thông điệp. Trục có nhãn và đơn vị. Chân hình ghi nguồn và mốc. Phong cách nhất quán.</li>
-          <li>Mỗi hình kèm 2-4 câu: hình cho thấy gì, bằng chứng đáng tin đến đâu, nhiễu nào đã xử lý, giới hạn còn lại.
-          </li>
-          <li>Hình sinh tự động vào <code>figures/</code>, không chỉnh tay bằng công cụ ngoài.</li>
+          <li>Ba góc: không gian (GeoJSON), thời gian (qua các mốc), LLM. Mỗi hình phục vụ một kết luận; <strong>không thêm hình cho đủ số</strong>.</li>
+          <li>Tiêu đề nêu thông điệp; trục có đơn vị; chân hình ghi nguồn và mốc.</li>
+          <li>Hình sinh tự động vào <code>figures/</code>, mỗi hình kèm 2-4 câu diễn giải.</li>
         </ul>
       </div>
 
       <div class="task-card">
         <h3>6) Báo cáo kỹ thuật</h3>
-        <p style="margin-bottom:0">
-          PDF 10-15 trang trong <code>reports/</code>. <strong>Phải có</strong> đủ các mục: thông tin nhóm (thành phố,
-          mốc chụp, mã commit); bên liên quan &amp; câu hỏi; dữ liệu &amp; QA; KPI; hợp phần LLM; kết quả &amp; so sánh;
-          <strong>giới hạn</strong>; tài liệu tham khảo. <strong>Thứ tự do nhóm tự sắp</strong> để kể tốt nhất: mở đầu
-          bằng kết luận, không kể theo trình tự mình làm (bài 14). Mỗi số có đơn vị; mỗi kết luận dẫn tới một hình hoặc một bảng.
-        </p>
+        <ul>
+          <li>PDF 10-15 trang trong <code>reports/</code>: nhóm, thành phố, mã commit · bên liên quan &amp; câu hỏi · dữ liệu &amp; QA · KPI · LLM · kết quả · <strong>giới hạn</strong> · tài liệu tham khảo.</li>
+          <li>Mở đầu bằng kết luận (bài 14). Mỗi số có đơn vị; mỗi kết luận dẫn tới một hình hoặc một bảng.</li>
+        </ul>
       </div>
     </section>
 
@@ -1138,9 +1114,8 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
             của nhãn chuẩn. Mô tả hướng dẫn gán và cách xử lý bất đồng. Báo cáo accuracy hoặc F1 của LLM <em>và</em> của
             phương pháp đối chứng, kèm phân tích kiểu lỗi.</li>
           <li><strong>Chi phí:</strong> đếm số yêu cầu và token; ước tính chi phí nếu xử lý hết đánh giá của thành phố
-            theo giá trả phí; mô tả xử lý theo lô, thử lại và bộ nhớ đệm. Cờ <code>--skip-llm</code> đọc kết quả đã lưu
-            trong <code>data/processed/</code> nếu khớp dữ liệu và cấu hình đang chạy, nên người chấm không cần khoá API.
-            Nếu chưa có kết quả phù hợp, báo "cần kết quả LLM" và vẫn tạo các sản phẩm không phụ thuộc LLM.</li>
+            theo giá trả phí; mô tả xử lý theo lô, thử lại và bộ nhớ đệm. Nên có cờ <code>--skip-llm</code> đọc kết quả đã lưu
+            trong <code>data/processed/</code> để phát triển và tự kiểm nhanh; khi chấm, bước LLM được chạy lại thật.</li>
           <li><strong>Tích hợp:</strong> ít nhất một KPI và một hình dùng kết quả LLM.</li>
         </ul>
       </div>
@@ -1197,7 +1172,7 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
             Chấp nhận tệp khoá phiên bản (lockfile) tương đương, kèm tệp khai báo dự án và lệnh cài tương ứng.</li>
           <li><strong>Hướng dẫn cài và chạy trong <code>README.md</code>:</strong> cài Python theo <code>.python-version</code>, tạo môi trường riêng,
             cài thư viện, rồi chạy quy trình; ghi cả phần mềm/thư viện hệ thống cần thêm nếu có.
-            Nêu lệnh chạy với <code>--skip-llm</code>, cấu hình dùng để chấm lại và các tệp kết quả cần đối chiếu.</li>
+            Nêu lệnh chạy đầy đủ (và với <code>--skip-llm</code>), tên biến môi trường chứa khoá API, cấu hình dùng để chấm lại và các tệp kết quả cần đối chiếu.</li>
         </ul>
         <p class="fine-print">
           <code>.python-version</code> là quy ước được
@@ -1212,8 +1187,8 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
         </p>
         <p>
           <strong>Tự kiểm trước khi nộp:</strong> một thành viên clone repo vào thư mục mới, dựng môi trường mới đúng như
-          đã khai báo, làm theo README và chạy với <code>--skip-llm</code> mà không dùng khoá API.
-          Phải tạo lại được số liệu và hình trong báo cáo từ dữ liệu thô và kết quả LLM đã lưu.
+          đã khai báo, làm theo README và chạy đầy đủ với khoá API đặt trong biến môi trường (thử thêm một lần với <code>--skip-llm</code>).
+          Phải tạo lại được số liệu và hình trong báo cáo từ dữ liệu thô.
           Ghi lệnh đã thử và kết quả kiểm tra vào README.
         </p>
 
@@ -1245,7 +1220,7 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
 └── requirements.txt          # thư viện ghim phiên bản (hoặc bộ tệp lockfile tương đương)</code></pre>
         <p class="fine-print" style="margin-top:10px"><code>run_pipeline.py</code> chạy các mô-đun theo thứ tự:
           <strong>tải → QA → LLM/đối chứng → đánh giá → KPI → hình</strong>.
-          Với <code>--skip-llm</code>, bước LLM dùng kết quả đã lưu; nếu thiếu, bỏ qua KPI/hình cần LLM theo quy định ở trên.
+          Với <code>--skip-llm</code>, bước LLM dùng kết quả đã lưu (chỉ để phát triển; khi chấm bước này chạy thật).
           Cách chia mô-đun trên chỉ là gợi ý;
           nhóm tự thiết kế, miễn chạy bằng một lệnh và tái lập được.</p>
         <h3 class="subhead">Ví dụ <code>configs/&lt;city&gt;.yaml</code></h3>
@@ -1254,9 +1229,6 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
 data_root: chile/rm/santiago      # dựng URL: data.insideairbnb.com/&lt;data_root&gt;/&lt;mốc&gt;/...
 currency: CLP
 snapshots: [2025-09-27, 2025-12-29, 2026-03-30, 2026-06-29]
-
-control_city: rio-de-janeiro      # đối chứng (giảng viên giao)
-control_data_root: brazil/rj/rio-de-janeiro
 
 qa:
   price_max_clp: 5000000          # ngưỡng ngoại lai giá
@@ -1281,8 +1253,8 @@ seed: 42</code></pre>
         </ol>
       </div>
       <div class="callout callout--danger" style="margin-top:14px">
-        <strong>Bảo mật:</strong> không commit khoá API (biến môi trường / Colab Secrets). Người chấm không dùng khoá
-        của nhóm.
+        <strong>Bảo mật:</strong> không commit khoá API (biến môi trường / Colab Secrets). Khi chấm, giảng viên dùng khoá
+        riêng đặt trong biến môi trường.
       </div>
     </section>
 
@@ -1313,21 +1285,20 @@ seed: 42</code></pre>
           <dl>
             <div>
               <dt>Xuất sắc <span>85-100%</span></dt>
-              <dd>Một lệnh chạy từ dữ liệu thô đến mọi kết quả. Cấu hình tách bạch. Mốc giữ lại chạy được
-                (bỏ qua đúng phần phân tích dùng LLM). Cache và <code>--skip-llm</code> hoạt động. Hai lần chạy ra cùng
-                số.</dd>
+              <dd>Một lệnh chạy từ dữ liệu thô đến mọi kết quả, kể cả bước LLM. Cấu hình tách bạch. Bộ test chung
+                qua hết. Cache hoạt động. Hai lần chạy ra cùng số.</dd>
             </div>
             <div>
               <dt>Tốt <span>70-84%</span></dt>
-              <dd>Một lệnh chạy hết. Mốc giữ lại chạy được sau khi sửa cấu hình nhỏ. Còn vài chỗ ghi cứng.</dd>
+              <dd>Một lệnh chạy hết. Bộ test chung qua sau khi sửa cấu hình nhỏ. Còn vài chỗ ghi cứng.</dd>
             </div>
             <div>
               <dt>Đạt <span>55-69%</span></dt>
-              <dd>Chạy lại được nhưng cần nhiều bước thủ công. Mốc giữ lại lỗi ở bước phụ.</dd>
+              <dd>Chạy lại được nhưng cần nhiều bước thủ công. Bộ test chung lỗi ở bước phụ.</dd>
             </div>
             <div>
               <dt>Chưa đạt <span>&lt;55%</span></dt>
-              <dd>Không chạy lại được theo README, hoặc mốc giữ lại gãy ở bước chính.</dd>
+              <dd>Không chạy lại được theo README, hoặc bộ test chung gãy ở bước chính.</dd>
             </div>
           </dl>
         </article>
@@ -1361,16 +1332,16 @@ seed: 42</code></pre>
           <dl>
             <div>
               <dt>Xuất sắc <span>85-100%</span></dt>
-              <dd>Phủ đủ bốn góc phân tích; mỗi hình phục vụ một kết luận, không có hình thừa. Có 3-5 phát hiện kèm bằng chứng, nêu cả giới hạn.
+              <dd>Phủ đủ ba góc phân tích; mỗi hình phục vụ một kết luận, không có hình thừa. Có 3-5 phát hiện kèm bằng chứng, nêu cả giới hạn.
               </dd>
             </div>
             <div>
               <dt>Tốt <span>70-84%</span></dt>
-              <dd>Phủ đủ bốn góc; hình đạt chuẩn kỹ thuật, thông điệp rõ ở đa số. Vài chỗ diễn giải vượt quá dữ liệu.</dd>
+              <dd>Phủ đủ ba góc; hình đạt chuẩn kỹ thuật, thông điệp rõ ở đa số. Vài chỗ diễn giải vượt quá dữ liệu.</dd>
             </div>
             <div>
               <dt>Đạt <span>55-69%</span></dt>
-              <dd>Phủ được phần lớn bốn góc nhưng vài hình thiếu đơn vị/chú giải hoặc trùng thông điệp; diễn giải chủ yếu mô tả lại hình.</dd>
+              <dd>Phủ được phần lớn ba góc nhưng vài hình thiếu đơn vị/chú giải hoặc trùng thông điệp; diễn giải chủ yếu mô tả lại hình.</dd>
             </div>
             <div>
               <dt>Chưa đạt <span>&lt;55%</span></dt>
