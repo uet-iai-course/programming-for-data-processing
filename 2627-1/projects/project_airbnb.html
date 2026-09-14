@@ -179,9 +179,6 @@
     .fact-card li+li,
     .task-card li+li,
     .callout li+li,
-    .pitfall-list li+li {
-      margin-top: 7px;
-    }
 
     .fact-grid {
       display: grid;
@@ -321,14 +318,6 @@
       padding: 0;
     }
 
-    .pitfall-list {
-      margin: 18px 0 0;
-    }
-
-    .pitfall-list h3 {
-      margin: 0 0 8px;
-      font-size: 1.05rem;
-    }
 
     .task-card {
       border: 0;
@@ -735,25 +724,6 @@
 https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YYYY-MM-DD&gt;/visualisations/neighbourhoods.geojson</code></pre>
       </div>
 
-      <div class="panel pitfall-list">
-        <h3>Lỗi thường gặp</h3>
-        <ul>
-          <li><strong>Hai bản <code>listings</code>.</strong> Trên lớp dùng <code>visualisations/</code>. Bài tập lớn dùng
-            <code>data/listings.csv.gz</code>.</li>
-          <li><strong>Giá ở dạng chuỗi, đơn vị nội tệ</strong>, không phải USD. Buenos Aires: đừng so giá danh nghĩa giữa các
-            mốc.</li>
-          <li><strong>Lược đồ lệch:</strong> 79 cột (09/2025) → 90 cột (06/2026). <code>host_since</code> trống 100% ở bản
-            06/2026.</li>
-          <li><strong><code>id</code> 18-19 chữ số:</strong> đọc thành float thì ghép <code>reviews</code> sai. Dùng số
-            nguyên hoặc chuỗi.</li>
-          <li>KPI và bản đồ: <code>neighbourhood_cleansed</code>, không phải <code>neighbourhood</code>.</li>
-          <li><code>calendar</code> không còn cột giá. Lấy giá ở <code>listings</code>.</li>
-          <li>URL có dấu: mã hoá URL, Unicode NFC.</li>
-          <li><code>reviews</code> nén có thể hơn 300 MB (Paris, Rome, London). Có thể đọc thẳng <code>.gz</code>, trung gian để
-            Parquet.</li>
-          <li>Đánh giá đa ngôn ngữ: phương pháp đối chứng chỉ dùng tiếng Anh sẽ bị lệch.</li>
-        </ul>
-      </div>
 
       <h3 class="subhead">Phân công thành phố</h3>
       <p>
