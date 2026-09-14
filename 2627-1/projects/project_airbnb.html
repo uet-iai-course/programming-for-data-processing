@@ -1132,7 +1132,6 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
         <p style="margin-top:0">
           Đây là tệp bắt buộc ở gốc GitHub repo, cần cập nhật suốt kì. Khai báo đầy đủ không bị trừ điểm.
           Giấu hoặc khai man là vi phạm <a href="../ai-policy.html">chính sách AI</a>.
-          Mục "AI sai ở đâu" được tính trong tiêu chí D.
         </p>
         <pre style="margin-bottom:0"><code># AI_USAGE.md
 ## Công cụ đã dùng (vào việc gì)
@@ -1147,48 +1146,14 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
       <h2 class="section-title">Sản phẩm bàn giao</h2>
       <div class="panel">
         <h3 id="moi-truong" class="subhead section-anchor" style="margin-top:0">Môi trường chạy và thư viện</h3>
-        <p>
-          Bài tập lớn dùng <strong>Python 3</strong>. Nhóm tự chọn phiên bản Python và thư viện phù hợp;
-          <strong>không ấn định chung phiên bản pandas/NumPy và không bắt buộc dùng pandas</strong>.
-          Có thể dùng Polars, DuckDB hoặc thư viện khác để thay thế hay kết hợp với pandas.
-          Nhóm cần giải thích lựa chọn, kiểm chứng kết quả và đáp ứng đầy đủ yêu cầu QA, KPI, LLM, trực quan hoá, tái lập.
-          Các phiên bản trong notebook/lab là môi trường của học liệu đó, không phải ràng buộc phiên bản cho bài tập lớn.
-        </p>
-        <p>
-          Để người chấm dựng lại môi trường, nhóm ghi phiên bản Python trong <code>.python-version</code>,
-          phiên bản thư viện trong <code>requirements.txt</code> (hoặc lockfile),
-          và hướng dẫn cài đặt trong <code>README.md</code>. Yêu cầu cụ thể cho từng tệp:
-        </p>
-        <ul class="plain-list">
-          <li><strong><code>.python-version</code> ở gốc repo:</strong> commit tệp chứa đúng một dòng là phiên bản
-            Python đầy đủ <code>3.x.y</code> đã kiểm thử (ví dụ <code>3.12.3</code>).
-            Lấy số phiên bản từ <code>python --version</code>.</li>
-          <li><strong>Môi trường đã kiểm thử trong <code>README.md</code>:</strong> tham chiếu <code>.python-version</code>
-            cho phiên bản Python; ghi hệ điều hành và phiên bản, kiến trúc máy, công cụ cài thư viện và phiên bản đã dùng.</li>
-          <li><strong>Danh sách phụ thuộc đã ghim phiên bản:</strong> <code>requirements.txt</code> dùng
-            <code>==</code> với phiên bản cụ thể, gồm cả các gói phụ thuộc gián tiếp cần để chạy quy trình.
-            Chấp nhận tệp khoá phiên bản (lockfile) tương đương, kèm tệp khai báo dự án và lệnh cài tương ứng.</li>
-          <li><strong>Hướng dẫn cài và chạy trong <code>README.md</code>:</strong> cài Python theo <code>.python-version</code>, tạo môi trường riêng,
-            cài thư viện, rồi chạy quy trình; ghi cả phần mềm/thư viện hệ thống cần thêm nếu có.
-            Nêu lệnh chạy đầy đủ (và với <code>--skip-llm</code>), tên biến môi trường chứa khoá API, cấu hình dùng để chấm lại và các tệp kết quả cần đối chiếu.</li>
+        <ul class="plain-list" style="margin-bottom:18px">
+          <li><strong>Python 3</strong>; thư viện tự chọn (không bắt buộc pandas), miễn giải thích và kiểm chứng được.</li>
+          <li><code>.python-version</code>: một dòng, phiên bản Python đã chạy thử (<code>3.x.y</code>).</li>
+          <li><code>requirements.txt</code> ghim <code>==</code> đủ để chạy quy trình (hoặc lockfile tương đương).</li>
+          <li><code>README.md</code>: cách cài, lệnh chạy, tên biến môi trường chứa khoá API, tệp kết quả để đối chiếu.</li>
+          <li><strong>Tự kiểm trước khi nộp:</strong> clone vào thư mục mới, dựng môi trường theo README, chạy một lệnh,
+            tạo lại được số liệu và hình trong báo cáo.</li>
         </ul>
-        <p class="fine-print">
-          <code>.python-version</code> là quy ước được
-          <a href="https://docs.astral.sh/uv/concepts/python-versions/#python-version-files" target="_blank" rel="noopener">uv</a>
-          và <a href="https://github.com/pyenv/pyenv#understanding-python-version-selection" target="_blank" rel="noopener">pyenv</a> hỗ trợ.
-          Có thể tạo tệp bằng trình soạn thảo; khi dùng pip/venv, nhóm vẫn phải chọn đúng Python để tạo môi trường.
-        </p>
-        <p class="fine-print">
-          Với pip, có thể dùng <code>python -m pip freeze &gt; requirements.txt</code> trong môi trường riêng đã chạy thành công.
-          Rà lại tệp trước khi nộp, tránh lẫn gói không dùng hoặc đường dẫn cục bộ của máy nhóm.
-          Tham khảo <a href="https://pip.pypa.io/en/stable/topics/repeatable-installs/" target="_blank" rel="noopener">hướng dẫn ghim phiên bản của pip</a>.
-        </p>
-        <p>
-          <strong>Tự kiểm trước khi nộp:</strong> một thành viên clone repo vào thư mục mới, dựng môi trường mới đúng như
-          đã khai báo, làm theo README và chạy đầy đủ với khoá API đặt trong biến môi trường (thử thêm một lần với <code>--skip-llm</code>).
-          Phải tạo lại được số liệu và hình trong báo cáo từ dữ liệu thô.
-          Ghi lệnh đã thử và kết quả kiểm tra vào README.
-        </p>
 
         <h3 class="subhead">Cấu trúc GitHub repo yêu cầu</h3>
         <pre><code>.
