@@ -709,17 +709,13 @@
         <p style="margin-top:0">
           Nguồn: <a href="https://insideairbnb.com/get-the-data/" target="_blank" rel="noopener">Inside Airbnb</a>,
           giấy phép CC BY 4.0. Báo cáo phải ghi nguồn và ngày của từng mốc chụp (snapshot); không commit dữ liệu thô lên Github.
-          Dùng bảng đầy đủ trong <code>data/</code>. Bản đồ lấy ở <code>visualisations/</code>.
-          Mốc cũ hiện khi bật <em>show archived data</em>.
+          Cấu trúc từng tệp, kiểu dữ liệu và các điểm lạ của mỗi bản chụp: nhóm tự khảo sát và ghi vào phần QA.
         </p>
         <ul class="plain-list">
-          <li><code>data/listings.csv.gz</code>: chỗ ở (bản 06/2026 có 90 cột; giá ở dạng chuỗi).</li>
-          <li><code>data/calendar.csv.gz</code>: mỗi dòng là một ngày của một chỗ ở trong ~365 ngày tới,
-            cho biết ngày đó còn trống hay đã đặt (<code>listing_id, date, available, minimum_nights, maximum_nights</code>).</li>
-          <li><code>data/reviews.csv.gz</code>: đánh giá văn bản tự do, đầu vào của phần phân tích dùng LLM.</li>
-          <li><code>visualisations/neighbourhoods.geojson</code>: ranh giới khu vực. Tệp này <em>không</em> nằm trong
-            <code>data/</code>.
-          </li>
+          <li><code>data/listings.csv.gz</code> — chỗ ở</li>
+          <li><code>data/calendar.csv.gz</code> — lịch trống / đã đặt theo ngày</li>
+          <li><code>data/reviews.csv.gz</code> — đánh giá văn bản (đầu vào phần LLM)</li>
+          <li><code>visualisations/neighbourhoods.geojson</code> — ranh giới khu vực</li>
         </ul>
         <pre class="pre-wrap"
           style="margin-bottom:0"><code>https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YYYY-MM-DD&gt;/data/&lt;bảng&gt;.csv.gz
