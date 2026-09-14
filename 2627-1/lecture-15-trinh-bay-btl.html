@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <title>LTXLDL | Trình bày &amp; vấn đáp bài tập lớn</title>
+  <title>LTXLDL | Vấn đáp bài tập lớn</title>
 
   <link rel="stylesheet" href="revealjs/dist/reset.css">
   <link rel="stylesheet" href="revealjs/dist/reveal.css" />
@@ -33,7 +33,7 @@
           <h1>
             <span class="text-light">Bài tập lớn</span>
             <br>
-            Trình bày &amp; vấn đáp
+            Vấn đáp
           </h1>
           <p class="text-light">Hướng dẫn chuẩn bị + checklist nộp — đọc kỹ <em>trước</em> hạn nộp.</p>
         </section>
@@ -62,7 +62,7 @@
             <li>☐ <span class="inline-code">data/processed/</span> + <span
                 class="inline-code">data/samples/</span> (bộ ≥100 nhãn tay!); raw KHÔNG commit.</li>
             <li>☐ <span class="inline-code">figures/</span> sinh tự động; <span
-                class="inline-code">reports/</span> có PDF + qa_report.csv + slides.pdf.</li>
+                class="inline-code">reports/</span> có PDF + qa_report.csv.</li>
             <li>☐ <span class="inline-code">AI_USAGE.md</span> — cập nhật lần cuối, mục
               "AI sai ở đâu" có ví dụ thật.</li>
             <li>☐ Tag <span class="inline-code">final</span> + commit hash ghi trong báo cáo.</li>
@@ -76,11 +76,11 @@
             Một thành viên clone repo vào thư mục mới (giả lập máy giảng viên), làm đúng theo
             README từ đầu: Python theo <span class="inline-code">.python-version</span> → môi trường mới →
             cài thư viện đã ghim → chạy <em>một</em> lệnh
-            với <span class="inline-code">--skip-llm</span>, không cần khoá API.
+            đầy đủ, khoá API đặt trong biến môi trường.
             Đối chiếu số liệu và hình tạo lại với báo cáo.
           </div>
-          <p>Khi chấm, pipeline của nhóm sẽ chạy trên <strong>snapshot held-out</strong>
-            (bản phát hành trong kỳ hoặc bản không nằm trong danh sách của nhóm) — chỉ đổi config.
+          <p>Khi chấm, giảng viên chạy <strong>một bộ test chung</strong> trên repo mọi nhóm:
+            dựng môi trường theo README, chạy pipeline trên snapshot giảng viên chọn — kể cả bước LLM — rồi soát tệp đầu ra.
             Hãy tự thử trước với một snapshot nhóm chưa dùng.</p>
         </section>
       </section>
@@ -99,14 +99,9 @@
             </thead>
             <tbody>
               <tr>
-                <td>Trình bày + demo pipeline chạy lại</td>
-                <td>~5'</td>
-                <td>câu chuyện dữ liệu: kết luận → bằng chứng → giới hạn</td>
-              </tr>
-              <tr>
                 <td><strong>Hỏi riêng từng thành viên</strong></td>
-                <td>~10' (2–3'/người)</td>
-                <td>giải thích code/số bất kỳ + câu hỏi thiết kế</td>
+                <td>~15' (3–4'/người)</td>
+                <td>giải thích code/số bất kỳ + câu hỏi thiết kế — <em>không có phần trình bày nhóm</em></td>
               </tr>
               <tr>
                 <td>Live task (nếu có)</td>
@@ -118,20 +113,6 @@
           <p class="caption">Lịch chi tiết từng nhóm: công bố trên Canvas Portal trước ngày thi vấn đáp.</p>
         </section>
 
-        <section>
-          <h2>Trình bày 5 phút</h2>
-          <ul>
-            <li>Slide 1: <strong>3 kết luận quan trọng nhất</strong> (mỗi cái một con số + một hình).</li>
-            <li>Sau đó mới đến: dữ liệu &amp; QA (tác động!), KPI, hợp phần LLM (chất lượng đo được),
-              so sánh thành phố.</li>
-            <li>Kết: giới hạn + một điều nhóm thấy thú vị nhất.</li>
-          </ul>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            5 phút = ~4–5 slide. Kể "hành trình em làm gì tuần 1, tuần 2…" là cách nhanh nhất
-            để hết giờ trước khi tới phần được điểm.
-          </div>
-        </section>
 
         <section>
           <h2>Hỏi riêng từng người — dạng câu hỏi</h2>
@@ -151,7 +132,7 @@
           <ol>
             <li><strong>"Phần đó bạn X làm ạ"</strong> — mọi thành viên phải nắm bức tranh chung
               và code chính. Phân công ≠ mỗi người chỉ biết phần mình.</li>
-            <li><strong>Demo không chạy lại được</strong> — vì chưa từng thử bài kiểm tra máy sạch.</li>
+            <li><strong>Bộ test chung không chạy qua</strong> — vì chưa từng thử bài kiểm tra máy sạch.</li>
             <li><strong>Không biết số của chính mình</strong> — báo cáo ghi 426k mà cả nhóm
               không ai truy lại được nguồn. Vấn đáp = thẩm định; hãy tự thẩm định trước.</li>
           </ol>
@@ -168,8 +149,8 @@
               sửa những gì không đứng vững.</li>
             <li><strong>T-3:</strong> mỗi người tự đi một vòng repo: mở ngẫu nhiên 5 file,
               tự giải thích.</li>
-            <li><strong>T-1:</strong> chạy thử trình bày 5 phút có bấm giờ; chốt ai nói phần nào,
-              ai demo, ai trực câu hỏi kỹ thuật.</li>
+            <li><strong>T-1:</strong> mỗi người tự trả lời thử 5 câu kiểu vấn đáp về code và số của nhóm —
+              không có phần trình bày, ai cũng có thể bị hỏi bất kỳ phần nào.</li>
           </ol>
         </section>
 
@@ -188,7 +169,7 @@
 
       <!-- Footer -->
       <div class="footer">
-        LTXLDL (2627-1) · Trình bày &amp; vấn đáp bài tập lớn
+        LTXLDL (2627-1) · Vấn đáp bài tập lớn
       </div>
     </div>
   </div>
