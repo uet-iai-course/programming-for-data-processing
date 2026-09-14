@@ -141,3 +141,7 @@ Phòng đào tạo đổi lịch 2627-1: **10 tuần × 3 tiết/tuần** (thay 
 - **Rút gọn phần 04 "Phân tích dùng LLM"** còn 6 gạch đầu dòng + callout 2 câu (GV: "ngắn hơn nhiều, đừng hướng dẫn chi tiết"). Bỏ: đoạn dịch máy khi gán nhãn, mô tả batch/retry/cache, "vài nghìn đánh giá". Giữ yêu cầu cứng: schema/enum, Gemini free, đối chứng không LLM + ≥100 nhãn tay + accuracy/F1 + phân tích lỗi, ước tính chi phí, ≥1 KPI và 1 hình dùng LLM, nêu ≥1 lỗi thật.
 - **Bảng phân công thành phố thu gọn** (`<details>` đóng mặc định, summary "Danh sách thành phố và bốn mốc chụp (26 thành phố)") — GV 14/09, trang quá dài. Đoạn dẫn "bốn mốc bản chụp… bắt buộc" vẫn hiện.
 - **Rút gọn "Môi trường chạy và thư viện"** (phần 06) còn 5 gạch đầu dòng: Python 3 + thư viện tự chọn, `.python-version`, `requirements.txt` ghim, README (cài/chạy/biến môi trường khoá API), tự kiểm máy sạch. Bỏ hai đoạn fine-print (uv/pyenv, pip freeze) và mô tả OS/kiến trúc máy.
+
+## Quyết định của giảng viên (14/09/2026 — bỏ phần trình bày nhóm, vấn đáp từng người ngay)
+
+- **Không còn trình bày 5 phút + slides.pdf.** Vấn đáp ~20'/nhóm vào thẳng hỏi riêng từng người (~15', 3–4'/người) + live task (~5'). Sửa: trang đề (mục 07, bỏ deliverable slide, cây repo bỏ `slides.pdf`), deck 15 (tiêu đề "Vấn đáp bài tập lớn", xoá slide "Trình bày 5 phút", bảng dòng thời gian, lỗi hay gặp, kế hoạch T-1), index (hàng "Vấn đáp BTL"), lab-14 checklist. **Giữ tên tệp** `lecture-15-trinh-bay-btl.html` để không gãy link đã public.
