@@ -1048,7 +1048,6 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
         <ul>
           <li>Tải đủ bốn mốc của thành phố nhóm bằng script; kiểm tệp tồn tại và có cột khoá.</li>
           <li>Dữ liệu thô vào <code>data/raw/</code> (gitignore); chỉ commit <code>data/processed/</code> khi dưới 50 MB.</li>
-          <li>Từ điển dữ liệu ngắn cho các cột thực sự dùng.</li>
         </ul>
       </div>
 
@@ -1056,8 +1055,8 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
         <h3>3) QA do nhóm tự đề xuất</h3>
         <ul>
           <li>Mỗi quy tắc: <em>tên → điều kiện → lý do → hành động</em>; ưu tiên <strong>gắn cờ</strong>.</li>
-          <li>Phủ: thiếu, ngoại lai, trùng (trong và giữa các mốc), kiểu sai, danh mục lệch.</li>
-          <li>Xuất <code>reports/qa_report.csv</code> ghi tác động (số dòng; KPI trước và sau). Một bộ quy tắc cho mọi mốc.</li>
+          <li>Bao gồm ít nhất các trường hợp sau: thiếu, ngoại lai, trùng (trong và giữa các mốc), kiểu sai, danh mục lệch.</li>
+          <li>Ghi vào <code>reports/qa_report.csv</code> các tác động (số dòng; KPI trước và sau).</li>
         </ul>
       </div>
 
@@ -1066,24 +1065,22 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
         <ul>
           <li>Mỗi KPI: <em>tên → mục tiêu → công thức → đơn vị</em>; tính <strong>sau QA</strong>; ghi rõ tiền tệ.</li>
           <li>Ít nhất một KPI theo khu vực (<code>neighbourhood_cleansed</code>) và theo thời gian; ít nhất một KPI dùng kết quả LLM.</li>
-          <li>Xuất <code>data/processed/kpi_*.csv</code> có cột <code>snapshot_date</code>.</li>
+          <li>Ghi KPI vào <code>data/processed/kpi_*.csv</code>.</li>
         </ul>
       </div>
 
       <div class="task-card">
         <h3>5) Trực quan hoá</h3>
         <ul>
-          <li>Ba góc: không gian (GeoJSON), thời gian (qua các mốc), LLM. Mỗi hình phục vụ một kết luận; <strong>không thêm hình cho đủ số</strong>.</li>
-          <li>Tiêu đề nêu thông điệp; trục có đơn vị; chân hình ghi nguồn và mốc.</li>
-          <li>Hình sinh tự động vào <code>figures/</code>, mỗi hình kèm 2-4 câu diễn giải.</li>
+          <li>Vẽ theo các góc độ sau: không gian, thời gian, LLM.</li>
+          <li>Hình sinh tự động vào <code>figures/</code>.</li>
         </ul>
       </div>
 
       <div class="task-card">
         <h3>6) Báo cáo kỹ thuật</h3>
         <ul>
-          <li>PDF 10-15 trang trong <code>reports/</code>: nhóm, thành phố, mã commit · bên liên quan &amp; câu hỏi · dữ liệu &amp; QA · KPI · LLM · kết quả · <strong>giới hạn</strong> · tài liệu tham khảo.</li>
-          <li>Mở đầu bằng kết luận (bài 14). Mỗi số có đơn vị; mỗi kết luận dẫn tới một hình hoặc một bảng.</li>
+          <li>PDF (tối đa 10 trang, theo format sẽ được công bố sau) trong <code>reports/</code>.</li>
         </ul>
       </div>
     </section>
@@ -1091,39 +1088,25 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
     <!-- Phân tích dùng LLM -->
     <section id="llm" class="section-anchor">
       <h2 class="section-title">Phần phân tích dùng LLM</h2>
-      <p>Dùng LLM để biến một mẫu bảng <code>reviews</code> thành dữ liệu có cấu trúc, rồi đo độ tin cậy của kết quả.
-        Mã mẫu nằm trong notebook bài 11.</p>
+      <p>Dùng LLM biến một mẫu bảng <code>reviews</code> thành dữ liệu có cấu trúc, rồi tự đo xem kết quả tin được đến đâu.
+        Mã mẫu: notebook bài 11.</p>
 
       <div class="task-card">
         <ul>
-          <li><strong>Trích xuất mỗi đánh giá:</strong> cảm xúc (<code>positive / mixed / negative</code>),
-            các khía cạnh được khen hoặc chê (danh mục nhóm tự đặt), và ngôn ngữ. Có thể thêm phát hiện spam hoặc quảng
-            cáo.</li>
-          <li><strong>Công cụ:</strong> Gemini API gói miễn phí, với <strong>đầu ra có cấu trúc</strong> (schema và
-            enum).
-            Nhà cung cấp khác được phép nếu nhóm tự trả phí và ghi rõ trong <code>AI_USAGE.md</code>.</li>
-          <li><strong>Mẫu.</strong> Cỡ mẫu do nhóm quyết định và <strong>giải thích</strong>: đủ để KPI/hình dùng LLM
-            có ý nghĩa (đủ đánh giá cho mỗi khu vực/thời kỳ cần so sánh) nhưng vừa <strong>hạn mức gói miễn phí</strong>.
-            Thực tế thường cỡ vài nghìn đánh giá. Nêu rõ cách chọn (gần nhất, phân tầng theo khu vực…) và thiên lệch có thể phát sinh.</li>
-          <li><strong>Đối chứng không dùng LLM:</strong> biểu thức chính quy và từ khoá (bài 7) cùng từ điển cảm xúc
-            (bài 11).
-            Dùng để chỉ ra LLM hơn ở đâu và còn kém ở đâu.</li>
-          <li><strong>Ít nhất 100 nhãn tay</strong> do nhóm gán làm chuẩn vàng (đủ để ước lượng accuracy/F1 có ý nghĩa).
-            Với thành phố có đánh giá không phải tiếng Anh, nhóm <strong>được dùng dịch máy để đọc hiểu khi gán</strong>:
-            con người vẫn quyết nhãn, không để máy tự sinh nhãn; báo cáo khai rõ và bàn ảnh hưởng của dịch máy tới độ tin
-            của nhãn chuẩn. Mô tả hướng dẫn gán và cách xử lý bất đồng. Báo cáo accuracy hoặc F1 của LLM <em>và</em> của
-            phương pháp đối chứng, kèm phân tích kiểu lỗi.</li>
-          <li><strong>Chi phí:</strong> đếm số yêu cầu và token; ước tính chi phí nếu xử lý hết đánh giá của thành phố
-            theo giá trả phí; mô tả xử lý theo lô, thử lại và bộ nhớ đệm. Nên có cờ <code>--skip-llm</code> đọc kết quả đã lưu
-            trong <code>data/processed/</code> để phát triển và tự kiểm nhanh; khi chấm, bước LLM được chạy lại thật.</li>
+          <li><strong>Trích xuất mỗi đánh giá:</strong> cảm xúc (<code>positive / mixed / negative</code>), khía cạnh khen/chê, ngôn ngữ.
+            Đầu ra có cấu trúc (schema, enum).</li>
+          <li><strong>Công cụ:</strong> Gemini API gói miễn phí; nhà cung cấp khác nếu tự trả phí và ghi trong <code>AI_USAGE.md</code>.</li>
+          <li><strong>Mẫu:</strong> cỡ mẫu và cách chọn do nhóm quyết định và giải thích.</li>
+          <li><strong>Kiểm chứng:</strong> phương pháp đối chứng không dùng LLM (bài 7, 11) và ít nhất 100 nhãn tay;
+            báo cáo accuracy/F1 của cả hai, kèm phân tích lỗi.</li>
+          <li><strong>Chi phí:</strong> ước tính nếu xử lý hết đánh giá của thành phố.</li>
           <li><strong>Tích hợp:</strong> ít nhất một KPI và một hình dùng kết quả LLM.</li>
         </ul>
       </div>
 
       <div class="callout callout--danger">
-        <strong>Bịa thông tin (hallucination).</strong> LLM có thể gắn khía cạnh không có trong đánh giá,
-        nhãn ngoài enum, hoặc suy ra từ đánh giá rỗng. Báo cáo phải nêu <em>ít nhất một lỗi thật</em> mà nhóm đã bắt
-        được.
+        <strong>LLM bịa.</strong> Nhãn ngoài enum, khía cạnh không có trong đánh giá… Báo cáo phải nêu <em>ít nhất một lỗi thật</em>
+        nhóm đã bắt được.
       </div>
     </section>
 
