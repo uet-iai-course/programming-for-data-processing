@@ -145,3 +145,7 @@ Phòng đào tạo đổi lịch 2627-1: **10 tuần × 3 tiết/tuần** (thay 
 ## Quyết định của giảng viên (14/09/2026 — bỏ phần trình bày nhóm, vấn đáp từng người ngay)
 
 - **Không còn trình bày 5 phút + slides.pdf.** Vấn đáp ~20'/nhóm vào thẳng hỏi riêng từng người (~15', 3–4'/người) + live task (~5'). Sửa: trang đề (mục 07, bỏ deliverable slide, cây repo bỏ `slides.pdf`), deck 15 (tiêu đề "Vấn đáp bài tập lớn", xoá slide "Trình bày 5 phút", bảng dòng thời gian, lỗi hay gặp, kế hoạch T-1), index (hàng "Vấn đáp BTL"), lab-14 checklist. **Giữ tên tệp** `lecture-15-trinh-bay-btl.html` để không gãy link đã public.
+
+## Quyết định của giảng viên (14/09/2026 — rubric BTL "công bố dần, chưa chốt")
+
+- Trang đề chỉ còn tên 4 tiêu chí + câu "điểm nhóm điều chỉnh từng người qua vấn đáp"; **trọng số 30/25/25/20 và 4 mức điểm rút khỏi trang**, ghi "công bố dần, chưa chốt". Khối rubric chi tiết chuyển sang `2627-1/projects/project_airbnb_rubric-draft.html` (draft-only, không publish — đã thêm vào danh sách cấm trong CLAUDE.md); khi chốt thì dán lại.

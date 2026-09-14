@@ -1,0 +1,98 @@
+<!-- NHÁP nội bộ — chỉ trên nhánh 2627-1-draft, KHÔNG publish. Rubric chi tiết BTL 2627-1 (bản 09/2026, chưa chốt).
+     Khi chốt: dán lại khối này vào project_airbnb.html thay cho ghi chú "công bố dần". -->
+      <h3 class="subhead">Rubric</h3>
+      <p>Bốn tiêu chí, trọng số <strong>30 / 25 / 25 / 20</strong>; mỗi tiêu chí bốn mức (85-100 / 70-84 / 55-69 / dưới 55%).
+        Điểm nhóm (thang 10) được điều chỉnh từng người qua vấn đáp.</p>
+
+      <div class="rubric">
+        <article class="rubric-item">
+          <h4>A. Thiết kế và tái lập quy trình <em>30%</em></h4>
+          <dl>
+            <div>
+              <dt>Xuất sắc <span>85-100%</span></dt>
+              <dd>Một lệnh chạy từ dữ liệu thô đến mọi kết quả, kể cả bước LLM. Cấu hình tách bạch. Bộ test chung
+                qua hết. Cache hoạt động. Hai lần chạy ra cùng số.</dd>
+            </div>
+            <div>
+              <dt>Tốt <span>70-84%</span></dt>
+              <dd>Một lệnh chạy hết. Bộ test chung qua sau khi sửa cấu hình nhỏ. Còn vài chỗ ghi cứng.</dd>
+            </div>
+            <div>
+              <dt>Đạt <span>55-69%</span></dt>
+              <dd>Chạy lại được nhưng cần nhiều bước thủ công. Bộ test chung lỗi ở bước phụ.</dd>
+            </div>
+            <div>
+              <dt>Chưa đạt <span>&lt;55%</span></dt>
+              <dd>Không chạy lại được theo README, hoặc bộ test chung gãy ở bước chính.</dd>
+            </div>
+          </dl>
+        </article>
+        <article class="rubric-item">
+          <h4>B. Lưu trữ và thao tác dữ liệu <em>25%</em></h4>
+          <dl>
+            <div>
+              <dt>Xuất sắc <span>85-100%</span></dt>
+              <dd>QA do nhóm đề xuất, có lý do và báo cáo tác động. KPI đủ bốn phần, xử lý đúng tiền tệ.
+                LLM có schema, phương pháp đối chứng, ít nhất 100 nhãn tay, phân tích lỗi và chi phí.</dd>
+            </div>
+            <div>
+              <dt>Tốt <span>70-84%</span></dt>
+              <dd>QA và KPI đủ, còn thiếu sót nhỏ (ví dụ chưa xét trùng giữa các mốc).
+                LLM đủ các phần nhưng phân tích lỗi và chi phí còn nông.</dd>
+            </div>
+            <div>
+              <dt>Đạt <span>55-69%</span></dt>
+              <dd>QA và KPI ở mức cơ bản, một số quy tắc sao chép. LLM chạy được nhưng đánh giá sơ
+                (ít nhãn, không phân tích lỗi).</dd>
+            </div>
+            <div>
+              <dt>Chưa đạt <span>&lt;55%</span></dt>
+              <dd>QA hình thức; KPI thiếu công thức/đơn vị; thiếu đối chứng hoặc nhãn tay; dùng LLM không kiểm chứng.
+              </dd>
+            </div>
+          </dl>
+        </article>
+        <article class="rubric-item">
+          <h4>C. Trực quan hoá và phát hiện <em>25%</em></h4>
+          <dl>
+            <div>
+              <dt>Xuất sắc <span>85-100%</span></dt>
+              <dd>Phủ đủ ba góc phân tích; mỗi hình phục vụ một kết luận, không có hình thừa. Có 3-5 phát hiện kèm bằng chứng, nêu cả giới hạn.
+              </dd>
+            </div>
+            <div>
+              <dt>Tốt <span>70-84%</span></dt>
+              <dd>Phủ đủ ba góc; hình đạt chuẩn kỹ thuật, thông điệp rõ ở đa số. Vài chỗ diễn giải vượt quá dữ liệu.</dd>
+            </div>
+            <div>
+              <dt>Đạt <span>55-69%</span></dt>
+              <dd>Phủ được phần lớn ba góc nhưng vài hình thiếu đơn vị/chú giải hoặc trùng thông điệp; diễn giải chủ yếu mô tả lại hình.</dd>
+            </div>
+            <div>
+              <dt>Chưa đạt <span>&lt;55%</span></dt>
+              <dd>Thiếu hình hoặc thông điệp mơ hồ; kết luận không có bằng chứng.</dd>
+            </div>
+          </dl>
+        </article>
+        <article class="rubric-item">
+          <h4>D. Làm việc nhóm, đạo đức và minh bạch AI <em>20%</em></h4>
+          <dl>
+            <div>
+              <dt>Xuất sắc <span>85-100%</span></dt>
+              <dd>Commit từ đầu kì, phân công rõ. <code>AI_USAGE.md</code> có ví dụ sai thật. Cả nhóm vấn đáp tốt.</dd>
+            </div>
+            <div>
+              <dt>Tốt <span>70-84%</span></dt>
+              <dd>Làm việc đều, khai báo đủ. Đa số vấn đáp tốt, một người còn yếu ngoài phần mình.</dd>
+            </div>
+            <div>
+              <dt>Đạt <span>55-69%</span></dt>
+              <dd>Commit dồn vào vài đợt. <code>AI_USAGE.md</code> chung chung. Kết quả vấn đáp lệch lớn.</dd>
+            </div>
+            <div>
+              <dt>Chưa đạt <span>&lt;55%</span></dt>
+              <dd>Một hoặc hai người gánh nhóm. Khai báo hình thức hoặc khai man. Không giải thích được sản phẩm.</dd>
+            </div>
+          </dl>
+        </article>
+      </div>

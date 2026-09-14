@@ -170,7 +170,7 @@ Mỗi deck nội dung (trừ buổi 9, 15) kết bằng mục **"Làm việc v�
 File **không bao giờ** publish lên `main` — chặn theo *loại*, không theo tên:
 
 - **Mọi file hướng dẫn/khởi động agent ở root**: `CLAUDE.md`, `AGENTS.md` và mọi symlink trỏ vào nó, `STARTER-PROMPT-*.md`… — bất kể tên tool.
-- **Tài liệu vận hành nội bộ**: `2627-1/{DECISIONS,PROGRESS,EDIT-PASS-NOTES}.md`.
+- **Tài liệu vận hành nội bộ**: `2627-1/{DECISIONS,PROGRESS,EDIT-PASS-NOTES}.md`, `2627-1/teaching-notes/` (gitignore), và mọi file `*-draft.html` (vd `2627-1/projects/project_airbnb_rubric-draft.html` — rubric BTL chưa chốt, 14/09/2026).
 - **Học liệu không công khai**: `2627-1/private/` (đã gitignore).
 - **Đề cương gốc**: `UET_*.docx` (có thông tin liên hệ cá nhân, đã gitignore).
 
