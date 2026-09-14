@@ -19,7 +19,7 @@ WEEKS = [("T1", "Bài 1–2"), ("T2", "Bài 3"), ("T3", "Bài 4–5"), ("T4", "B
 MID, ORAL = 5, 10                                   # chỉ số ga lớn
 PHASES = [(0, 2, "#B45309", "🐼 Nền tảng"), (3, 4, "#D97706", "🔌 Lấy dữ liệu"),
           (6, 7, "#F59E0B", "🧹 Làm sạch · LLM"), (8, 9, "#7A5C30", "📊 Trực quan hoá")]
-BTL = [(1, "👥", "lập nhóm"), (5, "📄", "proposal"), (9, "🏁", "final")]   # (ga, icon, nhãn)
+BTL = [(1, "👥", "lập nhóm 20/09"), (10, "🏁", "final 22/11")]   # (ga, icon, nhãn) — bỏ mốc proposal 14/09/2026
 QUIZ = [2, 8]                                       # ga có kiểm tra giấy 15' (T3, T9; đổi 4→3 ngày 04/09/2026; làm trong giờ thực hành từ 06/09 — hình chỉ đánh dấu tuần)
 LAB = (1, 10)                                       # lab chạy từ ga T2 tới ga cuối (tuần 11)
 GRADES = [(10, "#D97706", "🧪", "Thực hành"), (10, "#2563EB", "✍️", "Kiểm tra"),

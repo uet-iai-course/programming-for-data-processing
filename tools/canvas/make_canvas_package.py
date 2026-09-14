@@ -39,10 +39,9 @@ GRADING = [
 ]
 
 MILESTONES = [
-    ("Mốc 1 — Lập nhóm, tạo repo, nhận thành phố chính + đối chứng", "Không cần tag"),
-    ("Mốc 2 — Nộp đề xuất 2–3 trang", "git tag proposal"),
-    ("Mốc 3 — Nộp bản cuối", "git tag final"),
-    ("Mốc 4 — Vấn đáp ~20 phút/nhóm", "Lịch trên Canvas"),
+    ("Mốc 1 — Lập nhóm, tạo repo, nhận thành phố chính + đối chứng (23:59 Chủ nhật 20/09/2026, tuần 2)", "Không cần tag"),
+    ("Mốc 2 — Nộp bản cuối (23:59 Chủ nhật 22/11/2026, tuần 11)", "git tag final"),
+    ("Mốc 3 — Vấn đáp ~20 phút/nhóm", "Theo lịch thi của Trường"),
 ]
 
 

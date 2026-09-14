@@ -125,3 +125,8 @@ Phòng đào tạo đổi lịch 2627-1: **10 tuần × 3 tiết/tuần** (thay 
 - `README.md` tham chiếu `.python-version`, ghi hệ điều hành, kiến trúc máy, công cụ cài thư viện và hướng dẫn dựng môi trường/chạy lại. `requirements.txt` hoặc lockfile ghim phiên bản thư viện.
 - Có thể tạo `.python-version` bằng trình soạn thảo; không bắt buộc dùng uv/pyenv. Khi dùng pip/venv, cần chọn đúng Python lúc tạo môi trường.
 - Đồng bộ yêu cầu trong đề BTL, cây repo mẫu, checklist Bài 15 và phần môi trường Python của Bài 1 trên nhánh draft. Bài 1 thêm slide `.python-version` ngay sau `requirements.txt`; sửa diễn giải để không coi riêng danh sách thư viện là đủ tái lập toàn bộ môi trường.
+
+## Quyết định của giảng viên (14/09/2026 — bỏ mốc proposal, hạn final tuần 11)
+
+- **Bỏ Mốc 2 "git tag proposal"** (đề xuất 2–3 trang, GV phản hồi không chấm). Còn 3 mốc: (1) lập nhóm/repo/nhận thành phố **23:59 Chủ nhật 20/09/2026 (tuần 2)**, (2) `git tag final` **23:59 Chủ nhật 22/11/2026 (tuần 11)** — GV cho ngày chính thức cùng ngày, ghi thẳng lên trang đề; suy ra **tuần 1 = 07–13/09/2026** (dùng được cho lịch Canvas sau này), (3) vấn đáp **theo lịch thi của Trường** (không phải lịch GV đặt trên Canvas).
+- Đã sửa: `projects/project_airbnb.html` (timeline + dòng deliverables "có tag proposal và final"), hình lộ trình (`tools/roadmap`: bỏ marker proposal, final đặt ở ga cuối "sau T10" với nhãn "final · T11"), gói Canvas (`tools/canvas`), CLAUDE.md. Lưu ý: ga cuối trên hình vừa là "final T11" vừa là vấn đáp — chấp nhận vì vấn đáp diễn ra sau khi nộp final.
