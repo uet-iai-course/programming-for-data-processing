@@ -390,6 +390,24 @@
       overflow-wrap: anywhere;
     }
 
+    .city-details { margin-top: 10px; }
+    .city-details > summary {
+      cursor: pointer;
+      list-style: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      user-select: none;
+    }
+    .city-details > summary::-webkit-details-marker { display: none; }
+    .city-details > summary::before { content: "▸"; font-size: 0.9em; }
+    .city-details[open] > summary::before { content: "▾"; }
+    .city-details[open] > summary { margin-bottom: 6px; }
     .city-board {
       margin: 4px 0 16px;
     }
@@ -731,6 +749,8 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
         nhưng vẫn phải đủ bốn mốc này.
       </p>
 
+      <details class="city-details">
+        <summary>Danh sách thành phố và bốn mốc chụp (26 thành phố)</summary>
       <div class="city-board">
         <div class="city-group">
           <h4>Tây Ban Nha &amp; Bồ Đào Nha</h4>
@@ -1017,6 +1037,7 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
           </article>
         </div>
       </div>
+      </details>
     </section>
 
     <!-- Công việc -->
@@ -1088,25 +1109,19 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
     <!-- Phân tích dùng LLM -->
     <section id="llm" class="section-anchor">
       <h2 class="section-title">Phần phân tích dùng LLM</h2>
-      <p>Dùng LLM biến một mẫu bảng <code>reviews</code> thành dữ liệu có cấu trúc, rồi tự đo xem kết quả tin được đến đâu.
-        Mã mẫu: notebook bài 11.</p>
+      <p>Dùng LLM biến một mẫu bảng <code>reviews</code> thành dữ liệu có cấu trúc, rồi tự đo chất lượng kết quả.</p>
 
       <div class="task-card">
         <ul>
           <li><strong>Trích xuất mỗi đánh giá:</strong> cảm xúc (<code>positive / mixed / negative</code>), khía cạnh khen/chê, ngôn ngữ.
-            Đầu ra có cấu trúc (schema, enum).</li>
+            Đầu ra có cấu trúc.</li>
           <li><strong>Công cụ:</strong> Gemini API gói miễn phí; nhà cung cấp khác nếu tự trả phí và ghi trong <code>AI_USAGE.md</code>.</li>
           <li><strong>Mẫu:</strong> cỡ mẫu và cách chọn do nhóm quyết định và giải thích.</li>
-          <li><strong>Kiểm chứng:</strong> phương pháp đối chứng không dùng LLM (bài 7, 11) và ít nhất 100 nhãn tay;
+          <li><strong>Kiểm chứng:</strong> phương pháp đối chứng không dùng LLM và ít nhất 100 nhãn tay;
             báo cáo accuracy/F1 của cả hai, kèm phân tích lỗi.</li>
           <li><strong>Chi phí:</strong> ước tính nếu xử lý hết đánh giá của thành phố.</li>
           <li><strong>Tích hợp:</strong> ít nhất một KPI và một hình dùng kết quả LLM.</li>
         </ul>
-      </div>
-
-      <div class="callout callout--danger">
-        <strong>LLM bịa.</strong> Nhãn ngoài enum, khía cạnh không có trong đánh giá… Báo cáo phải nêu <em>ít nhất một lỗi thật</em>
-        nhóm đã bắt được.
       </div>
     </section>
 
