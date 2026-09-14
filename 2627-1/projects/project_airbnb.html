@@ -1172,7 +1172,7 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
 │   ├── evaluate.py           #   chấm LLM vs đối chứng trên nhãn tay
 │   └── viz.py                #   sinh hình vào figures/
 ├── figures/                  # hình sinh tự động từ quy trình
-├── reports/                  # report.pdf, slides.pdf, qa_report.csv, từ điển dữ liệu
+├── reports/                  # report.pdf, qa_report.csv, từ điển dữ liệu
 ├── notebooks/                # notebook khám phá (nếu có), không phải quy trình chính
 ├── run_pipeline.py           # (hoặc Makefile) một lệnh gọi các mô-đun theo thứ tự
 ├── .python-version           # một dòng: phiên bản Python đã kiểm thử (3.x.y)
@@ -1181,13 +1181,9 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
 ├── AI_USAGE.md               # khai báo AI (bắt buộc)
 ├── README.md                 # tham chiếu .python-version; môi trường, cài đặt, cách chạy/chấm lại
 └── requirements.txt          # thư viện ghim phiên bản (hoặc bộ tệp lockfile tương đương)</code></pre>
-        <p class="fine-print" style="margin-top:10px"><code>run_pipeline.py</code> chạy các mô-đun theo thứ tự:
-          <strong>tải → QA → LLM/đối chứng → đánh giá → KPI → hình</strong>.
-          Với <code>--skip-llm</code>, bước LLM dùng kết quả đã lưu (chỉ để phát triển; khi chấm bước này chạy thật).
-          Cách chia mô-đun trên chỉ là gợi ý;
-          nhóm tự thiết kế, miễn chạy bằng một lệnh và tái lập được.</p>
+        <br>
         <h3 class="subhead">Ví dụ <code>configs/&lt;city&gt;.yaml</code></h3>
-        <p class="fine-print" style="margin-top:0">Giá trị dưới đây là minh hoạ; nhóm tự quyết.</p>
+        <p class="fine-print" style="margin-top:0">Giá trị dưới đây là minh hoạ.</p>
         <pre><code>city: santiago
 data_root: chile/rm/santiago      # dựng URL: data.insideairbnb.com/&lt;data_root&gt;/&lt;mốc&gt;/...
 currency: CLP
@@ -1208,12 +1204,6 @@ llm:
   cache: data/processed/llm_cache.jsonl
 
 seed: 42</code></pre>
-        <ol style="margin:14px 0 0; padding-left:20px; line-height:1.65">
-          <li>GitHub repo hoàn chỉnh, commit đều, có tag <code>final</code>.</li>
-          <li>Báo cáo PDF 10-15 trang trong <code>reports/</code>, ghi mã commit.</li>
-          <li>Ít nhất 100 nhãn tay và script chấm chất lượng LLM.</li>
-          <li>Slide vấn đáp khoảng 5 phút, nộp tại <code>reports/slides.pdf</code>.</li>
-        </ol>
       </div>
       <div class="callout callout--danger" style="margin-top:14px">
         <strong>Bảo mật:</strong> không commit khoá API (biến môi trường / Colab Secrets). Khi chấm, giảng viên dùng khoá
@@ -1228,10 +1218,9 @@ seed: 42</code></pre>
       <div class="panel">
         <h3 class="subhead" style="margin-top:0">Vấn đáp: hỏi riêng từng thành viên</h3>
         <ul class="plain-list">
-          <li>Mỗi nhóm khoảng 20 phút: trình bày 5 phút, rồi <strong>hỏi riêng từng người</strong>
-            (mở ngẫu nhiên <strong>bất kỳ đoạn mã hoặc số liệu nào</strong> trong sản phẩm nhóm) và làm một bài nhỏ tại chỗ
-            (thêm quy tắc QA, lọc bảng, hoặc chỉ hình chứng minh một kết luận).</li>
-          <li>Điểm nhóm là gốc; vấn đáp điều chỉnh điểm từng người.
+          <li>Mỗi nhóm khoảng 20 phút, <strong>không có phần trình bày</strong>: vào thẳng <strong>hỏi riêng từng người</strong>
+            (mở ngẫu nhiên <strong>bất kỳ đoạn mã hoặc số liệu</strong> trong sản phẩm mà nhóm nộp).</li>
+          <li>Điểm nhóm là trần; vấn đáp điều chỉnh điểm từng người.
             <strong>Mỗi thành viên chịu trách nhiệm cho toàn bộ sản phẩm</strong>: không giải thích được phần được hỏi
             thì cá nhân đó bị trừ điểm, dù phần đó do người khác trong nhóm viết.</li>
           <li>Dùng AI lúc vấn đáp là gian lận (chế độ 🚫 đóng).</li>
@@ -1239,101 +1228,10 @@ seed: 42</code></pre>
       </div>
 
       <h3 class="subhead">Rubric</h3>
-      <p>Bốn tiêu chí, trọng số <strong>30 / 25 / 25 / 20</strong>; mỗi tiêu chí bốn mức (85-100 / 70-84 / 55-69 / dưới 55%).
+      <p>Bốn tiêu chí: <strong>thiết kế và tái lập quy trình</strong> · <strong>lưu trữ và thao tác dữ liệu</strong> ·
+        <strong>trực quan hoá và phát hiện</strong> · <strong>làm việc nhóm, đạo đức và minh bạch AI</strong>.
         Điểm nhóm (thang 10) được điều chỉnh từng người qua vấn đáp.</p>
-
-      <div class="rubric">
-        <article class="rubric-item">
-          <h4>A. Thiết kế và tái lập quy trình <em>30%</em></h4>
-          <dl>
-            <div>
-              <dt>Xuất sắc <span>85-100%</span></dt>
-              <dd>Một lệnh chạy từ dữ liệu thô đến mọi kết quả, kể cả bước LLM. Cấu hình tách bạch. Bộ test chung
-                qua hết. Cache hoạt động. Hai lần chạy ra cùng số.</dd>
-            </div>
-            <div>
-              <dt>Tốt <span>70-84%</span></dt>
-              <dd>Một lệnh chạy hết. Bộ test chung qua sau khi sửa cấu hình nhỏ. Còn vài chỗ ghi cứng.</dd>
-            </div>
-            <div>
-              <dt>Đạt <span>55-69%</span></dt>
-              <dd>Chạy lại được nhưng cần nhiều bước thủ công. Bộ test chung lỗi ở bước phụ.</dd>
-            </div>
-            <div>
-              <dt>Chưa đạt <span>&lt;55%</span></dt>
-              <dd>Không chạy lại được theo README, hoặc bộ test chung gãy ở bước chính.</dd>
-            </div>
-          </dl>
-        </article>
-        <article class="rubric-item">
-          <h4>B. Lưu trữ và thao tác dữ liệu <em>25%</em></h4>
-          <dl>
-            <div>
-              <dt>Xuất sắc <span>85-100%</span></dt>
-              <dd>QA do nhóm đề xuất, có lý do và báo cáo tác động. KPI đủ bốn phần, xử lý đúng tiền tệ.
-                LLM có schema, phương pháp đối chứng, ít nhất 100 nhãn tay, phân tích lỗi và chi phí.</dd>
-            </div>
-            <div>
-              <dt>Tốt <span>70-84%</span></dt>
-              <dd>QA và KPI đủ, còn thiếu sót nhỏ (ví dụ chưa xét trùng giữa các mốc).
-                LLM đủ các phần nhưng phân tích lỗi và chi phí còn nông.</dd>
-            </div>
-            <div>
-              <dt>Đạt <span>55-69%</span></dt>
-              <dd>QA và KPI ở mức cơ bản, một số quy tắc sao chép. LLM chạy được nhưng đánh giá sơ
-                (ít nhãn, không phân tích lỗi).</dd>
-            </div>
-            <div>
-              <dt>Chưa đạt <span>&lt;55%</span></dt>
-              <dd>QA hình thức; KPI thiếu công thức/đơn vị; thiếu đối chứng hoặc nhãn tay; dùng LLM không kiểm chứng.
-              </dd>
-            </div>
-          </dl>
-        </article>
-        <article class="rubric-item">
-          <h4>C. Trực quan hoá và phát hiện <em>25%</em></h4>
-          <dl>
-            <div>
-              <dt>Xuất sắc <span>85-100%</span></dt>
-              <dd>Phủ đủ ba góc phân tích; mỗi hình phục vụ một kết luận, không có hình thừa. Có 3-5 phát hiện kèm bằng chứng, nêu cả giới hạn.
-              </dd>
-            </div>
-            <div>
-              <dt>Tốt <span>70-84%</span></dt>
-              <dd>Phủ đủ ba góc; hình đạt chuẩn kỹ thuật, thông điệp rõ ở đa số. Vài chỗ diễn giải vượt quá dữ liệu.</dd>
-            </div>
-            <div>
-              <dt>Đạt <span>55-69%</span></dt>
-              <dd>Phủ được phần lớn ba góc nhưng vài hình thiếu đơn vị/chú giải hoặc trùng thông điệp; diễn giải chủ yếu mô tả lại hình.</dd>
-            </div>
-            <div>
-              <dt>Chưa đạt <span>&lt;55%</span></dt>
-              <dd>Thiếu hình hoặc thông điệp mơ hồ; kết luận không có bằng chứng.</dd>
-            </div>
-          </dl>
-        </article>
-        <article class="rubric-item">
-          <h4>D. Làm việc nhóm, đạo đức và minh bạch AI <em>20%</em></h4>
-          <dl>
-            <div>
-              <dt>Xuất sắc <span>85-100%</span></dt>
-              <dd>Commit từ đầu kì, phân công rõ. <code>AI_USAGE.md</code> có ví dụ sai thật. Cả nhóm vấn đáp tốt.</dd>
-            </div>
-            <div>
-              <dt>Tốt <span>70-84%</span></dt>
-              <dd>Làm việc đều, khai báo đủ. Đa số vấn đáp tốt, một người còn yếu ngoài phần mình.</dd>
-            </div>
-            <div>
-              <dt>Đạt <span>55-69%</span></dt>
-              <dd>Commit dồn vào vài đợt. <code>AI_USAGE.md</code> chung chung. Kết quả vấn đáp lệch lớn.</dd>
-            </div>
-            <div>
-              <dt>Chưa đạt <span>&lt;55%</span></dt>
-              <dd>Một hoặc hai người gánh nhóm. Khai báo hình thức hoặc khai man. Không giải thích được sản phẩm.</dd>
-            </div>
-          </dl>
-        </article>
-      </div>
+      <p class="fine-print">Trọng số và mô tả các mức điểm: <em>công bố dần</em>.</p>
     </section>
 
     <p class="closing-line">Hết đề bài. Chúc các nhóm hoàn thành tốt bài tập lớn.</p>
