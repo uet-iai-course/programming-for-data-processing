@@ -106,12 +106,19 @@ print(x8.astype(np.int16) + 1)
 <aside class="notes">Nối từ giới hạn số nguyên: số byte cố định còn giới hạn độ chính xác của số thực. Trọng tâm là đánh đổi bộ nhớ và độ chính xác; cách in chỉ để đọc ví dụ. .12f điều khiển số chữ số sau dấu chấm khi in, không điều khiển dtype. Các chữ số 43267 không ngẫu nhiên: float32 của 1/3 bằng chính xác 11184811/33554432, viết thập phân là 0.3333333432674407958984375. Chuỗi in 12 số là bản làm tròn thập phân của giá trị này. float64 cũng không bằng đúng 1/3, nhưng sai số nhỏ hơn nên chưa hiện ở 12 số. Không suy ra float32 luôn đúng đúng 7 vị trí sau dấu chấm: độ chính xác liên quan chữ số có nghĩa và độ lớn. Khi cần minh hoạ thêm, notebook in cùng một giá trị float32 bằng .6f và .12f. Nguồn: Python floatingpoint tutorial.</aside>
 </section>
 
-<section id="exercise-bytes"><h2>Bài tập 1: tính dung lượng mảng</h2>
-<p>Một mảng có <strong>1.000.000 hàng, 3 cột</strong>.</p>
-<p>Mỗi phần tử <code>float64</code> chiếm 8 byte; <code>float32</code> chiếm 4 byte.</p>
-<ol><li>Nếu dùng <code>float64</code>, mảng có bao nhiêu byte dữ liệu?</li><li>Nếu dùng <code>float32</code>, tiết kiệm được bao nhiêu byte?</li></ol>
-<p>Chỉ tính phần dữ liệu. <strong>Tiết kiệm bộ nhớ đã đủ để quyết định chọn float32 chưa?</strong></p>
-<aside class="notes">Kết quả: float64 cần 24.000.000 byte; float32 cần 12.000.000 byte, tiết kiệm 12.000.000 byte. Có thể kiểm số byte mỗi phần tử bằng np.dtype(np.float64).itemsize và np.dtype(np.float32).itemsize. Câu hỏi mở rộng sau khi chữa: tại sao với list chỉ biết số phần tử vẫn chưa đủ để tính tổng dung lượng?</aside>
+<section id="exercise-bytes"><h2>Bài tập 1: đổi kiểu lúc nào?</h2>
+<p>Cần nhân đôi các số trong <code>x</code>. Hai cách sau có cho cùng kết quả?</p>
+<pre><code class="language-python" data-trim>
+x = np.array([50, 100, 120], dtype=np.int8)
+a = (x * 2).astype(np.int16)
+b = x.astype(np.int16) * 2
+</code></pre>
+<ol>
+<li>Dự đoán giá trị của <code>a</code> và <code>b</code>. Cách nào đúng?</li>
+<li>Tính <code>nbytes</code> của <code>x</code>, <code>a</code>, <code>b</code>.</li>
+<li>Vì sao đổi sang <code>int16</code> vẫn có thể cho kết quả sai?</li>
+</ol>
+<aside class="notes">Cho sinh viên dự đoán trước khi chạy. a = [100, -56, -16]; b = [100, 200, 240]. x.nbytes = 3; a.nbytes = b.nbytes = 6. int16 chiếm 2 byte mỗi phần tử. Ở a, phép nhân chạy với int8 nên tràn trước khi đổi kiểu; astype chỉ chuyển các giá trị đã sai sang int16. Ở b, đổi kiểu trước nên phép nhân cho kết quả đúng. Cùng dtype và dung lượng không đảm bảo cùng giá trị.</aside>
 </section>
 
       </section>
@@ -193,15 +200,21 @@ print(np.multiply(x, 2))
 <aside class="notes">Tách hai yếu tố: cấu trúc dữ liệu và nơi thực hiện vòng lặp. Xem phiên bản, mẫu đo và code trong script; đây không phải cam kết tốc độ trên máy khác.</aside>
 </section>
 
-<section><h2>Bài tập 2: so sánh ba cách nhân đôi</h2>
-<p><code>xs</code> là list số nguyên; <code>x</code> là mảng <code>int64</code> chứa cùng các giá trị.</p>
+<section><h2>Bài tập 2: thay vòng for bằng phép toán mảng</h2>
+<p>Đoạn code sau tính bình phương chênh lệch của từng cặp số:</p>
 <pre><code class="language-python" data-trim>
-a = [v * 2 for v in xs]
-b = [v * 2 for v in x]
-c = x * 2
+x = np.array([10, 12, 11, 20])
+y = np.array([12, 11, 15, 20])
+ket_qua = []
+for u, v in zip(x, y):
+    ket_qua.append((v - u) ** 2)
 </code></pre>
-<ol><li>Cách nào vẫn chạy vòng lặp trong Python?</li><li>Vì sao thay <code>xs</code> bằng <code>x</code> ở cách thứ hai chưa chắc làm chương trình nhanh hơn?</li><li>Dùng notebook đo cả ba cách với 10 phần tử và 1 triệu phần tử. Thứ tự nhanh, chậm có thay đổi không?</li></ol>
-<aside class="notes">Giải thích việc boxing scalar, chi phí lời gọi ufunc và quy mô dữ liệu. Không chấm dựa trên tỷ số chính xác; yêu cầu sinh viên giải thích các bước thực thi.</aside>
+<ol>
+<li>Tính tay <code>ket_qua</code>.</li>
+<li>Viết lại bằng một biểu thức NumPy, không dùng <code>for</code>.</li>
+<li>Bản viết lại vẫn phải tính trên từng cặp số. Vì sao với mảng lớn, nó thường nhanh hơn?</li>
+</ol>
+<aside class="notes">Kết quả [4, 1, 16, 0]. Biểu thức (y - x) ** 2 trả về ndarray. Các phép toán chạy trong mã NumPy đã biên dịch, giảm xử lý bytecode và đối tượng ở mỗi lượt của vòng for Python. Có thể tận dụng SIMD, không cần nhiều luồng để nhanh hơn. Không yêu cầu đo tốc độ hoặc khẳng định NumPy luôn nhanh hơn với mảng bốn phần tử. Không cần giảng mảng trung gian ở đây.</aside>
 </section>
 
 
@@ -216,6 +229,13 @@ c = x * 2
 <section id="strides"><h2>Từ chỉ mục đến ô nhớ</h2>
 <figure class="fig"><img src="img/lecture-03/strides-addressing.svg?v=4" alt="A[2,1] là 33, cách đầu vùng dữ liệu 56 byte: hai bước hàng 24 byte và một bước cột 8 byte."></figure>
 <aside class="notes">Mỗi hàng có 3 số × 8 byte. Xuất phát từ ô 10, đi hai hàng tới ô 30, rồi một cột tới ô 33. Độ lệch tính từ phần tử đầu của mảng đang xét; strides dùng byte, không dùng số phần tử. Tiếp nối đúng ví dụ A[2,1] ở slide trước: từ hàng, cột trên hình sang vị trí trong bộ nhớ. Phần view phía sau sẽ dùng lại cách tính này.</aside>
+</section>
+
+<section><h2>Bài tập 3: tìm vị trí phần tử</h2>
+<p><code>A.shape = (4, 3)</code>, <code>A.strides = (24, 8)</code> (byte).</p>
+<figure class="fig"><img src="img/lecture-03/strides-exercise.svg?v=2" alt="Dãy 10,12,11,20,21,24,30,33,31,40,44,42; mỗi phần tử chiếm 8 byte."></figure>
+<ol><li><code>A[1, 2]</code> cách đầu vùng dữ liệu bao nhiêu byte?</li><li>Phần tử cách đầu vùng dữ liệu 80 byte có giá trị và chỉ mục nào?</li><li>Tạo <code>B = A.astype(np.int32)</code>. Mỗi số còn 4 byte. <code>B.strides</code> bằng bao nhiêu?</li></ol>
+<aside class="notes">40 byte; giá trị 44 tại A[3,1]; strides int32 là (12,4). Hỏi sinh viên vì sao shape không đổi mà stride đổi.</aside>
 </section>
 
 <section id="slice-basics"><h2>Lấy một phần mảng</h2>
@@ -248,12 +268,7 @@ print(B[0])
 <aside class="notes">Nhắc lại strides (24,8) đã dùng để tìm A[2,1]: NumPy vẫn đọc vùng dữ liệu của A, nhưng view chọn điểm bắt đầu, shape và bước dịch riêng. Trong ví dụ này bước cột đổi từ 8 thành 16 byte, bước hàng giữ 24 byte. Chỉ vào bước từ ô 11 sang ô 20. Bước hàng được tính từ đầu hàng, không phải cộng 16 byte liên tục qua cả mảng. Vẽ lưới chỉ mục rồi ánh xạ bằng offset = i × 24 + j × 16.</aside>
 </section>
 
-<section><h2>Bài tập 3: tìm vị trí phần tử</h2>
-<p><code>A.shape = (4, 3)</code>, <code>A.strides = (24, 8)</code> (byte).</p>
-<figure class="fig"><img src="img/lecture-03/strides-exercise.svg?v=2" alt="Dãy 10,12,11,20,21,24,30,33,31,40,44,42; mỗi phần tử chiếm 8 byte."></figure>
-<ol><li><code>A[1, 2]</code> cách đầu vùng dữ liệu bao nhiêu byte?</li><li>Phần tử cách đầu vùng dữ liệu 80 byte có giá trị và chỉ mục nào?</li><li>Tạo <code>B = A.astype(np.int32)</code>. Mỗi số còn 4 byte. <code>B.strides</code> bằng bao nhiêu?</li></ol>
-<aside class="notes">40 byte; giá trị 44 tại A[3,1]; strides int32 là (12,4). Hỏi sinh viên vì sao shape không đổi mà stride đổi.</aside>
-</section>
+
 
 <section><h2>Bài tập 4: xác định các ô của view</h2>
 <pre><code class="language-python" data-trim>
@@ -286,9 +301,49 @@ print(R)
 <aside class="notes">A đang liên tục theo hàng. reshape mặc định đọc theo thứ tự hàng, không phải chuyển vị. Không khẳng định reshape luôn tạo view. Ví dụ transpose rồi reshape(-1) ở notebook cho thấy có thể cần copy. Nguồn: NumPy copies and views.</aside>
 </section>
 
+<section id="check-memory"><h2>Kiểm tra bộ nhớ dùng chung</h2>
+<p><code>np.shares_memory</code> kiểm tra hai mảng có dùng chung phần dữ liệu nào không.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>
+V = A[:, 1:]
+print(np.shares_memory(A, V))
+</code></pre><pre class="jp-output" data-jp-n="8"><code class="language-text" data-trim>
+True
+</code></pre></div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="9"><code class="language-python" data-trim>
+print(np.shares_memory(A, A.T))
+</code></pre><pre class="jp-output" data-jp-n="9"><code class="language-text" data-trim>
+True
+</code></pre></div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="10"><code class="language-python" data-trim>
+C = A.copy()
+print(np.shares_memory(A, C))
+</code></pre><pre class="jp-output" data-jp-n="10"><code class="language-text" data-trim>
+False
+</code></pre></div>
+<aside class="notes">Thuộc tính .base cho biết đối tượng làm nền cho dữ liệu của mảng. Không dùng b.base is a như phép kiểm tra tổng quát: view có thể trỏ thẳng tới mảng gốc sâu hơn. Ví dụ phản chứng nằm trong notebook.</aside>
+</section>
+
 <section id="boolean-selection"><h2>Lọc phần tử bằng điều kiện</h2>
 <figure class="fig"><img src="img/lecture-03/boolean-selection.svg?v=2" alt="A % 2 == 0 đánh dấu các số chẵn; A[mask] trả về [10,12,20,24,30,40,44,42], shape (8,)."></figure>
 <aside class="notes">Lọc bằng mảng bool là một dạng chỉ mục nâng cao. Với mask cùng shape A, kết quả một chiều theo thứ tự hàng và là bản sao. Mask hàng A[:,0]>=30 lại chọn cả hàng, cho shape(2,3); thử thêm ở notebook. Ghép điều kiện bằng & hoặc |, đặt mỗi điều kiện trong ngoặc. Nguồn: https://numpy.org/doc/stable/user/basics.indexing.html#boolean-array-indexing .</aside>
+</section>
+
+<section id="multiple-conditions"><h2>Lọc bằng nhiều điều kiện</h2>
+<p><code>&amp;</code> (và): lấy các số từ 20 đến dưới 40.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="11"><code class="language-python" data-trim>
+mask = (A &gt;= 20) &amp; (A &lt; 40)
+print(A[mask])
+</code></pre><pre class="jp-output" data-jp-n="11"><code class="language-text" data-trim>
+[20 21 24 30 33 31]
+</code></pre></div>
+<p><code>|</code> (hoặc): lấy các số dưới 12 hoặc từ 40 trở lên.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="12"><code class="language-python" data-trim>
+mask = (A &lt; 12) | (A &gt;= 40)
+print(A[mask])
+</code></pre><pre class="jp-output" data-jp-n="12"><code class="language-text" data-trim>
+[10 11 40 44 42]
+</code></pre></div>
+<p>Đặt <strong>mỗi điều kiện trong ngoặc</strong>; dùng <code>&amp;</code>, <code>|</code> thay cho <code>and</code>, <code>or</code>.</p>
 </section>
 
 <section id="index-pairs"><h2>Chọn bằng hai mảng chỉ mục</h2>
@@ -299,6 +354,23 @@ print(R)
 <section id="index-grid"><h2>Chọn các hàng và cột với np.ix_</h2>
 <figure class="fig"><img src="img/lecture-03/index-grid.svg" alt="Chọn cột 1,2 ở mỗi hàng 0,2: kết quả [[12,11],[33,31]], shape (2,2)."></figure>
 <aside class="notes">So với slide trước, yêu cầu bây giờ là lấy cả hai cột ở mỗi hàng đã chọn. np.ix_ tạo các mảng chỉ mục có shape (2,1) và (1,2); cơ chế broadcasting sẽ học sau. Ở đây chỉ cần đọc đúng bốn ô được chọn.</aside>
+</section>
+
+<section id="index-order"><h2>Lặp và đổi thứ tự chỉ mục</h2>
+<p>Lấy hàng 1 hai lần:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="13"><code class="language-python" data-trim>
+print(A[[1, 1], :])
+</code></pre><pre class="jp-output" data-jp-n="13"><code class="language-text" data-trim>
+[[20 21 24]
+ [20 21 24]]
+</code></pre></div>
+<p>Lấy hàng 0, 2; ở mỗi hàng, lấy cột 2 trước cột 0:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="14"><code class="language-python" data-trim>
+print(A[np.ix_([0, 2], [2, 0])])
+</code></pre><pre class="jp-output" data-jp-n="14"><code class="language-text" data-trim>
+[[11 10]
+ [31 30]]
+</code></pre></div>
 </section>
 
 <section id="selection-copy"><h2>Phân biệt view và bản sao</h2>
@@ -313,6 +385,23 @@ V[0, 0] = -1
 <p>Lấy dữ liệu bằng mảng chỉ mục hoặc mask tạo <strong>bản sao</strong>. Lát cắt cơ bản tạo <strong>view</strong>.</p>
 <aside class="notes">Đáp án [10,-1,11]; C và V ban đầu cùng giá trị nhưng không cùng quan hệ bộ nhớ với B. Kiểm chứng bằng np.shares_memory. Phân biệt lấy dữ liệu với gán trực tiếp: B[:,[1,2]]=-9 vẫn ghi vào B; C=B[:,[1,2]] rồi sửa C không ghi vào B. Không khái quát rằng mọi thao tác có chỉ mục nâng cao đều không sửa gốc. Nguồn: NumPy indexing, assigning values to indexed arrays.</aside>
 </section>
+
+<section id="mask-assignment"><h2>Đọc và gán bằng mask</h2>
+<pre><code class="language-python" data-trim>
+mask = A &gt;= 30
+</code></pre>
+<table style="width:100%; table-layout:fixed"><thead><tr><th>Đọc: tạo bản sao</th><th>Gán: sửa trực tiếp A</th></tr></thead><tbody>
+<tr><td><pre><code class="language-python" data-trim>
+B = A[mask]
+</code></pre></td><td><pre><code class="language-python" data-trim>
+A[mask] = -1
+</code></pre></td></tr>
+<tr><td><code>A[mask]</code> đứng một mình hoặc ở vế phải: lấy các giá trị ra mảng mới.</td><td><code>A[mask]</code> ở vế trái phép gán: ghi vào các ô được chọn của <code>A</code>.</td></tr>
+<tr><td>Sửa <code>B</code> không làm đổi <code>A</code>.</td><td>Các ô có giá trị ≥ 30 của <code>A</code> được đổi thành −1.</td></tr>
+</tbody></table>
+<aside class="notes">Đối chiếu thao tác đọc và gán, không chỉ nhìn cú pháp A[mask]. Ở đây mask là mảng bool. Lấy bằng boolean indexing tạo bản sao; gán trực tiếp qua boolean indexing sửa mảng đích. Không suy rộng quy tắc tạo bản sao sang lát cắt cơ bản. Chạy mỗi ví dụ từ dữ liệu A ban đầu; notebook giữ A và minh hoạ bằng mảng riêng.</aside>
+</section>
+
       </section>
       <section>
 <section><h1><span class="text-light">4.</span><br>Broadcasting</h1><p class="text-light">Tính toán với các mảng khác shape.</p></section>
@@ -404,7 +493,11 @@ ket_qua = A + A[:, 0:1]
 <tr><td><code>[40, 50, 60, 70, 80]</code></td><td>60</td><td>60</td></tr>
 <tr><td><code>[40, 50, 60, 70, 380]</code></td><td>120</td><td>60</td></tr>
 </tbody></table>
-<p>Một chỗ ở giá cao kéo trung bình lên 120 USD; bốn chỗ còn lại đều dưới mức này.</p>
+<pre><code class="language-python" data-trim>
+gia = np.array([40, 50, 60, 70, 380])
+np.mean(gia)    # 120.0 — trung bình
+np.median(gia)  #  60.0 — trung vị
+</code></pre>
 <p><strong>Trong báo cáo bài tập lớn, dùng số nào để mô tả mức giá điển hình?</strong></p>
 <aside class="notes">np.mean(gia), np.median(gia). Trung vị là giá trị giữa sau sắp xếp; nếu số phần tử chẵn thì lấy trung bình hai giá trị giữa. Trung vị hữu ích khi mô tả mức giá điển hình của dãy lệch; mean liên hệ với tổng. Giá cao không tự động là dữ liệu sai. Chỉ so sánh giá cùng đơn vị, thời điểm và loại chỗ ở phù hợp; dữ liệu này hoàn toàn giả lập.</aside>
 </section>
@@ -430,15 +523,15 @@ np.std([30, 30, 90, 90])  # 30  (USD)
 </section>
 
 <section><h2>Trừ trung bình của từng hàng</h2>
-<p>Mỗi giá lệch bao nhiêu so với giá trung bình của chính chỗ ở đó?</p><div class="jp-cell"><pre class="jp-input" data-jp-n="14"><code class="language-python" data-trim>
+<p>Mỗi giá lệch bao nhiêu so với giá trung bình của chính chỗ ở đó?</p><div class="jp-cell"><pre class="jp-input" data-jp-n="15"><code class="language-python" data-trim>
 tb_hang = A.mean(axis=1, keepdims=True)
 print(tb_hang.shape)
-</code></pre><pre class="jp-output" data-jp-n="14"><code class="language-text" data-trim>
+</code></pre><pre class="jp-output" data-jp-n="15"><code class="language-text" data-trim>
 (4, 1)
-</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="15"><code class="language-python" data-trim>
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="16"><code class="language-python" data-trim>
 chenh_lech = A - tb_hang
 print(chenh_lech.round(2))
-</code></pre><pre class="jp-output" data-jp-n="15"><code class="language-text" data-trim>
+</code></pre><pre class="jp-output" data-jp-n="16"><code class="language-text" data-trim>
 [[-1.    1.    0.  ]
  [-1.67 -0.67  2.33]
  [-1.33  1.67 -0.33]
