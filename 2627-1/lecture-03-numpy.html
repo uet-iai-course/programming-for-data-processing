@@ -328,6 +328,22 @@ False
 <aside class="notes">Lọc bằng mảng bool là một dạng chỉ mục nâng cao. Với mask cùng shape A, kết quả một chiều theo thứ tự hàng và là bản sao. Mask hàng A[:,0]>=30 lại chọn cả hàng, cho shape(2,3); thử thêm ở notebook. Ghép điều kiện bằng & hoặc |, đặt mỗi điều kiện trong ngoặc. Nguồn: https://numpy.org/doc/stable/user/basics.indexing.html#boolean-array-indexing .</aside>
 </section>
 
+<section id="mask-assignment"><h2>Đọc và gán bằng mask</h2>
+<pre><code class="language-python" data-trim>
+mask = A &gt;= 30
+</code></pre>
+<table style="width:100%; table-layout:fixed"><thead><tr><th>Đọc: tạo bản sao</th><th>Gán: sửa trực tiếp A</th></tr></thead><tbody>
+<tr><td><pre><code class="language-python" data-trim>
+B = A[mask]
+</code></pre></td><td><pre><code class="language-python" data-trim>
+A[mask] = -1
+</code></pre></td></tr>
+<tr><td><code>A[mask]</code> đứng một mình hoặc ở vế phải: lấy các giá trị ra mảng mới.</td><td><code>A[mask]</code> ở vế trái phép gán: ghi vào các ô được chọn của <code>A</code>.</td></tr>
+<tr><td>Sửa <code>B</code> không làm đổi <code>A</code>.</td><td>Các ô có giá trị ≥ 30 của <code>A</code> được đổi thành −1.</td></tr>
+</tbody></table>
+<aside class="notes">Đối chiếu thao tác đọc và gán, không chỉ nhìn cú pháp A[mask]. Ở đây mask là mảng bool. Lấy bằng boolean indexing tạo bản sao; gán trực tiếp qua boolean indexing sửa mảng đích. Không suy rộng quy tắc tạo bản sao sang lát cắt cơ bản. Chạy mỗi ví dụ từ dữ liệu A ban đầu; notebook giữ A và minh hoạ bằng mảng riêng.</aside>
+</section>
+
 <section id="multiple-conditions"><h2>Lọc bằng nhiều điều kiện</h2>
 <p><code>&amp;</code> (và): lấy các số từ 20 đến dưới 40.</p>
 <div class="jp-cell"><pre class="jp-input" data-jp-n="11"><code class="language-python" data-trim>
@@ -351,11 +367,6 @@ print(A[mask])
 <aside class="notes">Đọc từng cặp chỉ mục cùng vị trí. Hai danh sách này chọn hai phần tử, không chọn bốn giao điểm. Có thể đổi thứ tự hoặc lặp lại chỉ mục. Nguồn: https://numpy.org/doc/stable/user/basics.indexing.html#integer-array-indexing .</aside>
 </section>
 
-<section id="index-grid"><h2>Chọn các hàng và cột với np.ix_</h2>
-<figure class="fig"><img src="img/lecture-03/index-grid.svg" alt="Chọn cột 1,2 ở mỗi hàng 0,2: kết quả [[12,11],[33,31]], shape (2,2)."></figure>
-<aside class="notes">So với slide trước, yêu cầu bây giờ là lấy cả hai cột ở mỗi hàng đã chọn. np.ix_ tạo các mảng chỉ mục có shape (2,1) và (1,2); cơ chế broadcasting sẽ học sau. Ở đây chỉ cần đọc đúng bốn ô được chọn.</aside>
-</section>
-
 <section id="index-order"><h2>Lặp và đổi thứ tự chỉ mục</h2>
 <p>Lấy hàng 1 hai lần:</p>
 <div class="jp-cell"><pre class="jp-input" data-jp-n="13"><code class="language-python" data-trim>
@@ -364,14 +375,37 @@ print(A[[1, 1], :])
 [[20 21 24]
  [20 21 24]]
 </code></pre></div>
-<p>Lấy hàng 0, 2; ở mỗi hàng, lấy cột 2 trước cột 0:</p>
+<p>Lấy ô (2, 2) trước ô (0, 1):</p>
 <div class="jp-cell"><pre class="jp-input" data-jp-n="14"><code class="language-python" data-trim>
-print(A[np.ix_([0, 2], [2, 0])])
+print(A[[2, 0], [2, 1]])
 </code></pre><pre class="jp-output" data-jp-n="14"><code class="language-text" data-trim>
-[[11 10]
- [31 30]]
+[31 12]
 </code></pre></div>
 </section>
+
+<section id="index-grid"><h2>Chọn các hàng và cột với np.ix_</h2>
+<figure class="fig"><img src="img/lecture-03/index-grid.svg" alt="Chọn cột 1,2 ở mỗi hàng 0,2: kết quả [[12,11],[33,31]], shape (2,2)."></figure>
+<aside class="notes">Khác với ghép từng cặp chỉ mục, yêu cầu bây giờ là lấy cả hai cột ở mỗi hàng đã chọn. np.ix_ tạo các mảng chỉ mục có shape (2,1) và (1,2); cơ chế broadcasting sẽ học sau. Ở đây chỉ cần đọc đúng bốn ô được chọn.</aside>
+</section>
+
+<section id="ix-assignment"><h2>Đọc và gán với np.ix_</h2>
+<p>Chọn cột 1, 2 ở mỗi hàng 0, 2:</p>
+<pre><code class="language-python" data-trim>
+chon = np.ix_([0, 2], [1, 2])
+</code></pre>
+<table style="width:100%; table-layout:fixed"><thead><tr><th>Đọc: tạo bản sao</th><th>Gán: sửa trực tiếp A</th></tr></thead><tbody>
+<tr><td><pre><code class="language-python" data-trim>
+B = A[chon]
+B[:] = -1
+</code></pre></td><td><pre><code class="language-python" data-trim>
+A[chon] = -1
+</code></pre></td></tr>
+<tr><td><code>A</code> giữ nguyên.</td><td>Bốn ô chứa 12, 11, 33, 31 đổi thành −1.</td></tr>
+</tbody></table>
+<aside class="notes">Chạy hai ví dụ từ A ban đầu. np.ix_ chỉ tạo bộ mảng chỉ mục; A[chon] khi đọc mới tạo bản sao dữ liệu. Gán A[chon] = -1 ghi trực tiếp vào A, giống mask. Hỏi thêm: A[chon][:] = -1 có sửa A không? Không, bước A[chon] tạo bản sao rồi mới gán lên bản sao đó. Không đồng nhất chỉ mục nâng cao với view, dù lựa chọn cụ thể đôi khi có thể mô tả bằng lát cắt. Nguồn: https://numpy.org/doc/stable/user/basics.indexing.html#assigning-values-to-indexed-arrays .</aside>
+</section>
+
+
 
 <section id="selection-copy"><h2>Phân biệt view và bản sao</h2>
 <pre><code class="language-python" data-trim>
@@ -382,25 +416,15 @@ C[0, 0] = -9
 V[0, 0] = -1
 </code></pre>
 <p><strong>B[0] có những giá trị nào sau đoạn code này?</strong></p>
-<p>Lấy dữ liệu bằng mảng chỉ mục hoặc mask tạo <strong>bản sao</strong>. Lát cắt cơ bản tạo <strong>view</strong>.</p>
+<table style="font-size:.8em"><thead><tr><th>Thao tác</th><th>Kết quả</th></tr></thead><tbody>
+<tr><td>Lấy lát cắt cơ bản</td><td><strong>View</strong>, dùng chung dữ liệu</td></tr>
+<tr><td>Lấy bằng mảng chỉ mục, mask, <code>np.ix_</code></td><td><strong>Bản sao</strong>, dữ liệu riêng</td></tr>
+<tr><td>Gán trực tiếp: <code>B[...] = ...</code></td><td><strong>Sửa B</strong> với cả các cách chọn trên</td></tr>
+</tbody></table>
 <aside class="notes">Đáp án [10,-1,11]; C và V ban đầu cùng giá trị nhưng không cùng quan hệ bộ nhớ với B. Kiểm chứng bằng np.shares_memory. Phân biệt lấy dữ liệu với gán trực tiếp: B[:,[1,2]]=-9 vẫn ghi vào B; C=B[:,[1,2]] rồi sửa C không ghi vào B. Không khái quát rằng mọi thao tác có chỉ mục nâng cao đều không sửa gốc. Nguồn: NumPy indexing, assigning values to indexed arrays.</aside>
 </section>
 
-<section id="mask-assignment"><h2>Đọc và gán bằng mask</h2>
-<pre><code class="language-python" data-trim>
-mask = A &gt;= 30
-</code></pre>
-<table style="width:100%; table-layout:fixed"><thead><tr><th>Đọc: tạo bản sao</th><th>Gán: sửa trực tiếp A</th></tr></thead><tbody>
-<tr><td><pre><code class="language-python" data-trim>
-B = A[mask]
-</code></pre></td><td><pre><code class="language-python" data-trim>
-A[mask] = -1
-</code></pre></td></tr>
-<tr><td><code>A[mask]</code> đứng một mình hoặc ở vế phải: lấy các giá trị ra mảng mới.</td><td><code>A[mask]</code> ở vế trái phép gán: ghi vào các ô được chọn của <code>A</code>.</td></tr>
-<tr><td>Sửa <code>B</code> không làm đổi <code>A</code>.</td><td>Các ô có giá trị ≥ 30 của <code>A</code> được đổi thành −1.</td></tr>
-</tbody></table>
-<aside class="notes">Đối chiếu thao tác đọc và gán, không chỉ nhìn cú pháp A[mask]. Ở đây mask là mảng bool. Lấy bằng boolean indexing tạo bản sao; gán trực tiếp qua boolean indexing sửa mảng đích. Không suy rộng quy tắc tạo bản sao sang lát cắt cơ bản. Chạy mỗi ví dụ từ dữ liệu A ban đầu; notebook giữ A và minh hoạ bằng mảng riêng.</aside>
-</section>
+
 
       </section>
       <section>
