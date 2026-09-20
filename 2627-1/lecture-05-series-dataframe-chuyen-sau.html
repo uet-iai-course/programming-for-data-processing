@@ -13,501 +13,583 @@
   <link rel="stylesheet" href="plugin/highlight/zenburn.css">
   <link rel="stylesheet" href="lecture-style.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<style>
+.reveal .concept-grid {display:flex;gap:28px;align-items:flex-start;margin:24px 0;}
+.reveal .concept-grid > div {flex:1;min-width:0;}
+.reveal .concept-grid table {font-size:.82em;width:100%;}
+.reveal .concept-grid h4 {color:#1E93AB;text-transform:none;}
+.reveal .concept-grid .arrow {flex:0 0 40px;color:#E8890C;text-align:center;font-size:1.5em;}
+.reveal .data-table {font-size:.85em;margin:24px auto;}
+.reveal .data-table th {color:#1E93AB;}
+.reveal .row-a {background:#e5f2f5;}
+.reveal .row-b {background:#fcf0df;}
+.reveal .row-c {background:#e8f3eb;}
+</style>
 </head>
 
 <body>
   <div class="reveal">
     <div class="slides">
+<section>
 
-      <!-- ====== Mở bài ====== -->
-      <section>
-        <section>
-          <h1>Lập trình <br /> xử lý dữ liệu</h1>
-          <div>
-            <p>Học kì 1, năm học 2026–2027</p>
-            <p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
-          </div>
-        </section>
+<section><h1>Lập trình<br/>xử lý dữ liệu</h1><p>Học kì 1, năm học 2026–2027</p><p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p></section>
 
-        <section>
-          <h1>
-            <span class="text-light">Bài 5</span>
-            <br>
-            Series &amp; DataFrame chuyên sâu
-          </h1>
-          <p class="text-light">Index, apply, groupby, ghép nhiều bảng.</p>
-        </section>
+<section><h1><span class="text-light">Bài 5</span><br/>Series &amp; DataFrame<br/>chuyên sâu</h1></section>
 
-        <section>
-          <h2>Bài trước</h2>
-          <ul>
-            <li>Thói quen 5 bước, lọc bool, <code>loc</code>, cột mới, thống kê cơ bản.</li>
-            <li>Đã giới thiệu nhanh <code>groupby</code>, bài này sẽ học kỹ.</li>
-          </ul>
-        </section>
+<section id="previous"><h2>Bài trước</h2>
+<p>Đã biết chọn hàng, chọn cột, lọc điều kiện và sửa bảng bằng <code>loc</code>.</p><p>Bài này mở rộng sang phép tính giữa các Series, tính theo nhóm và ghép nhiều bảng.</p></section>
 
-        <section>
-          <h2>Tổng quan</h2>
-          <ol>
-            <li>Index là gì?</li>
-            <li>Biến đổi giá trị: map &amp; apply</li>
-            <li>groupby — chia để trị</li>
-            <li>Ghép bảng: concat &amp; merge</li>
-            <li>Làm việc với AI thì sao?</li>
-          </ol>
-          <p class="text-light">Dữ liệu gồm 18.534 phòng tại Santiago và một số bảng phụ.</p>
-        </section>
-      </section>
+<section id="agenda"><h2>Tổng quan</h2>
+<ol><li>Khớp dữ liệu theo nhãn</li><li>Áp dụng hàm lên dữ liệu</li><li>Tính theo nhóm</li><li>Ghép bảng</li><li>Viết phân tích thành một chuỗi</li></ol></section>
 
-      <!-- ====== Phần 1: Index ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">1.</span><br>Index là gì?</h1>
-          <p class="text-light">Index xác định danh tính của từng dòng, không phải số thứ tự.</p>
-        </section>
+</section>
 
-        <section data-jp-reset>
-          <h2>set_index: dùng một cột làm index</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-d = df.set_index("id")
+<section>
 
-d.loc[978070332077815549, ["neighbourhood", "price"]]
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-neighbourhood      Ñuñoa
-price            45647.0
-            </code></pre>
-          </div>
-          <p>Index là khoá tra cứu: tìm phòng theo ID thay vì nhớ vị trí của dòng.</p>
-          <p class="text-light">ID Airbnb từ năm 2022 dài 18–19 chữ số — 82% listing Santiago
-            thuộc dạng này; ID cũ chỉ có 5–8 chữ số.</p>
-        </section>
+<section><h1><span class="text-light">1.</span><br>Khớp dữ liệu <br> theo nhãn</h1><p class="text-light">Tính chênh lệch giá khi hai bảng không cùng thứ tự.</p></section>
 
-        <section data-jp-reset>
-          <h2>loc theo nhãn — iloc theo vị trí</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-s = pd.Series([10, 20, 30], index=[2, 0, 1])
+<section id="predict-align"><h2>Tính chênh lệch giá</h2>
+<p>Hai Series lưu giá qua hai lần thu thập (giả lập, USD/đêm).</p><div class="concept-grid"><div><h4>gia_cu</h4><table class="data-table"><thead><tr><th>Chỉ mục</th><th>Giá</th></tr></thead><tbody><tr class="row-a"><td>P1</td><td>100</td></tr><tr class="row-b"><td>P2</td><td>80</td></tr></tbody></table></div><div><h4>gia_moi</h4><table class="data-table"><thead><tr><th>Chỉ mục</th><th>Giá</th></tr></thead><tbody><tr class="row-b"><td>P2</td><td>90</td></tr><tr class="row-a"><td>P1</td><td>110</td></tr></tbody></table></div></div><pre><code class="language-python" data-trim>
+gia_moi - gia_cu                        # Trừ hai Series
+gia_moi.to_numpy() - gia_cu.to_numpy()  # Bỏ nhãn, trừ hai mảng
+</code></pre><p>Hai phép trừ có cho cùng giá trị không?</p><aside class="notes">Yêu cầu dự đoán hai kết quả trước khi chạy. to_numpy() lấy các giá trị theo thứ tự hiện tại, không mang chỉ mục sang mảng NumPy. Phép trừ Series ghép P1 với P1, P2 với P2; phép trừ mảng ghép 90 với 100, 110 với 80. Hỏi thêm: nếu hai Series tình cờ cùng thứ tự, liệu ví dụ kiểm tra đó có phát hiện được lỗi bỏ nhãn không? Màu theo mã chỗ ở, không theo vị trí hàng.</aside></section>
 
-s.loc[2], s.iloc[2]
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="2"><code class="language-text" data-trim>
-(10, 30)
-            </code></pre>
-          </div>
-          <p><span class="inline-code">loc[2]</span> = dòng <em>mang nhãn</em> 2;
-            <span class="inline-code">iloc[2]</span> = dòng <em>thứ ba</em>.
-            Khi index là số nhưng không phải 0, 1, 2, …, cần phân biệt hai cách truy cập này.</p>
-        </section>
+<section id="alignment"><h2>Trừ các giá có cùng nhãn</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
+gia_cu = pd.Series([100, 80], index=[&quot;P1&quot;, &quot;P2&quot;])
+gia_moi = pd.Series([90, 110], index=[&quot;P2&quot;, &quot;P1&quot;])
+print(gia_moi - gia_cu)
+</code></pre><pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
+P1    10
+P2    10
+dtype: int64
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
+print(gia_moi.to_numpy() - gia_cu.to_numpy())
+</code></pre><pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
+[-10  30]
+</code></pre></div><p>Series trừ theo <strong>nhãn</strong>; mảng NumPy trừ theo <strong>vị trí</strong>.</p><aside class="notes">Liên hệ NumPy: mảng chỉ dùng vị trí, còn phép toán giữa các Series căn chỉnh theo nhãn. Kết quả ở đây dùng mã làm nhãn nên ghép đúng chỗ ở. pandas không tự hiểu ý nghĩa mã nếu người dùng gắn nhãn sai. Tách thành hai ô để hai kết quả không dính vào nhau.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Alignment: phép toán tự khớp theo index</h2>
-          <p>Giá trung vị 2 snapshot, các quận <em>không cùng thứ tự</em>:</p>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-t9  = pd.Series({"Centro": 50, "Ñuñoa": 40, "Vitacura": 120})
-t12 = pd.Series({"Ñuñoa": 44, "Centro": 55, "La Reina": 35})
-
-((t12 - t9) / t9 * 100).round(1)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
-Centro      10.0
-La Reina     NaN
-Vitacura     NaN
-Ñuñoa       10.0
-            </code></pre>
-          </div>
-          <p>pandas ghép <em>Centro với Centro, Ñuñoa với Ñuñoa</em> theo nhãn, không theo vị trí.</p>
-        </section>
-
-        <section>
-          <h2>Alignment vừa có lợi, vừa có bẫy</h2>
-          <div class="two-col">
-            <div>
-              <h4 class="text-green">Lợi</h4>
-              <ul>
-                <li>Các giá trị cùng nhãn được ghép với nhau dù thứ tự dòng khác nhau.</li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="text-red">Bẫy</h4>
-              <ul>
-                <li>Nhãn chỉ có ở một Series → kết quả <code>NaN</code> mà không báo lỗi
-                  (Vitacura, La Reina ở slide trước).</li>
-              </ul>
-            </div>
-          </div>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Sau mỗi phép toán giữa hai Series/DataFrame, hãy đếm <code>isna()</code>.
-            NaN mới xuất hiện = có nhãn không khớp.
-          </div>
-        </section>
-
-        <section data-jp-reset>
-          <h2>reset_index: trả index về làm cột</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-gia_quan = df.groupby("neighbourhood")["price"].median()
-gia_quan.reset_index().head(2)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>
-  neighbourhood    price
-0     Cerrillos  45500.0
-1   Cerro Navia  36992.0
-            </code></pre>
-          </div>
-          <p>groupby trả kết quả với khoá nằm ở index. Dùng <span class="inline-code">reset_index()</span>
-            để đưa khoá về lại thành cột khi cần merge, vẽ hoặc ghi file.</p>
-        </section>
-      </section>
-
-      <!-- ====== Phần 2: map & apply ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">2.</span><br>Biến đổi giá trị:<br>map &amp; apply</h1>
-          <p class="text-light">Dùng map hoặc apply khi phép toán vector hoá không diễn đạt được yêu cầu.</p>
-        </section>
-
-        <section>
-          <h2>Ba cách biến đổi một cột</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Nấc</th>
-                <th>Cú pháp</th>
-                <th>Tốc độ</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>1. Vector hoá có sẵn</td>
-                <td><span class="inline-code">df["price"] * 28</span>, <span class="inline-code">.str.lower()</span></td>
-                <td>⚡⚡⚡</td>
-              </tr>
-              <tr>
-                <td>2. <strong>map</strong> — hàm/dict theo từng giá trị</td>
-                <td><span class="inline-code">s.map(clean_price)</span></td>
-                <td>⚡⚡</td>
-              </tr>
-              <tr>
-                <td>3. <strong>apply</strong> theo hàng</td>
-                <td><span class="inline-code">df.apply(f, axis=1)</span></td>
-                <td>🐌</td>
-              </tr>
-            </tbody>
-          </table>
-          <p>Ưu tiên <strong>phép toán vector hoá có sẵn</strong>; chỉ dùng map hoặc apply khi
-            phép toán đó không diễn đạt được yêu cầu.</p>
-        </section>
-
-        <section data-jp-reset>
-          <h2>map với dict: đổi tên hàng loạt</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-viet_hoa = {"Entire home/apt": "Nguyên căn",
-            "Private room": "Phòng riêng",
-            "Shared room": "Phòng chung",
-            "Hotel room": "Khách sạn"}
-df["loai"] = df["room_type"].map(viet_hoa)
-df["loai"].value_counts().head(2)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-loai
-Nguyên căn     15004
-Phòng riêng     3413
-            </code></pre>
-          </div>
-          <p><code>map</code> với dict thường dùng để chuẩn hoá nhãn hoặc gom nhóm giá trị.
-            Giá trị ngoài dict trở thành <code>NaN</code> và cần được kiểm tra.</p>
-        </section>
-
-        <section data-jp-reset>
-          <h2>map với hàm</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-gia_chuoi = pd.Series(["$45,647.00", "N/A", "$19,856.00"])
-
-gia_chuoi.map(clean_price)      # hàm bài 2, chạy cả cột
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-0    45647.0
-1        NaN
-2    19856.0
+<section id="missing-label"><h2>Khi một bên thiếu giá</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
+gia_moi = pd.Series([90, 110, 70], index=[&quot;P2&quot;, &quot;P1&quot;, &quot;P3&quot;])
+print(gia_moi - gia_cu)
+</code></pre><pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
+P1    10.0
+P2    10.0
+P3     NaN
 dtype: float64
-            </code></pre>
-          </div>
-          <p>Bảng <span class="inline-code">listings</span> đầy đủ có cột giá ở dạng chuỗi này;
-            hàm <code>clean_price</code> từ bài 2 có thể được dùng lại.</p>
-        </section>
+</code></pre></div><p>Phép trừ lấy hợp nhãn: kết quả có đủ P1, P2, P3.</p><p>P3 chưa có giá cũ nên chưa tính được.</p><aside class="notes">NaN ở P3 phát sinh vì thiếu toán hạng, không phải giá mới bị thiếu. Không tự điền giá cũ bằng 0. Dữ liệu vẫn là giả lập USD/đêm.</aside></section>
 
-        <section data-jp-reset>
-          <h2>apply theo hàng</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-def diem_hap_dan(r):
-    if pd.isna(r["price"]) or r["price"] == 0:
-        return None
-    return r["number_of_reviews_ltm"] / r["price"] * 10_000
+<section id="set-index"><h2>Đưa mã chỗ ở vào chỉ mục</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
+phong = pd.DataFrame({&quot;id&quot;: [&quot;P1&quot;, &quot;P2&quot;, &quot;P3&quot;],
+                      &quot;gia&quot;: [100, 80, 50]})
+phong = phong.set_index(&quot;id&quot;)
+print(phong)
+</code></pre><pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>
+    gia
+id
+P1  100
+P2   80
+P3   50
+</code></pre></div><p><code>set_index("id")</code> dùng cột mã làm nhãn của hàng.</p><p><code>set_index</code> không kiểm mã lặp: hỏi <code>phong.index.is_unique</code> hoặc dùng <code>verify_integrity=True</code>.</p><aside class="notes">Bảng giả lập mới, đơn vị USD/đêm. Mục đích là để gán Series theo mã ở slide sau. Bảng này có mỗi mã một lần nên is_unique trả True. Ví dụ chỉ mục lặp và verify_integrity nằm trong phần tự học notebook.</aside></section>
 
-df["hap_dan"] = df.apply(diem_hap_dan, axis=1)
-            </code></pre>
-          </div>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            <code>apply(axis=1)</code> gọi hàm Python cho <em>từng dòng</em> nên chậm hơn vector hoá.
-            Ví dụ trên có thể viết thành một biểu thức vector:
-            <code>df["number_of_reviews_ltm"] / df["price"] * 1e4</code>. Chỉ dùng apply khi
-            logic không thể biểu diễn rõ ràng bằng phép toán vector hoá.
-          </div>
-        </section>
-      </section>
+<section id="assign-align"><h2>Gán cột cũng khớp theo nhãn</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
+gia_cap_nhat = pd.Series([90, 110], index=[&quot;P2&quot;, &quot;P1&quot;])
+phong[&quot;gia_moi&quot;] = gia_cap_nhat
+print(phong)
+</code></pre><pre class="jp-output" data-jp-n="5"><code class="language-text" data-trim>
+    gia  gia_moi
+id
+P1  100    110.0
+P2   80     90.0
+P3   50      NaN
+</code></pre></div><p>Phép gán căn theo nhãn sẵn có của bảng, không lấy hợp nhãn như phép trừ.</p><aside class="notes">P3 không có trong Series nên nhận NaN. Chỉ mục id của bảng và chỉ mục không có tên của Series vẫn ghép được vì giá trị nhãn trùng; tên của chỉ mục không phải khoá ghép. Không dùng .values hoặc .to_numpy để né nhãn khi nhãn xác định đối tượng.</aside></section>
 
-      <!-- ====== Phần 3: groupby ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">3.</span><br>groupby — chia để trị</h1>
-          <p class="text-light">Các câu hỏi "theo từng nhóm" thường được biểu diễn bằng groupby.</p>
-        </section>
+<section id="exercise-alignment"><h2>Bài tập 1: Gán đúng phí</h2>
+<p>Bảng <code>phong</code> dùng mã chỗ ở làm chỉ mục. Phí dọn dẹp (USD) được cung cấp riêng:</p>
+<pre><code class="language-python" data-trim>
+ma_cho_o = ["P3", "P1", "P2"]
+phi = [20, 10, 30]
+</code></pre>
+<p>Thêm cột <code>phi</code> vào <code>phong</code> sao cho phí luôn khớp với mã chỗ ở, kể cả khi thứ tự hàng của bảng thay đổi.</p><aside class="notes">Lời giải: phong["phi"] = pd.Series(phi, index=ma_cho_o). Kết quả theo mã: P1=10, P2=30, P3=20. Kiểm chứng bằng cách đảo thứ tự hàng của phong rồi chạy lại phép gán. Không gợi ý API trên slide: sinh viên tự chọn cách giữ quan hệ giữa mã và phí. Chấp nhận cách khác nếu khớp đúng theo mã và không phụ thuộc thứ tự hàng.</aside></section>
 
-        <section>
-          <h2>Cơ chế split–apply–combine</h2>
-          <figure class="fig">
-            <img src="img/lecture-05/split-apply-combine.svg" alt="Sơ đồ split-apply-combine" style="width:95%">
-            <figcaption class="caption">groupby chia bảng theo khoá, áp phép tính cho từng nhóm rồi ghép kết quả.
-              Toàn bộ thao tác được biểu diễn trong một câu lệnh.</figcaption>
-          </figure>
-        </section>
+</section>
 
-        <section data-jp-reset>
-          <h2>Nhiều khoá: nhóm lồng nhau</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-df.groupby(["neighbourhood", "room_type"])["price"].median().head(4)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-neighbourhood  room_type
-Cerrillos      Entire home/apt    52116.0
-               Private room       29100.0
-               Shared room        40169.0
-Cerro Navia    Entire home/apt    51261.0
-            </code></pre>
-          </div>
-          <p>Kết quả mang <strong>MultiIndex</strong> (nhãn hai tầng). Có thể dùng
-            <span class="inline-code">reset_index()</span> nếu muốn thao tác với các khoá như cột thông thường.</p>
-        </section>
+<section>
 
-        <section data-jp-reset>
-          <h2>agg đặt tên: thống kê + cỡ nhóm đi cùng nhau</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-tk = df.groupby("neighbourhood")["price"].agg(
-    trung_vi="median", so_phong="size")
+<section><h1><span class="text-light">2.</span><br>Áp dụng hàm <br> lên dữ liệu</h1><p class="text-light">Tra phí theo loại chỗ ở, rồi tính tiền cho mỗi hàng.</p></section>
 
-tk[tk["so_phong"] >= 500].nlargest(3, "trung_vi")
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-               trung_vi  so_phong
-neighbourhood
-Lo Barnechea   426230.0       824
-Las Condes      97460.0      2862
-Providencia     72845.0      2997
-            </code></pre>
-          </div>
-          <p>Bài học từ bài 4: lọc <em>cỡ nhóm ≥ 500</em> trước khi xếp hạng để tránh
-            kết luận dựa trên nhóm chỉ có vài phòng.</p>
-        </section>
+<section id="mapping-input"><h2>Bảng chỗ ở và bảng mã phí</h2>
+<div class="concept-grid"><div><h4>bang</h4><table class="data-table"><thead><tr><th>Chỉ mục</th><th>loai</th><th>gia</th></tr></thead><tbody><tr><td>P1</td><td>Nguyên căn</td><td>100</td></tr><tr><td>P2</td><td>Phòng riêng</td><td>80</td></tr><tr><td>P3</td><td>Khác</td><td>60</td></tr></tbody></table></div><div><h4>phi_theo_loai</h4><table class="data-table"><thead><tr><th>loai</th><th>phí</th></tr></thead><tbody><tr><td>Nguyên căn</td><td>20</td></tr><tr><td>Phòng riêng</td><td>10</td></tr></tbody></table></div></div><p>Giá theo USD/đêm, phí dọn dẹp thu một lần. Tra phí cho từng hàng:</p><pre><code class="language-python" data-trim>
+bang["phi"] = bang["loai"].map(phi_theo_loai)
+</code></pre><p>Hàng P3 mang loại “Khác”: cột <code>phi</code> nhận gì?</p><aside class="notes">Yêu cầu dự đoán trước khi sang slide sau. Loại “Khác” cố ý không có trong bảng mã: đây là tình huống thường gặp khi bảng mã được viết tay còn dữ liệu thì không. Nhắc lại khác biệt với phần 1: map tra theo giá trị của cột loai, còn phép gán Series khớp theo chỉ mục.</aside></section>
 
-        <section data-jp-reset>
-          <h2>transform: kết quả nhóm quay về từng dòng</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-trung_vi_quan = df.groupby("neighbourhood")["price"].transform("median")
-df["he_so_gia"] = df["price"] / trung_vi_quan
+<section id="mapping"><h2>Tra phí theo loại chỗ ở</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>
+phi_theo_loai = {&quot;Nguyên căn&quot;: 20, &quot;Phòng riêng&quot;: 10}
+bang[&quot;phi&quot;] = bang[&quot;loai&quot;].map(phi_theo_loai)
+print(bang[[&quot;loai&quot;, &quot;phi&quot;]])
+</code></pre><pre class="jp-output" data-jp-n="6"><code class="language-text" data-trim>
+           loai   phi
+P1   Nguyên căn  20.0
+P2  Phòng riêng  10.0
+P3         Khác   NaN
+</code></pre></div><p><code>map</code> tra từng giá trị trong bảng mã. “Khác” chưa có mức phí nên nhận NaN.</p><aside class="notes">Chưa có mức phí không có nghĩa miễn phí. Hỏi lớp xem nên điền 0, điền mức trung bình hay giữ NaN — câu trả lời phụ thuộc nghiệp vụ, không phải kỹ thuật. Bảng bang có ba giá P1=100, P2=80, P3=60 USD/đêm; notebook có ô tạo bảng đầy đủ.</aside></section>
 
-df[df["he_so_gia"] > 20].shape[0]    # đắt gấp hơn 20 lần trung vị quận mình
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="3"><code class="language-text" data-trim>
-23
-            </code></pre>
-          </div>
-          <p><code>agg</code> trả một dòng mỗi nhóm; <code>transform</code> trả
-            <strong>đúng độ dài bảng gốc</strong> — để so từng dòng với "chuẩn" của nhóm nó.
-            23 phòng có hệ số lớn hơn 20 là các ứng viên ngoại lai (outlier) cần kiểm tra.</p>
-        </section>
+<section id="apply-row"><h2>Viết hàm tính tiền cho mỗi phòng</h2>
+<p>Tiền ba đêm = 3 × giá mỗi đêm + phí dọn dẹp.</p><table class="data-table"><thead><tr><th>Chỉ mục</th><th>gia</th><th>phi</th></tr></thead><tbody><tr><td>P1</td><td>100</td><td>20</td></tr><tr><td>P2</td><td>80</td><td>10</td></tr><tr><td>P3</td><td>60</td><td>NaN</td></tr></tbody></table><pre><code class="language-python" data-trim>
+def tien_ba_dem(hang):
+    return 3 * hang[&quot;gia&quot;] + hang[&quot;phi&quot;]
+</code></pre><aside class="notes">Bảng bang dùng dữ liệu từ map; đây là lần đầu cần đồng thời gia và phi. Hàm nhận một hàng và trả một số. Tính tay P1=320, P2=250; P3 chưa tính được vì thiếu phí. Ở bước này chưa gọi hàm. Nếu truyền bang.loc["P1"] vào hàm thì được 320. Không cần lambda để giới thiệu apply.</aside></section>
 
-        <section data-jp-reset>
-          <h2>pivot_table: bảng chéo hai chiều</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-df.pivot_table(values="price", index="neighbourhood",
-               columns="room_type", aggfunc="median")
-            </code></pre>
-            <pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>
-room_type      Entire home/apt  Private room
-neighbourhood
-Las Condes            106129.0       40366.0
-Providencia            81709.0       38400.0
-Santiago               49352.0       31250.0
-            </code></pre>
-          </div>
-          <p>pivot_table = groupby hai khoá + trải một khoá ra thành cột. Bảng "quận × loại phòng"
-            là định dạng phổ biến trong báo cáo.</p>
-        </section>
+<section id="apply"><h2>Gọi hàm cho từng hàng</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>
+print(bang.apply(tien_ba_dem, axis=1))
+</code></pre><pre class="jp-output" data-jp-n="7"><code class="language-text" data-trim>
+P1    320.0
+P2    250.0
+P3      NaN
+dtype: float64
+</code></pre></div><table class="data-table"><thead><tr><th>Lần gọi</th><th>Giá trị trả về</th></tr></thead><tbody><tr><td>P1: 3 × 100 + 20</td><td>320</td></tr><tr><td>P2: 3 × 80 + 10</td><td>250</td></tr><tr><td>P3: 3 × 60 + NaN</td><td>NaN</td></tr></tbody></table><p><code>axis=1</code>: mỗi lần gọi, hàm nhận một hàng dưới dạng Series.</p><aside class="notes">Ba hàng tạo Series kết quả ba phần tử, giữ chỉ mục P1/P2/P3. Hàm vẫn được gọi lần lượt cho các hàng; apply không tự biến hàm Python thành phép tính vector hoá. axis=0 nhận từng cột, có ô minh hoạ trong phần tự học của notebook.</aside></section>
 
-        <section>
-          <h2>Khi nào dùng groupby?</h2>
-          <div class="question-box">
-            <div class="question-title">Hiểu yêu cầu, nhận dạng</div>
-            <div class="question-content">
-              Khi yêu cầu có dạng <em>"…theo từng quận / mỗi loại phòng / hàng tháng…"</em>,
-              hãy nghĩ đến <span class="inline-code">groupby(khoá)[cột].phép_tính()</span>.
-            </div>
-          </div>
-        </section>
-      </section>
+<section id="column-expression"><h2>Tính trực tiếp trên các cột</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>
+print(3 * bang[&quot;gia&quot;] + bang[&quot;phi&quot;])
+</code></pre><pre class="jp-output" data-jp-n="8"><code class="language-text" data-trim>
+P1    320.0
+P2    250.0
+P3      NaN
+dtype: float64
+</code></pre></div><p>Công thức này viết được bằng phép toán trên cột nên chưa cần <code>apply</code>.</p><aside class="notes">Đối chiếu kết quả với slide trước: cùng 320, 250, NaN. Với phép tính đơn giản trên cột, viết trực tiếp thể hiện công thức rõ hơn và tránh gọi hàm Python cho từng hàng. apply hữu ích khi đã có hàm xử lý một hàng.</aside></section>
 
-      <!-- ====== Phần 4: concat & merge ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">4.</span><br>Ghép bảng:<br>concat &amp; merge</h1>
-          <p class="text-light">Dữ liệu thực tế thường được phân tách thành nhiều bảng.</p>
-        </section>
+<section id="apply-speed"><h2>So sánh tốc độ hai cách</h2>
+<p>Cùng một phép tính trên 18.534 hàng Santiago: tiền cho số đêm tối thiểu.</p><pre><code class="language-python" data-trim>
+def tien_toi_thieu(hang):
+    return hang[&quot;price&quot;] * hang[&quot;minimum_nights&quot;]
+</code></pre><div class="jp-cell jp-plain"><pre class="jp-input" data-jp-n="9"><code class="language-python" data-trim>
+%timeit listings.apply(tien_toi_thieu, axis=1)
+%timeit listings[&quot;price&quot;] * listings[&quot;minimum_nights&quot;]
+</code></pre><pre class="jp-output" data-jp-n="9"><code class="language-text" data-trim>
+126 ms ± 958 μs per loop (mean ± std. dev. of 7 runs, 10 loops each)
+123 μs ± 178 ns per loop (mean ± std. dev. of 7 runs, 10,000 loops each)
+</code></pre></div><p><code>apply(axis=1)</code> dựng một Series Python cho mỗi hàng: khoản chi phí Bài 3 đã chỉ ra.</p><aside class="notes">Số đo trên máy giảng viên, pandas 3.0.3, 18.534 hàng; máy khác cho con số khác nhưng chênh lệch bậc độ lớn thì giữ nguyên. Ở đây khoảng 1.000 lần. %timeit là lệnh magic của IPython/Colab, chạy nhiều lượt rồi lấy trung bình. Không kết luận apply luôn xấu: khi mỗi hàng cần logic phức tạp, apply vẫn là cách viết rõ nhất. Bài 3 đã so vòng for với phép tính trên cả mảng.</aside></section>
 
-        <section data-jp-reset>
-          <h2>concat: ghép các snapshot theo chiều dọc</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-t9["snapshot"] = "2025-09"        # thêm nguồn gốc cho từng bảng
-t6["snapshot"] = "2026-06"
+<section id="cut-qcut"><h2>Hai cách chia giá thành ba nhóm</h2>
+<p>Ngưỡng tuyệt đối (30.000 và 100.000 CLP) và ngưỡng phân vị:</p><div class="jp-cell"><pre class="jp-input" data-jp-n="10"><code class="language-python" data-trim>
+gia = listings[&quot;price&quot;].dropna()
+nguong_gia = [0, 30000, 100000, np.inf]
+nhan = [&quot;thấp&quot;, &quot;giữa&quot;, &quot;cao&quot;]
+cut3 = pd.cut(gia, nguong_gia, right=False, labels=nhan)
+qcut3 = pd.qcut(gia, 3, labels=nhan)
+print(pd.DataFrame({&quot;cut&quot;: cut3.value_counts(),
+                    &quot;qcut&quot;: qcut3.value_counts()}))
+</code></pre><pre class="jp-output" data-jp-n="10"><code class="language-text" data-trim>
+         cut  qcut
+price
+thấp    1660  5913
+giữa   12325  5880
+cao     3703  5895
+</code></pre></div><p><code>qcut</code> tự chọn mốc 46.720 và 75.872 để ba nhóm bằng nhau.</p><aside class="notes">right=False để mốc thuộc về nhóm bên phải, khớp mô tả "dưới 30.000 / 30.000–99.999 / từ 100.000" dùng trong lab. Tên chỉ mục price là tên cột nguồn. cut nhận danh sách ngưỡng do người phân tích đặt; qcut nhận số nhóm rồi tự tính ngưỡng từ dữ liệu. Mốc phân vị lấy bằng pd.qcut(gia, 3, retbins=True)[1].</aside></section>
 
-ca_hai = pd.concat([t9, t6], ignore_index=True)
-ca_hai.groupby("snapshot").size()
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-snapshot
-2025-09    16772
-2026-06    18534
-            </code></pre>
-          </div>
-          <p>Thêm cột <code>snapshot</code> trước khi concat để giữ nguồn gốc của từng dòng;
-            sau đó có thể so sánh theo thời gian bằng groupby.</p>
-        </section>
+<section id="cut-qcut-shift"><h2>Nếu cả thị trường tăng giá 20%</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="11"><code class="language-python" data-trim>
+gia12 = gia * 1.2
+cut12 = pd.cut(gia12, nguong_gia, right=False, labels=nhan)
+qcut12 = pd.qcut(gia12, 3, labels=nhan)
+print(pd.DataFrame({&quot;cut&quot;: cut12.value_counts(),
+                    &quot;qcut&quot;: qcut12.value_counts()}))
+</code></pre><pre class="jp-output" data-jp-n="11"><code class="language-text" data-trim>
+         cut  qcut
+price
+thấp     951  5913
+giữa   11656  5880
+cao     5081  5895
+</code></pre></div><p>Ngưỡng tuyệt đối thấy được thị trường lên giá; ngưỡng phân vị khoá cỡ nhóm nên không thấy.</p><p>Chọn ranh giới là câu hỏi phân tích.</p><aside class="notes">qcut không đổi một dòng nào: 5.913/5.880/5.895 trước và sau. cut chuyển 709 chỗ ở ra khỏi nhóm thấp và thêm 1.378 vào nhóm cao. Hỏi lớp: nếu báo cáo "tỷ lệ chỗ ở giá cao tăng" thì phải dùng cách chia nào? Ngược lại, khi muốn so ba nhóm có cỡ bằng nhau trong cùng một mốc chụp thì qcut tiện hơn. Bài lab 5 dùng đúng ba ngưỡng tuyệt đối này. Ngưỡng tuyệt đối so sánh được giữa các mốc chụp và giữa các thành phố; ngưỡng phân vị thì không.</aside></section>
 
-        <section>
-          <h2>merge: ghép NGANG theo khoá chung</h2>
-          <figure class="fig">
-            <img src="img/lecture-05/merge-how.svg" alt="inner join và left join" style="width:96%">
-            <figcaption class="caption">inner loại các dòng không khớp; left giữ đủ bảng trái và điền NaN —
-              chọn <code>how</code> là quyết định giữ hay bỏ các dòng không khớp.</figcaption>
-          </figure>
-        </section>
+<section id="exercise-apply"><h2>Bài tập 2: Miễn phí dọn dẹp</h2>
+<p>Bảng <code>dat_cho</code>: mỗi hàng là một lượt ở; <code>gia</code> tính theo USD/đêm; <code>so_dem</code> là số đêm của lượt ở; <code>phi</code> là phí dọn dẹp một lần (USD).</p><table class="data-table"><thead><tr><th>Chỉ mục</th><th>gia</th><th>so_dem</th><th>phi</th></tr></thead><tbody><tr><td>P1</td><td>100</td><td>2</td><td>20</td></tr><tr><td>P2</td><td>80</td><td>7</td><td>10</td></tr><tr><td>P3</td><td>60</td><td>8</td><td>15</td></tr></tbody></table><p>Thêm cột <code>tong</code> tính tổng tiền phòng và phí dọn dẹp cho mỗi lượt ở, trong đó khách ở từ 7 đêm được miễn phí dọn dẹp.</p><aside class="notes">Kết quả: P1=220, P2=560, P3=480. Chấp nhận hàm với apply hoặc phép toán cột và mask; không bắt buộc hai cách. Hàm: phi = 0 if hang["so_dem"] &gt;= 7 else hang["phi"]; return hang["gia"]*hang["so_dem"]+phi. Gán dat_cho["tong"] = dat_cho.apply(tien, axis=1). Cách theo cột: phi_tinh=dat_cho["phi"].copy(); phi_tinh.loc[dat_cho["so_dem"] &gt;= 7]=0; dat_cho["tong"]=dat_cho["gia"]*dat_cho["so_dem"]+phi_tinh. Khi chữa, kiểm trường hợp đúng 7 đêm và việc phí chỉ thu một lần cho mỗi lượt ở. Có thể so sánh hai cách sau khi sinh viên tự giải.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Cách viết merge</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-vung = pd.DataFrame({
-    "neighbourhood": ["Santiago", "Providencia", "Las Condes", "Ñuñoa"],
-    "vung": ["Trung tâm", "Đông", "Đông", "Đông"],
+</section>
+
+<section>
+
+<section><h1><span class="text-light">3.</span><br>Tính theo nhóm</h1><p class="text-light">Từ phép tính trên từng hàng chuyển sang phép tính trên một tập hàng: so sánh giá giữa các khu, rồi so từng chỗ ở với khu của nó.</p></section>
+
+<section id="group-data"><h2>So sánh giá của hai khu vực</h2>
+<p>Bảng giả lập, USD/đêm. Mỗi hàng là một chỗ ở.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="12"><code class="language-python" data-trim>
+df = pd.DataFrame({
+    &quot;id&quot;: [&quot;P1&quot;, &quot;P2&quot;, &quot;P3&quot;, &quot;P4&quot;, &quot;P5&quot;],
+    &quot;khu&quot;: [&quot;A&quot;, &quot;B&quot;, &quot;A&quot;, &quot;B&quot;, &quot;A&quot;],
+    &quot;gia&quot;: [100., 80., 200., 120., np.nan],
 })
-m = df.merge(vung, on="neighbourhood", how="left")
+print(df)
+</code></pre><pre class="jp-output" data-jp-n="12"><code class="language-text" data-trim>
+   id khu    gia
+0  P1   A  100.0
+1  P2   B   80.0
+2  P3   A  200.0
+3  P4   B  120.0
+4  P5   A    NaN
+</code></pre></div><aside class="notes">Giữ bảng này cho groupby và transform. Hàng cùng khu không cần đứng cạnh nhau. A có ba chỗ ở nhưng chỉ hai giá; B có hai chỗ và đủ hai giá. Bắt đầu bằng tính tay trung bình mỗi khu.</aside></section>
 
-m.groupby("vung")["price"].median()
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-vung
-Trung tâm    47755.0
-Đông         76628.5
-            </code></pre>
-          </div>
-          <p>Merge bổ sung cột <code>vung</code>; nhờ đó có thể phân tích giá theo vùng dù
-            dữ liệu gốc chưa có thông tin này.</p>
-        </section>
+<section id="group-mechanism"><h2>Tính trung bình từng khu</h2>
+<table class="data-table"><thead><tr><th>khu</th><th>Các giá được nhóm</th><th>Trung bình</th></tr></thead><tbody><tr class="row-a"><td>A</td><td>100, 200, NaN</td><td>150</td></tr><tr class="row-b"><td>B</td><td>80, 120</td><td>100</td></tr></tbody></table><div class="jp-cell"><pre class="jp-input" data-jp-n="13"><code class="language-python" data-trim>
+print(df.groupby(&quot;khu&quot;)[&quot;gia&quot;].mean())
+</code></pre><pre class="jp-output" data-jp-n="13"><code class="language-text" data-trim>
+khu
+A    150.0
+B    100.0
+Name: gia, dtype: float64
+</code></pre></div><p>Chia → tính → gộp (split–apply–combine): <code>groupby</code> chia theo khu, <code>mean</code> tính từng nhóm, pandas gộp thành một kết quả mỗi khu.</p><aside class="notes">Ba bước này là khung để đọc mọi phép tính theo nhóm về sau. Kết quả có một phần tử mỗi khu, nhãn A/B. A=(100+200)/2, không chia 3. Các hàng nguồn không cần liên tiếp. Không gọi bước tính này là DataFrame.apply để tránh lẫn với phần 2. mean chỉ tính trên các giá không thiếu của từng nhóm.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Sau merge: kiểm tra số dòng và độ khớp</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-len(df), len(m), m["vung"].isna().sum()
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="3"><code class="language-text" data-trim>
-(18534, 18534, 3680)
-            </code></pre>
-          </div>
-          <ul>
-            <li>Nếu số dòng <strong>tăng</strong>, khoá bên phải có thể bị trùng và làm nhân bản dòng.</li>
-            <li>Có 3.680 giá trị <code>vung</code> = NaN: các quận này chưa có trong bảng tra cứu.</li>
-          </ul>
-        </section>
+<section id="count-size"><h2>Đếm số giá dùng để tính</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="14"><code class="language-python" data-trim>
+tk = df.groupby(&quot;khu&quot;)[&quot;gia&quot;].agg(
+    trung_binh=&quot;mean&quot;, so_cho_o=&quot;size&quot;, so_gia=&quot;count&quot;)
+print(tk)
+</code></pre><pre class="jp-output" data-jp-n="14"><code class="language-text" data-trim>
+     trung_binh  so_cho_o  so_gia
+khu
+A         150.0         3       2
+B         100.0         2       2
+</code></pre></div><p><code>size</code> đếm mọi hàng; <code>count</code> chỉ đếm giá không thiếu.</p><aside class="notes">agg chạy các phép tổng hợp trên cùng cột của từng nhóm. Tên bên trái đặt tên cột kết quả. Với dữ liệu đề, mỗi hàng đúng là một chỗ ở nên size có thể đặt tên so_cho_o. Nếu một chỗ xuất hiện nhiều đợt thì size không còn là số chỗ ở khác nhau. A có ba hàng nhưng chỉ hai giá tham gia mean.</aside></section>
 
-        <section data-jp-reset>
-          <h2>validate: kiểm tra quan hệ giữa hai bảng</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-m = df.merge(vung, on="neighbourhood",
-             how="left", validate="m:1")
-# nhiều listing (m) ứng với đúng 1 dòng vùng (1)
-# vi phạm -> phát sinh MergeError
-            </code></pre>
-          </div>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Merge có thể tạo kết quả sai mà không báo lỗi. Dùng <code>validate=</code> và kiểm tra
-            số dòng để phát hiện khoá trùng hoặc quan hệ ghép không đúng.
-          </div>
-        </section>
-      </section>
+<section id="reset-index"><h2>Đưa tên khu về cột</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<p>Bảng <code>tk</code> đang dùng tên khu làm chỉ mục. Đưa tên khu thành cột để lưu hoặc xử lý tiếp:</p><div class="jp-cell"><pre class="jp-input" data-jp-n="15"><code class="language-python" data-trim>
+print(tk.reset_index())
+</code></pre><pre class="jp-output" data-jp-n="15"><code class="language-text" data-trim>
+  khu  trung_binh  so_cho_o  so_gia
+0   A       150.0         3       2
+1   B       100.0         2       2
+</code></pre></div><aside class="notes">reset_index tạo kết quả mới, không sửa tk trong ví dụ này. Liên hệ Bài 4: nếu lưu tk bằng index=False ngay thì mất tên khu. Đưa tên khu thành cột là một cách giữ thông tin; xuất cả chỉ mục cũng hợp lệ. Không khẳng định mọi thao tác ghép hoặc vẽ đều bắt buộc reset_index.</aside></section>
 
-      <!-- ====== Kết ====== -->
-      <section>
-        <section>
-          <h2>Tổng kết</h2>
-          <ul>
-            <li>Index là danh tính dòng: <code>loc</code> theo nhãn, <code>iloc</code> theo vị trí;
-              phép toán tự căn chỉnh (<strong>align</strong>) theo index.</li>
-            <li>Biến đổi: ưu tiên vector hoá, sau đó đến <code>map</code> và <code>apply</code>.</li>
-            <li><code>groupby</code>: agg đặt tên kèm cỡ nhóm, <code>transform</code> để so
-              từng dòng với nhóm, <code>pivot_table</code> cho bảng chéo.</li>
-            <li>concat ghép dọc theo snapshot; merge ghép ngang. Sau merge, kiểm tra số dòng và
-              dùng <code>validate</code>.</li>
-          </ul>
-        </section>
+<section id="real-groups"><h2>Giá nguyên căn ở Santiago</h2>
+<p>Dùng bảng <code>listings</code> của Bài 4 (CLP/đêm). So sánh ba khu sau:</p><div class="jp-cell"><pre class="jp-input" data-jp-n="16"><code class="language-python" data-trim>
+nguyen_can = listings.loc[
+    listings[&quot;room_type&quot;] == &quot;Entire home/apt&quot;]
+thong_ke = nguyen_can.groupby(&quot;neighbourhood&quot;)[&quot;price&quot;].agg(
+    trung_vi=&quot;median&quot;, so_gia=&quot;count&quot;)
+print(thong_ke.loc[[&quot;Santiago&quot;, &quot;Providencia&quot;, &quot;Las Condes&quot;]])
+</code></pre><pre class="jp-output" data-jp-n="16"><code class="language-text" data-trim>
+               trung_vi  so_gia
+neighbourhood
+Santiago        49352.5    6006
+Providencia     81709.0    2160
+Las Condes     106129.0    2263
+</code></pre></div><p>Chỉ xét nguyên căn để tránh gộp chung với phòng riêng.</p><aside class="notes">Snapshot Santiago 2026-06-29. Ba khu được chỉ định để minh hoạ, không phải ba khu giá cao nhất. Bỏ ngưỡng 500 tuỳ ý của bản trước. count là số giá quan sát, không phải tổng số chỗ ở. Cùng loại chỗ ở vẫn có thể khác diện tích, vị trí và chất lượng; chưa thể gán nguyên nhân chênh lệch cho khu. Nguồn dữ liệu và ô tải đầy đủ trong notebook.</aside></section>
 
-        <section>
-          <h2>Làm việc với AI thì sao?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <div class="good-box">
-            <span class="box-title">AI làm tốt</span>
-            Viết biểu thức groupby/pivot từ mô tả tiếng Việt; giải thích lỗi liên quan đến MultiIndex.
-          </div>
-          <div class="warn-box">
-            <span class="box-title">AI hay sai</span>
-            Chọn <code>how</code> không dựa trên yêu cầu; không kiểm tra dòng bị loại hoặc nhân bản;
-            dùng apply(axis=1) cho phép tính có thể vector hoá.
-          </div>
-        </section>
+<section id="exercise-count"><h2>Bài tập 3: Trung bình của cả hai khu</h2>
+<p>Bảng dưới tổng hợp các giá đã biết (USD/đêm).</p><table class="data-table"><thead><tr><th>Khu</th><th>Giá trung bình</th><th>Số giá đã biết</th></tr></thead><tbody><tr><td>A</td><td>100</td><td>2</td></tr><tr><td>B</td><td>200</td><td>8</td></tr></tbody></table><p>Từ bảng trên, tính giá trung bình của toàn bộ 10 giá đã biết.</p><aside class="notes">Đáp án 180 = (100×2 + 200×8)/(2+8). 150 là trung bình của hai số trung bình khu với trọng số bằng nhau, không phải trung bình của mười giá. Tổng giá khu A=200, B=1600; tổng 1800 chia 10. Cần dùng số giá đã biết (count), không phải tổng số hàng nếu có giá thiếu. Không có dữ liệu giá riêng lẻ vẫn tính được mean chung từ mean và count chính xác; chưa kết luận tương tự cho median. Số liệu giả lập độc lập với df ở ví dụ trước.</aside></section>
 
-        <section>
-          <h2>Kiểm chứng thế nào?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <ul>
-            <li>Trước và sau mỗi merge do AI viết, in <code>len()</code> hai bảng và đếm NaN ở cột mới.</li>
-            <li>Với groupby phức tạp, lấy <strong>một nhóm</strong> nhỏ, lọc thủ công và tính lại một kết quả.</li>
-          </ul>
-        </section>
+<section id="group-keys"><h2>Tách thêm theo loại chỗ ở</h2>
+<p>Trong mỗi khu, tính riêng giá nguyên căn và phòng riêng.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="17"><code class="language-python" data-trim>
+df[&quot;loai&quot;] = [&quot;Nguyên căn&quot;, &quot;Phòng riêng&quot;, &quot;Phòng riêng&quot;,
+              &quot;Nguyên căn&quot;, &quot;Nguyên căn&quot;]
+print(df.groupby([&quot;khu&quot;, &quot;loai&quot;])[&quot;gia&quot;].mean())
+</code></pre><pre class="jp-output" data-jp-n="17"><code class="language-text" data-trim>
+khu  loai
+A    Nguyên căn     100.0
+     Phòng riêng    200.0
+B    Nguyên căn     120.0
+     Phòng riêng     80.0
+Name: gia, dtype: float64
+</code></pre></div><p>Mỗi cặp <code>(khu, loai)</code> là một nhóm.</p><aside class="notes">A nguyên căn có 100 và NaN → 100; A phòng riêng 200; B nguyên căn 120; B phòng riêng 80. Một nhãn nhóm giờ gồm hai thành phần. Không mở chi tiết MultiIndex ở đây. Nhu cầu so sánh các loại riêng là lý do thêm khoá, không phải cứ càng nhiều khoá càng tốt.</aside></section>
 
-        <section>
-          <h2>Đọc thêm</h2>
-          <ul>
-            <li>McKinney, <em>Python for Data Analysis</em>, 3rd ed. — ch. 8 (Join/Combine),
-              ch. 10 (Aggregation &amp; Group Operations).</li>
-            <li>📖 Tự học: pandas User Guide, mục <em>Group by: split-apply-combine</em> và
-              <em>Merge, join, concatenate</em>.</li>
-          </ul>
-        </section>
-      </section>
+<section id="unstack"><h2>Cùng dữ liệu, hai hình dạng bảng</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="18"><code class="language-python" data-trim>
+dai = listings.groupby([&quot;neighbourhood&quot;, &quot;room_type&quot;])[&quot;price&quot;].median()
+rong = dai.loc[[&quot;Santiago&quot;, &quot;Providencia&quot;, &quot;Las Condes&quot;]]
+print(rong.head(4))
+</code></pre><pre class="jp-output" data-jp-n="18"><code class="language-text" data-trim>
+neighbourhood  room_type
+Santiago       Entire home/apt    49352.5
+               Hotel room         40991.0
+               Private room       31250.5
+               Shared room        16207.5
+Name: price, dtype: float64
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="19"><code class="language-python" data-trim>
+print(rong.unstack(&quot;room_type&quot;))
+</code></pre><pre class="jp-output" data-jp-n="19"><code class="language-text" data-trim>
+room_type      Entire home/apt  Hotel room  Private room  Shared room
+neighbourhood
+Santiago               49352.5     40991.0       31250.5      16207.5
+Providencia            81709.0    129093.0       38400.0      25000.0
+Las Condes            106129.0    116213.0       40365.5      26277.0
+</code></pre></div><p>Dạng rộng dễ cho người đọc; dạng dài dễ cho máy vẽ biểu đồ hoặc ghép tiếp.</p><aside class="notes">Cùng một dữ liệu, chỉ khác cách sắp: unstack đưa một mức chỉ mục lên thành cột. Ô trống xuất hiện khi một khu không có loại chỗ ở nào đó. Chiều ngược lại là stack, và pivot_table gộp cả hai bước tính và sắp; cả hai ở phần tự học notebook. Ba khu được chọn để output vừa slide; bảng đầy đủ có 31 khu.</aside></section>
+
+<section id="transform-need"><h2>Trừ giá cho trung bình của khu</h2>
+<p>Muốn biết mỗi chỗ ở cao hay thấp hơn trung bình khu của nó. Nhưng <code>df["gia"]</code> có chỉ mục 0, 1, 2, 3, 4 còn <code>tb_khu</code> có chỉ mục A, B.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="20"><code class="language-python" data-trim>
+tb_khu = df.groupby(&quot;khu&quot;)[&quot;gia&quot;].mean()
+print(df[&quot;gia&quot;] - tb_khu)
+</code></pre><pre class="jp-output" data-jp-n="20"><code class="language-text" data-trim>
+0   NaN
+1   NaN
+2   NaN
+3   NaN
+4   NaN
+A   NaN
+B   NaN
+Name: gia, dtype: float64
+</code></pre></div><p>Hợp nhãn gồm cả 0…4 và A, B; không nhãn nào có mặt ở cả hai bên nên mọi giá trị đều NaN.</p><aside class="notes">Yêu cầu dự đoán trước khi hiện output. Không giải thích bằng việc khác độ dài: pandas căn chỉnh theo nhãn, kể cả khi hai bên cùng độ dài. Cần gắn 150/100 về đúng từng hàng trước khi trừ.</aside></section>
+
+<section id="transform"><h2>Gắn trung bình khu vào từng hàng</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="21"><code class="language-python" data-trim>
+df[&quot;tb_khu&quot;] = df.groupby(&quot;khu&quot;)[&quot;gia&quot;].transform(&quot;mean&quot;)
+df[&quot;chenh_lech&quot;] = df[&quot;gia&quot;] - df[&quot;tb_khu&quot;]
+print(df[[&quot;id&quot;, &quot;khu&quot;, &quot;gia&quot;, &quot;tb_khu&quot;, &quot;chenh_lech&quot;]])
+</code></pre><pre class="jp-output" data-jp-n="21"><code class="language-text" data-trim>
+   id khu    gia  tb_khu  chenh_lech
+0  P1   A  100.0   150.0       -50.0
+1  P2   B   80.0   100.0       -20.0
+2  P3   A  200.0   150.0        50.0
+3  P4   B  120.0   100.0        20.0
+4  P5   A    NaN   150.0         NaN
+</code></pre></div><p>Cùng <code>mean</code>, khác ở bước gộp: tổng hợp cho hai kết quả (mỗi nhóm một), <code>transform</code> cho năm kết quả (mỗi hàng một).</p><aside class="notes">Nối phần 1: tb_khu bây giờ có cùng nhãn 0…4 với gia, nên trừ đúng. P5 vẫn nhận trung bình A=150 nhưng chênh lệch thiếu vì chưa biết giá P5. Có thể dùng df["khu"].map(tb_khu) với Series trung bình để giải khác; notebook tự học minh hoạ sau khi học cả hai. transform giữ nguyên chỉ mục của bảng.</aside></section>
+
+<section id="group-filter"><h2>Giữ lại các khu đủ lớn</h2>
+<p>Chỉ phân tích các khu có từ 300 chỗ ở trở lên:</p><div class="jp-cell"><pre class="jp-input" data-jp-n="22"><code class="language-python" data-trim>
+khu_dong = listings.groupby(&quot;neighbourhood&quot;).filter(
+    lambda nhom: len(nhom) &gt;= 300)
+print(len(khu_dong), khu_dong[&quot;neighbourhood&quot;].nunique())
+</code></pre><pre class="jp-output" data-jp-n="22"><code class="language-text" data-trim>
+16850 8
+</code></pre></div><p>Từ 18.534 hàng, 31 khu còn 16.850 hàng, 8 khu. Cách khác, cùng kết quả:</p><pre><code class="language-python" data-trim>
+mask = listings.groupby(&quot;neighbourhood&quot;)[&quot;id&quot;].transform(&quot;size&quot;) &gt;= 300
+khu_dong = listings.loc[mask]
+</code></pre><aside class="notes">Bộ ba theo nhóm đã đủ: agg trả một kết quả cho mỗi nhóm, transform trả một kết quả cho mỗi hàng, filter giữ lại chính các hàng gốc theo tính chất của cả nhóm. Hàm truyền cho filter nhận cả nhóm dưới dạng DataFrame và trả True/False. Ngưỡng 300 là lựa chọn phân tích, phải nói rõ trong báo cáo. Kiểm bằng listings["neighbourhood"].nunique() = 31.</aside></section>
+
+<section id="transform-real"><h2>So giá từng chỗ ở với khu của nó</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="23"><code class="language-python" data-trim>
+nguyen_can = nguyen_can.copy()
+nguyen_can[&quot;tv_khu&quot;] = nguyen_can.groupby(
+    &quot;neighbourhood&quot;)[&quot;price&quot;].transform(&quot;median&quot;)
+nguyen_can[&quot;lech&quot;] = nguyen_can[&quot;price&quot;] - nguyen_can[&quot;tv_khu&quot;]
+print(nguyen_can[[&quot;neighbourhood&quot;, &quot;price&quot;, &quot;tv_khu&quot;, &quot;lech&quot;]].head())
+</code></pre><pre class="jp-output" data-jp-n="23"><code class="language-text" data-trim>
+   neighbourhood     price   tv_khu     lech
+2       Recoleta   46776.0  52494.0  -5718.0
+4       Recoleta  107044.0  52494.0  54550.0
+5       Recoleta   56615.0  52494.0   4121.0
+10    La Florida   61239.0  57059.0   4180.0
+11      Pudahuel   63500.0  58369.0   5131.0
+</code></pre></div><p>Chỉ mục giữ nguyên từ bảng gốc nên trừ được trực tiếp: mỗi chỗ ở so với trung vị khu của nó.</p><aside class="notes">Đây là lời hứa ở slide mở mục 3. Chỉ mục không liên tục vì nguyen_can là kết quả lọc theo room_type; transform vẫn trả đúng một giá trị cho mỗi hàng của bảng đang có. Dùng copy() để tránh cảnh báo khi gán cột vào kết quả lọc. Lệch dương nghĩa là đắt hơn trung vị khu, chưa nói được là đắt xứng đáng hay không.</aside></section>
+
+<section id="host-unit"><h2>Đổi đơn vị quan sát sang host</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="24"><code class="language-python" data-trim>
+host = listings.groupby(&quot;host_id&quot;).agg(
+    so_cho_o=(&quot;id&quot;, &quot;size&quot;), trung_vi_gia=(&quot;price&quot;, &quot;median&quot;))
+print(host.head())
+</code></pre><pre class="jp-output" data-jp-n="24"><code class="language-text" data-trim>
+         so_cho_o  trung_vi_gia
+host_id
+19611          18       70972.0
+30509           1       74177.0
+54585           1      130665.0
+79349           2      154433.5
+119648          2       32493.0
+</code></pre></div><div class="key-box"><span class="box-title">Quan trọng</span>18.534 chỗ ở gom thành 9.712 host: bảng mới có 9.712 hàng, mỗi hàng là một host. Mọi con số tính trên bảng này phải nói rõ đơn vị đếm.</div><aside class="notes">Số đo trên snapshot Santiago 2026-06-29: 9.712 host; một nửa số host chỉ có 1 chỗ ở (trung vị 1); host lớn nhất có 253 chỗ ở; 198 host (2,0%) nắm 4.337 chỗ ở (23,4%). Tỷ lệ nguyên căn cũng khác nhau theo đơn vị: 76,7% ở nhóm host có 1 chỗ ở, 92,7% ở nhóm host có từ 10 chỗ ở trở lên. Vì thế "giá trung vị của một chỗ ở" và "giá trung vị của một host" là hai con số khác nhau, không thay thế cho nhau trong báo cáo.</aside></section>
+
+<section id="host-check"><h2>Dựng lại một cột của nhà cung cấp</h2>
+<p>Santiago có sẵn cột <code>calculated_host_listings_count</code>. Tự tính lại:</p><div class="jp-cell"><pre class="jp-input" data-jp-n="25"><code class="language-python" data-trim>
+n_host = listings.groupby(&quot;host_id&quot;)[&quot;id&quot;].transform(&quot;size&quot;)
+khop = n_host == listings[&quot;calculated_host_listings_count&quot;]
+print(khop.sum(), len(listings))
+</code></pre><pre class="jp-output" data-jp-n="25"><code class="language-text" data-trim>
+18534 18534
+</code></pre></div><p>Khớp cả 18.534 hàng. Số người khác đưa, dựng lại từ dữ liệu gốc trước khi dùng.</p><aside class="notes">Đây là thói quen dùng lại suốt môn và trong bài tập lớn: mỗi cột "đã tính sẵn" đều là một giả thuyết cần kiểm. Nếu lệch, phải hỏi lệch ở hàng nào và vì sao — có thể nhà cung cấp đếm theo phạm vi khác (cả nước thay vì một thành phố) chứ không hẳn là lỗi. transform("size") ở đây đếm số hàng cùng host_id trong chính bảng đang có.</aside></section>
+
+</section>
+
+<section>
+
+<section><h1><span class="text-light">4.</span><br>Ghép bảng</h1><p class="text-light">Từ một bảng chuyển sang nhiều bảng: ghép bảng có thể làm mất hoặc nhân hàng, nên phải kiểm số hàng trước và sau.</p></section>
+
+<section id="concat"><h2>Gộp hai lần thu thập</h2>
+<pre><code class="language-python" data-trim>
+dot_1 = pd.DataFrame({&quot;id&quot;: [&quot;P1&quot;, &quot;P2&quot;], &quot;gia&quot;: [100, 80], &quot;dot&quot;: 1})
+dot_2 = pd.DataFrame({&quot;id&quot;: [&quot;P1&quot;, &quot;P3&quot;], &quot;gia&quot;: [110, 70], &quot;dot&quot;: 2})
+</code></pre><div class="jp-cell"><pre class="jp-input" data-jp-n="26"><code class="language-python" data-trim>
+print(pd.concat([dot_1, dot_2], ignore_index=True))
+</code></pre><pre class="jp-output" data-jp-n="26"><code class="language-text" data-trim>
+   id  gia  dot
+0  P1  100    1
+1  P2   80    1
+2  P1  110    2
+3  P3   70    2
+</code></pre></div><p><code>concat</code> nối thêm hàng. P1 có hai lần thu thập nên xuất hiện hai lần.</p><aside class="notes">Dữ liệu giả lập USD/đêm. Một hàng ở đây là một chỗ ở trong một đợt, xác định bởi id và dot. ignore_index=True đặt chỉ mục kết quả về 0,1,2,3; không xoá hàng trùng mã. concat mặc định khớp cột theo tên. Không quay lại bài tập thiết kế bảng dài/rộng vốn không có yêu cầu đủ rõ.</aside></section>
+
+<section id="merge-input"><h2>Bổ sung thông tin vùng</h2>
+<div class="concept-grid"><div><h4>cho_o</h4><table class="data-table"><thead><tr><th>id</th><th>khu</th></tr></thead><tbody><tr><td>P1</td><td>A</td></tr><tr><td>P2</td><td>B</td></tr><tr><td>P3</td><td>C</td></tr></tbody></table></div><div><h4>vung</h4><table class="data-table"><thead><tr><th>khu</th><th>vung</th></tr></thead><tbody><tr><td>A</td><td>Bắc</td></tr><tr><td>B</td><td>Nam</td></tr></tbody></table></div></div><p>Ghép theo cột <code>khu</code>. P3 thuộc C nhưng bảng vùng chưa có C.</p><aside class="notes">Hai bảng giả lập mới phục vụ ghép. Mục tiêu bổ sung một cột thông tin, khác nối thêm quan sát bằng concat. Khoá ghép khu là giá trị dùng đối chiếu hàng giữa hai bảng; không phải nhãn chỉ mục 0,1,2. Hỏi xem yêu cầu có cần giữ P3 khi chưa biết vùng không.</aside></section>
+
+<section id="merge-left"><h2>Giữ lại các chỗ ở chưa có vùng</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="27"><code class="language-python" data-trim>
+m = cho_o.merge(vung, on=&quot;khu&quot;, how=&quot;left&quot;)
+print(m)
+</code></pre><pre class="jp-output" data-jp-n="27"><code class="language-text" data-trim>
+   id khu vung
+0  P1   A  Bắc
+1  P2   B  Nam
+2  P3   C  NaN
+</code></pre></div><p><code>on="khu"</code> đối chiếu theo khu; <code>how="left"</code> giữ mọi hàng bảng trái (left join).</p><aside class="notes">P3 vẫn có, vùng thiếu. Left join giữ mỗi hàng trái ít nhất một lần, không hứa số hàng không đổi nếu khoá phải lặp. Bảng cho_o và vung được tạo đầy đủ trong notebook sau slide đầu vào. Trên slide dùng chính hai bảng đã trình bày. Giới thiệu tên tiếng Anh một lần vì tài liệu pandas và mọi tài liệu SQL đều dùng từ này.</aside></section>
+
+<section id="merge-check"><h2>Tìm hàng không ghép được</h2>
+<p>Thêm <code>indicator=True</code> để biết mỗi chỗ ở có tìm được khu tương ứng trong bảng <code>vung</code> hay không.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="28"><code class="language-python" data-trim>
+kiem_tra = cho_o.merge(vung, on=&quot;khu&quot;, how=&quot;left&quot;,
+                        indicator=True)
+print(kiem_tra)
+</code></pre><pre class="jp-output" data-jp-n="28"><code class="language-text" data-trim>
+   id khu vung     _merge
+0  P1   A  Bắc       both
+1  P2   B  Nam       both
+2  P3   C  NaN  left_only
+</code></pre></div><p><code>both</code>: tìm thấy khu trong bảng vùng.<br><code>left_only</code>: P3 thuộc khu C → bảng vùng không có dòng nào khớp.</p><aside class="notes">Đặt ngay sau left join: trong bảng kết quả trước, P3 có vùng NaN vì không có khu C ở bảng vung. indicator thêm cột _merge, không thay đổi cách ghép. Khi dữ liệu lớn, lọc kiem_tra.loc[kiem_tra["_merge"] == "left_only"] để xem các hàng cần xử lý. Chưa giới thiệu validate tại đây. Tham khảo pandas.DataFrame.merge: https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html</aside></section>
+
+<section id="merge-nan"><h2>Khớp khoá mà thiếu thông tin</h2>
+<p>Bảng vùng có khu C nhưng ô <code>vung</code> của C trống:</p><div class="jp-cell"><pre class="jp-input" data-jp-n="29"><code class="language-python" data-trim>
+vung_thieu = pd.DataFrame({&quot;khu&quot;: [&quot;A&quot;, &quot;B&quot;, &quot;C&quot;],
+                           &quot;vung&quot;: [&quot;Bắc&quot;, &quot;Nam&quot;, np.nan]})
+print(cho_o.merge(vung_thieu, on=&quot;khu&quot;, how=&quot;left&quot;, indicator=True))
+</code></pre><pre class="jp-output" data-jp-n="29"><code class="language-text" data-trim>
+   id khu vung _merge
+0  P1   A  Bắc   both
+1  P2   B  Nam   both
+2  P3   C  NaN   both
+</code></pre></div><p>Cả ba hàng đều <code>both</code>: khoá C khớp, chỉ thiếu giá trị. NaN bên phải không có nghĩa là không khớp khoá.</p><aside class="notes">So thẳng với slide trước: cùng một ô NaN ở cột vung, nhưng nguyên nhân khác hẳn. Muốn biết hàng nào không khớp khoá thì đọc cột _merge, đừng đếm NaN. Hai nguyên nhân dẫn tới hai cách xử lý khác nhau: bổ sung bảng tra cứu, hay đi hỏi lại nguồn dữ liệu.</aside></section>
+
+<section id="merge-inner"><h2>Chỉ lấy các chỗ ở ghép được vùng</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="30"><code class="language-python" data-trim>
+print(cho_o.merge(vung, on=&quot;khu&quot;, how=&quot;inner&quot;))
+</code></pre><pre class="jp-output" data-jp-n="30"><code class="language-text" data-trim>
+   id khu vung
+0  P1   A  Bắc
+1  P2   B  Nam
+</code></pre></div><p><code>how="inner"</code> (inner join) chỉ giữ cặp khớp khoá: P3 biến mất. <code>inner</code> là mặc định, quên <code>how</code> là mất hàng.</p><aside class="notes">Lựa chọn left/inner phụ thuộc yêu cầu phân tích: báo cáo tất cả chỗ ở và đánh dấu thiếu, hay chỉ phân tích các chỗ đã tra được vùng. Mặc định của merge là inner, nên quên how có thể làm mất hàng. Không dạy join như bốn hình Venn vì hình Venn không thể hiện nhân hàng.</aside></section>
+
+<section id="merge-expand"><h2>Khi bảng tra cứu lặp khoá</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="31"><code class="language-python" data-trim>
+vung_lap = pd.DataFrame({&quot;khu&quot;: [&quot;A&quot;, &quot;A&quot;, &quot;B&quot;],
+                         &quot;vung&quot;: [&quot;Bắc&quot;, &quot;Trung tâm&quot;, &quot;Nam&quot;]})
+print(cho_o.merge(vung_lap, on=&quot;khu&quot;, how=&quot;left&quot;))
+</code></pre><pre class="jp-output" data-jp-n="31"><code class="language-text" data-trim>
+   id khu       vung
+0  P1   A        Bắc
+1  P1   A  Trung tâm
+2  P2   B        Nam
+3  P3   C        NaN
+</code></pre></div><p>P1 khớp hai hàng mang khoá A nên xuất hiện hai lần.</p><aside class="notes">Cho sinh viên dự đoán trước khi xem output. Cơ chế merge tạo mọi cặp hàng cùng khoá, không chọn một hàng ngẫu nhiên. Chưa biết vùng nào đúng thì không tự drop_duplicates để ép số hàng. Left join vẫn giữ P3 nhưng tổng hàng tăng từ 3 lên 4.</aside></section>
+
+<section id="validate"><h2>Báo lỗi nếu bảng vùng lặp khu</h2>
+<p><code>many_to_one</code>: nhiều chỗ ở một khu; bảng vùng mỗi khu một dòng.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="32"><code class="language-python" data-trim>
+cho_o.merge(vung_lap, on=&quot;khu&quot;, how=&quot;left&quot;,
+            validate=&quot;many_to_one&quot;)
+</code></pre><pre class="jp-output" data-jp-n="32"><code class="language-text" data-trim>
+MergeError: Merge keys are not unique in right dataset;
+not a many-to-one merge
+</code></pre></div><p>Khu A lặp nên pandas dừng, thay vì lặng lẽ nhân đôi P1.</p><aside class="notes">Đặt ngay sau ví dụ nhân hàng; dùng lại vung_lap có A/Bắc và A/Trung tâm. Yêu cầu nghiệp vụ của ví dụ là mỗi khu thuộc một vùng, nên khoá khu phía phải phải duy nhất. validate="many_to_one" (viết tắt "m:1") kiểm tra yêu cầu đó và báo lỗi khi không thoả; không tự sửa dữ liệu hay chọn hộ một dòng. Nhiều chỗ ở cùng khu bên trái là hợp lệ. Kiểm tra này không yêu cầu mọi khu phía trái đều xuất hiện phía phải; indicator ở trước dùng để phát hiện thiếu đối ứng. Thông báo đầy đủ còn liệt kê các khoá bị lặp; trên slide cắt còn dòng đầu cho vừa khung. Nếu quan hệ nhiều–nhiều là chủ đích thì không dùng ràng buộc này. Tham khảo pandas.DataFrame.merge: https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.merge.html</aside></section>
+
+<section id="merge-real"><h2>Ghép bảng host trở lại bảng chỗ ở</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="33"><code class="language-python" data-trim>
+mo_rong = listings.merge(host, on=&quot;host_id&quot;, how=&quot;left&quot;,
+                         validate=&quot;many_to_one&quot;)
+assert len(mo_rong) == len(listings)
+print(len(listings), &quot;-&gt;&quot;, len(mo_rong))
+</code></pre><pre class="jp-output" data-jp-n="33"><code class="language-text" data-trim>
+18534 -&gt; 18534
+</code></pre></div><p><code>validate</code>: mỗi chỗ ở khớp đúng một host. <code>assert</code>: số hàng phải không đổi, lần chạy sau tự báo lỗi.</p><aside class="notes">Đây là mẫu sẽ dùng lại trong bài tập lớn: mỗi lần ghép, viết ngay một assert về số hàng. Bảng host là bảng cấp host dựng ở mục 3, khoá host_id duy nhất nên many_to_one thoả. Nếu bỏ validate và bảng phải lỡ có host lặp, số hàng sẽ tăng âm thầm và mọi tỷ lệ tính sau đó đều sai. Chạy trên snapshot Santiago 2026-06-29.</aside></section>
+
+<section id="exercise-merge"><h2>Bài tập 4: Ghép hai bảng</h2>
+<div class="concept-grid">
+<div><h4>trai</h4><table class="data-table"><thead><tr><th>id</th><th>khu</th></tr></thead><tbody><tr><td>P1</td><td>A</td></tr><tr><td>P2</td><td>A</td></tr><tr><td>P3</td><td>B</td></tr></tbody></table></div>
+<div><h4>phai</h4><table class="data-table"><thead><tr><th>khu</th><th>vung</th></tr></thead><tbody><tr><td>A</td><td>Bắc</td></tr><tr><td>A</td><td>Trung tâm</td></tr></tbody></table></div>
+</div><p>Viết bảng kết quả của lệnh sau:</p>
+<pre><code class="language-python" data-trim>
+trai.merge(phai, on="khu", how="left")
+</code></pre><aside class="notes">Kết quả gồm 5 hàng theo thứ tự: P1/A/Bắc; P1/A/Trung tâm; P2/A/Bắc; P2/A/Trung tâm; P3/B/NaN. Khi chữa, nối từng hàng bên trái với các hàng khớp bên phải. P1 và P2 đều khớp hai hàng A; P3 không khớp nhưng được giữ vì how="left". Không thêm yêu cầu đếm hay tính tổng vào đề. Liên hệ validate vừa học: nếu yêu cầu mỗi khu chỉ thuộc một vùng, bảng phải này không đạt yêu cầu.</aside></section>
+
+</section>
+
+<section>
+
+<section id="pipeline-intro"><h1><span class="text-light">5.</span><br>Viết phân tích <br> thành một chuỗi</h1><p class="text-light">Một chuỗi trả bảng mới: chạy lại bao nhiêu lần cũng ra một kết quả.</p></section>
+
+<section id="rerun"><h2>Chạy lại một ô có đổi kết quả không?</h2>
+<p>Một ô tăng giá 10%:</p><div class="jp-cell"><pre class="jp-input" data-jp-n="34"><code class="language-python" data-trim>
+bang_gia = pd.DataFrame({&quot;gia&quot;: [100.0, 80.0]}, index=[&quot;P1&quot;, &quot;P2&quot;])
+bang_gia[&quot;gia&quot;] = bang_gia[&quot;gia&quot;] * 1.1
+print(bang_gia)
+</code></pre><pre class="jp-output" data-jp-n="34"><code class="language-text" data-trim>
+      gia
+P1  110.0
+P2   88.0
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="35"><code class="language-python" data-trim>
+bang_gia[&quot;gia&quot;] = bang_gia[&quot;gia&quot;] * 1.1   # chạy lại đúng dòng trên
+print(bang_gia)
+</code></pre><pre class="jp-output" data-jp-n="35"><code class="language-text" data-trim>
+      gia
+P1  121.0
+P2   96.8
+</code></pre></div><p>Gán chồng lên cột cũ: mỗi lần chạy lại là một kết quả khác.</p><aside class="notes">Đây là lỗi hay gặp nhất khi làm việc trong notebook. Liên hệ Bài 4: cột dẫn xuất không tự tính lại khi cột nguồn đổi, và ở đây thì ngược lại, nó tự tính lại thêm một lần nữa. Cách chữa ở slide sau. Cách chữa tạm thời khi vẫn muốn gán: luôn tính từ cột gốc (bang_gia["gia_moi"] = bang_gia["gia"] * 1.1).</aside></section>
+
+<section id="pipeline-steps"><h2>Đặt tên cho từng bước</h2>
+<p>Mỗi bước là một hàm: nhận bảng, trả một cột.</p><pre><code class="language-python" data-trim>
+def chia_phan_khuc(d):
+    return pd.cut(d[&quot;price&quot;], nguong_gia, right=False, labels=nhan)
+
+def dem_host(d):
+    return d.groupby(&quot;host_id&quot;)[&quot;id&quot;].transform(&quot;size&quot;)
+</code></pre><aside class="notes">Hai hàm dùng lại đúng cut và transform đã học; tên hàm nói rõ bước đó làm gì. Tham số d là bảng mà bước trước trả về. Đặt tên bước trước khi ghép chuỗi để chuỗi đọc được như một danh sách việc. Không dùng lambda dài trên slide: khó đọc và không đặt tên được.</aside></section>
+
+<section id="pipeline-assign"><h2>Thêm cột, trả bảng mới</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="36"><code class="language-python" data-trim>
+co_gia = listings.loc[listings[&quot;price&quot;].notna()]
+mo_rong = co_gia.assign(phan_khuc=chia_phan_khuc, n_host=dem_host)
+print(co_gia.shape, mo_rong.shape)
+</code></pre><pre class="jp-output" data-jp-n="36"><code class="language-text" data-trim>
+(17688, 19) (17688, 21)
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="37"><code class="language-python" data-trim>
+print(&quot;phan_khuc&quot; in listings.columns)
+</code></pre><pre class="jp-output" data-jp-n="37"><code class="language-text" data-trim>
+False
+</code></pre></div><p>Bảng mới có thêm hai cột. <code>listings</code> không đổi.</p><aside class="notes">assign nhận hàm, gọi hàm trên bảng hiện tại và trả một bảng mới có thêm cột. Khác với bang_gia["gia"] = ... ở slide trước: không có phép gán vào bảng gốc, nên chạy ô này bao nhiêu lần cũng chỉ tạo bảng mới giống nhau. assign nhận cả giá trị lẫn hàm; hàm nhận bảng đang được xây (đã có các cột trước đó trong cùng lời gọi assign).</aside></section>
+
+<section id="pipeline"><h2>Ghép thành một chuỗi</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="38"><code class="language-python" data-trim>
+ket_qua = (listings
+    .loc[listings[&quot;price&quot;].notna()]
+    .assign(phan_khuc=chia_phan_khuc, n_host=dem_host)
+    .groupby(&quot;phan_khuc&quot;, observed=True)
+    .agg(so_cho_o=(&quot;id&quot;, &quot;size&quot;),
+         trung_vi_gia=(&quot;price&quot;, &quot;median&quot;),
+         tv_n_host=(&quot;n_host&quot;, &quot;median&quot;)))
+print(ket_qua)
+</code></pre><pre class="jp-output" data-jp-n="38"><code class="language-text" data-trim>
+           so_cho_o  trung_vi_gia  tv_n_host
+phan_khuc
+thấp           1660       23617.5        1.0
+giữa          12325       54776.0        2.0
+cao            3703      145318.0        3.0
+</code></pre></div><p>Lọc → thêm cột → nhóm → tổng hợp. Không sửa <code>listings</code>, nên chạy lại vẫn ra một kết quả.</p><aside class="notes">Đây là điều kiện để bài tập lớn chạy lại từ đầu đến cuối bằng một lệnh. observed=True chỉ giữ các nhóm thực sự có dữ liệu. Đọc kết quả: chỗ ở càng đắt càng hay thuộc về host nhiều chỗ ở (trung vị 1 → 2 → 3), nhưng đây mới là quan sát, chưa phải kết luận nhân quả. Không giới thiệu pipe ở bài này. Liên hệ Bài 4: cột dẫn xuất không tự tính lại; ở đây mọi cột đều tính lại từ đầu mỗi lần chạy nên không có cột nào lệch.</aside></section>
+
+</section>
+
+<section>
+
+<section id="summary"><h2>Tổng kết</h2>
+<ol><li>Phép tính và phép gán Series khớp theo nhãn.</li><li>Dùng hàm hoặc phép toán cột để thực hiện đúng quy tắc tính.</li><li>Tổng hợp trả kết quả cho mỗi nhóm; <code>transform</code> trả kết quả cho từng hàng.</li><li>Ghép bảng có thể làm mất hoặc nhân hàng, nên phải kiểm số hàng trước và sau.</li><li>Viết phân tích thành một chuỗi trả bảng mới để chạy lại luôn ra cùng kết quả.</li></ol></section>
+
+<section id="ai"><h2>Làm việc với AI thì sao?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div><div class="good-box"><span class="box-title">AI làm tốt</span>Viết code tính toán, nhóm và ghép từ yêu cầu cụ thể.</div><div class="warn-box"><span class="box-title">AI hay sai</span>Bỏ nhãn khi tính, bỏ sót điều kiện, chọn sai khoá nhóm, không kiểm tra các hàng bị lặp sau ghép, và trả bảng đã đổi đơn vị đếm mà không nói.</div></section>
+
+<section id="verify"><h2>Kiểm chứng thế nào?</h2>
+<ol><li>Thử dữ liệu đảo thứ tự, thiếu nhãn và giá trị đúng biên điều kiện.</li><li>Tính tay một nhóm; kiểm tra số giá tham gia phép tính.</li><li>Dự đoán số hàng sau ghép rồi kiểm tra khoá và các hàng chưa khớp.</li><li>Hỏi mỗi hàng của bảng kết quả là gì: một chỗ ở, một host hay một lượt thu thập?</li></ol></section>
+
+<section id="reading"><h2>Đọc thêm</h2>
+<ol><li><a href="https://wesmckinney.com/book/pandas-basics">McKinney, §5.2: khớp nhãn và áp dụng hàm</a></li><li><a href="https://wesmckinney.com/book/data-aggregation">McKinney, chương 10: tính theo nhóm</a></li><li><a href="https://wesmckinney.com/book/data-wrangling">McKinney, §8.2: ghép dữ liệu; §8.3: đổi hình dạng bảng</a></li><li><a href="https://pandas.pydata.org/docs/user_guide/merging.html">pandas: kiểm tra phép ghép</a></li></ol></section>
+
+</section>
 
       <!-- Footer -->
       <div class="footer">

@@ -13,520 +13,508 @@
   <link rel="stylesheet" href="plugin/highlight/zenburn.css">
   <link rel="stylesheet" href="lecture-style.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <style>
+    .reveal .data-table {
+      font-size: .85em;
+      margin: 24px auto;
+    }
+
+    .reveal .data-table th {
+      color: #1E93AB;
+    }
+
+    .reveal #columns .jp-output code,
+    .reveal #chained .jp-output code { white-space: pre-wrap; }
+  </style>
 </head>
 
 <body>
   <div class="reveal">
     <div class="slides">
-
-      <!-- ====== Mở bài ====== -->
       <section>
+
         <section>
-          <h1>Lập trình <br /> xử lý dữ liệu</h1>
-          <div>
-            <p>Học kì 1, năm học 2026–2027</p>
-            <p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
-          </div>
+          <h1>Lập trình<br>xử lý dữ liệu</h1>
+          <p>Học kì 1, năm học 2026–2027</p>
+          <p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
         </section>
 
         <section>
-          <h1>
-            <span class="text-light">Bài 4</span>
-            <br>
-            Làm quen với pandas
-          </h1>
+          <h1><span class="text-light">Bài 4</span><br>Làm quen với pandas</h1>
         </section>
 
-        <section>
+        <section id="previous">
           <h2>Bài trước</h2>
-          <ul>
-            <li>NumPy: mảng cùng dtype, vector hoá, mặt nạ bool, axis.</li>
-            <li>Nhưng mảng chỉ có <em>vị trí</em> — cột 3 là "giá" hay "vĩ độ", tự bạn phải nhớ.</li>
-          </ul>
-          <p class="text-light">Bài này bổ sung nhãn cho dữ liệu và làm việc với dữ liệu dạng bảng.</p>
-        </section>
+          <p>NumPy cho ta <code>shape</code>, <code>dtype</code>, cách chọn phần tử và cách tính trên cả mảng.</p>
+          <p>Nhưng mảng chỉ biết vị trí: cột thứ 3 là giá hay vĩ độ, bạn phải tự nhớ.</p>
+          <p>pandas gắn nhãn cho từng hàng và từng cột.</p>
+        <aside class="notes">Dữ liệu thật có cả số và chữ, nên mỗi hàng và mỗi cột cần một nhãn đi kèm.</aside></section>
 
-        <section>
+        <section id="agenda">
           <h2>Tổng quan</h2>
           <ol>
-            <li>Series &amp; DataFrame là gì?</li>
-            <li>Đọc dữ liệu thật &amp; nhìn tổng quan</li>
-            <li>Chọn cột, lọc hàng</li>
-            <li>Thống kê &amp; sắp xếp</li>
-            <li>Giá trị thiếu (giới thiệu) &amp; ghi file</li>
-            <li>Làm việc với AI thì sao?</li>
+            <li>Bảng có nhãn</li>
+            <li>Đọc và hiểu dữ liệu</li>
+            <li>Chọn hàng, chọn cột</li>
+            <li>Tính toán và sửa bảng</li>
+            <li>Kiểm tra và lưu</li>
           </ol>
-          <p class="text-light">Dữ liệu: 18.534 phòng Airbnb ở Santiago, Chile.</p>
         </section>
+
       </section>
 
-      <!-- ====== Phần 1 ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">1.</span><br>Series &amp; DataFrame</h1>
-          <p class="text-light">Mảng NumPy có thêm nhãn cho từng phần tử, từng cột.</p>
-        </section>
 
-        <section data-jp-reset>
-          <h2>Series = mảng + index</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
+<section><h1><span class="text-light">1.</span><br>Bảng có nhãn</h1><p class="text-light">Biểu diễn dữ liệu bằng DataFrame và Series.</p></section>
+
+<section id="small-table"><h2>Ví dụ về bảng</h2><p>Dữ liệu giả lập; mỗi hàng là một chỗ ở, giá tính bằng USD/đêm.</p><table class="data-table"><thead><tr><th>chỉ mục</th><th>loại</th><th>giá</th></tr></thead><tbody><tr><td><span style="color:#1E93AB">a</span></td><td>Nguyên căn</td><td>100</td></tr><tr><td><span style="color:#1E93AB">b</span></td><td>Phòng riêng</td><td>50</td></tr><tr><td><span style="color:#1E93AB">c</span></td><td>Nguyên căn</td><td>chưa biết</td></tr></tbody></table><p>Ta cần giữ cả <strong>nhãn hàng</strong>, <strong>tên cột</strong> và kiểu dữ liệu của từng cột.</p><aside class="notes">Nối NumPy: một ndarray có một dtype, còn bảng này có cả chữ và số. Pandas cung cấp DataFrame để làm việc với bảng có nhãn. Chỉ mục a/b/c đánh dấu hàng; không phải cột dữ liệu thứ ba. Không khẳng định NumPy không thể chứa dữ liệu hỗn hợp; trọng tâm là cấu trúc bảng phù hợp hơn.</aside></section>
+
+<section id="dataframe"><h2>Tạo bảng với DataFrame</h2><p><strong>DataFrame</strong> là bảng hai chiều. Mỗi khoá của dict dưới đây tạo một cột.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
 import pandas as pd
+import numpy as np
 
-gia = pd.Series([45647, 19856, 46776],
-                index=["phong_A", "phong_B", "phong_C"])
-gia
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-phong_A    45647
-phong_B    19856
-phong_C    46776
-dtype: int64
-            </code></pre>
-          </div>
-          <p>Bên trong vẫn là mảng NumPy (<span class="inline-code">gia.values</span>) —
-            nhưng giờ tra được theo <em>tên</em>: <span class="inline-code">gia["phong_B"]</span>.</p>
-        </section>
-
-        <section data-jp-reset>
-          <h2>DataFrame = các Series chung một index</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
 df = pd.DataFrame({
-    "gia":  [45647, 19856, 46776],
-    "loai": ["Private", "Private", "Entire home"],
-})
-df
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-     gia         loai
-0  45647      Private
-1  19856      Private
-2  46776  Entire home
-            </code></pre>
-          </div>
-          <p>Mỗi cột có một dtype riêng (số, chuỗi…). DataFrame biểu diễn và xử lý bảng dữ liệu
-            thuận tiện hơn cấu trúc list các dict ở bài 2.</p>
-        </section>
+    &quot;loai&quot;: [&quot;Nguyên căn&quot;, &quot;Phòng riêng&quot;, &quot;Nguyên căn&quot;],
+    &quot;gia&quot;: [100., 50., np.nan],
+}, index=[&quot;a&quot;, &quot;b&quot;, &quot;c&quot;])
+print(df)
+</code></pre><pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
+          loai    gia
+a   Nguyên căn  100.0
+b  Phòng riêng   50.0
+c   Nguyên căn    NaN
+</code></pre></div><p><code>NaN</code> đánh dấu giá trị thiếu; chưa biết giá khác với giá bằng 0.</p><aside class="notes">Chỉ từ dict trong code sang hai cột trong bảng. index cung cấp nhãn hàng. Nếu bỏ index khi tạo từ các list này, pandas dùng nhãn 0,1,2. NaN biểu diễn thiếu trong cột float ở đây; chưa mở các dtype nullable.</aside></section>
 
-        <section>
-          <h2>Từ ndarray đến DataFrame</h2>
-          <div class="pipeline">
-            <div class="stage">
-              <div class="stage-title">ndarray</div>
-              <div class="stage-desc">khối số<br>theo vị trí</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">Series</div>
-              <div class="stage-desc">1 cột<br>có index</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage stage-highlight">
-              <div class="stage-title">DataFrame</div>
-              <div class="stage-desc">nhiều cột<br>chung index</div>
-            </div>
-          </div>
-          <div class="key-box" style="margin-top:0.9em">
-            <span class="box-title">Quan trọng</span>
-            Phần lớn kỹ năng NumPy ở bài 3 (vector hoá, mặt nạ bool, thống kê)
-            có thể áp dụng trực tiếp trên từng cột của DataFrame.
-          </div>
-        </section>
+<section id="shape-dtype"><h2>Nhãn và kích thước của bảng</h2><p><code>df.index</code> giữ nhãn hàng, <code>df.columns</code> giữ tên cột; cả hai là <code>Index</code>.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
+print(df.index)
+</code></pre><pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
+Index([&#x27;a&#x27;, &#x27;b&#x27;, &#x27;c&#x27;], dtype=&#x27;str&#x27;)
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
+print(df.columns)
+</code></pre><pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
+Index([&#x27;loai&#x27;, &#x27;gia&#x27;], dtype=&#x27;str&#x27;)
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
+print(df.shape)
+</code></pre><pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>
+(3, 2)
+</code></pre></div><p>Chỉ mục không tính vào số cột: bảng có 2 cột.</p><aside class="notes">Index lưu nhãn kèm dtype của nhãn; ở đây nhãn là chuỗi nên dtype là str. Dùng repr thật để sinh viên nhận ra output khi tự chạy. shape là tuple (số hàng, số cột), đọc như shape của mảng NumPy. Chỉ mục có thể là số hoặc chữ, không mặc định là vị trí; phần loc/iloc sau sẽ làm rõ. Index là kiểu riêng của pandas dùng để lưu nhãn.</aside></section>
+
+<section id="series"><h2>Mỗi cột là một Series</h2><p>Lấy cột <code>gia</code>: các giá trị vẫn đi cùng nhãn hàng <code>a, b, c</code>.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
+gia = df[&quot;gia&quot;]
+print(gia)
+</code></pre><pre class="jp-output" data-jp-n="5"><code class="language-text" data-trim>
+a    100.0
+b     50.0
+c      NaN
+Name: gia, dtype: float64
+</code></pre></div><p><strong>Series</strong> là dữ liệu một chiều có chỉ mục; <code>gia</code> là tên của Series này.</p><aside class="notes">Name trong output là tên Series, dtype là kiểu dữ liệu của các giá trị. Series cũng có thể tạo độc lập với pd.Series; không phải chỉ tồn tại bên trong DataFrame.</aside></section>
+
+<section id="series-calculation"><h2>Tính toán trên Series</h2><p>Nhân các giá trị với 2, như phép tính trên mảng NumPy:</p><div class="jp-cell"><pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>
+print(gia * 2)
+</code></pre><pre class="jp-output" data-jp-n="6"><code class="language-text" data-trim>
+a    200.0
+b    100.0
+c      NaN
+Name: gia, dtype: float64
+</code></pre></div><p>Nhãn của hàng được giữ lại. Giá trị thiếu vẫn là <code>NaN</code>.</p><aside class="notes">Phép toán tạo kết quả mới, gia và df vẫn giữ nguyên. Sinh viên nhìn nhãn để biết kết quả ứng với chỗ ở nào. Khớp nhãn giữa hai Series khác thứ tự để Bài 5.</aside></section>
+
+<section id="column-dtypes"><h2>Mỗi cột có một dtype</h2><p>Cột loại chứa chữ; cột giá chứa số thực và giá trị thiếu.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>
+print(df.dtypes)
+</code></pre><pre class="jp-output" data-jp-n="7"><code class="language-text" data-trim>
+loai        str
+gia     float64
+dtype: object
+</code></pre></div><p>Hai dòng đầu là dtype của hai cột. Dòng cuối mô tả <strong>Series kết quả</strong> của <code>df.dtypes</code>.</p><aside class="notes">Không hiểu dtype: object là dtype chung của DataFrame. df.dtypes trả một Series chứa các đối tượng dtype. Trong pandas 3.0.3 cột chuỗi được suy luận là str. Dtype không tự nói ý nghĩa nghiệp vụ: mã số có thể lưu bằng int nhưng không có nghĩa nên tính trung bình mã.</aside></section>
+
+<section id="exercise-table"><h2>Bài tập 1: Chọn chỗ ở</h2><p>Giá giả lập (USD). Phí dọn dẹp chỉ thu <strong>một lần</strong> cho mỗi lượt ở.</p>
+<table class="data-table"><thead><tr><th>Chỗ ở</th><th>Giá mỗi đêm</th><th>Phí dọn dẹp</th></tr></thead><tbody><tr><td>a</td><td>100</td><td>0</td></tr><tr><td>b</td><td>80</td><td>100</td></tr><tr><td>c</td><td>60</td><td>300</td></tr></tbody></table>
+<ol><li>Tạo DataFrame và tính tổng tiền cho 2 đêm, 7 đêm bằng phép toán trên Series. Mỗi trường hợp chọn chỗ nào rẻ nhất?</li><li>Từ bao nhiêu đêm thì c rẻ hơn cả a và b? Kiểm tra lại bằng code.</li></ol><aside class="notes">Mục đích: dùng các cột có ý nghĩa khác nhau để lập phép tính, chọn phương án theo tổng tiền và kiểm chứng ngưỡng thay đổi. Dữ liệu giả lập, tổng tiền trong bài chỉ gồm giá đêm và phí dọn dẹp đã nêu; số đêm là số nguyên dương. Cách tạo: cho_o = pd.DataFrame({"gia_dem": [100, 80, 60], "phi_don": [0, 100, 300]}, index=["a", "b", "c"]). Tổng cho n đêm: cho_o["gia_dem"] * n + cho_o["phi_don"]. Hai Series lấy từ cùng bảng có cùng chỉ mục; chưa yêu cầu cơ chế khớp nhãn khác thứ tự. Với 2 đêm: a=200, b=260, c=420, chọn a. Với 7 đêm: a=700, b=660, c=720, chọn b. Để c rẻ hơn a: 60n+300 &lt; 100n nên n &gt; 7,5. Để c rẻ hơn b: 60n+300 &lt; 80n+100 nên n &gt; 10. Số đêm tối thiểu là 11. Kiểm tra n=10: [1000, 900, 900], b và c bằng nhau; n=11: [1100, 980, 960], c rẻ nhất. Chấp nhận cách lập luận bằng bất đẳng thức hoặc thử các số đêm và giải thích ngưỡng; không bắt buộc idxmin, apply, groupby hoặc thêm cột chưa học. Chỉ đọc nhãn từ Series kết quả là đủ. Không suy rộng thành báo giá Airbnb thật.</aside></section>
+
       </section>
 
-      <!-- ====== Phần 2 ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">2.</span><br>Đọc dữ liệu thật<br>&amp; nhìn tổng quan</h1>
-          <p class="text-light">Các bước đầu tiên khi làm việc với một dataset mới.</p>
-        </section>
+<section><h1><span class="text-light">2.</span><br>Đọc và hiểu dữ liệu</h1><p class="text-light">Đọc bảng chỗ ở, kiểm tra giá rồi nhận xét mức giá.</p></section>
 
-        <section data-jp-reset>
-          <h2>read_csv: một dòng, cả bảng</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-URL = ("https://data.insideairbnb.com/chile/rm/santiago/"
-       "2026-06-29/visualisations/listings.csv")
-df = pd.read_csv(URL)
-df.shape
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="1"><code class="language-text" data-trim>
+<section id="read-csv"><h2>Đọc bảng Airbnb Santiago</h2><p>Tìm hiểu mức giá chỗ ở tại Santiago từ snapshot ngày 29/06/2026.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>
+url = (&quot;https://data.insideairbnb.com/chile/rm/santiago/&quot;
+       &quot;2026-06-29/visualisations/listings.csv&quot;)
+listings = pd.read_csv(url)
+print(listings.shape)
+</code></pre><pre class="jp-output" data-jp-n="8"><code class="language-text" data-trim>
 (18534, 19)
-            </code></pre>
-          </div>
-          <p><code>read_csv</code> đọc 18.534 dòng × 19 cột bằng một lệnh và tự suy luận
-            kiểu dữ liệu cho từng cột.</p>
-        </section>
+</code></pre></div><p><code>read_csv</code> tạo DataFrame: <strong>18.534 hàng, 19 cột</strong>.</p><aside class="notes">Bản rút gọn visualisations/listings.csv, không phải bản chi tiết data/listings.csv.gz. Chuyển từ tạo DataFrame bằng dict sang đọc từ file. Mỗi hàng là một chỗ ở trong snapshot, không phải lượt đặt phòng. Không gọi dữ liệu này là toàn bộ thị trường cho thuê.</aside></section>
 
-        <section data-jp-reset>
-          <h2>head / sample: xem trước vài dòng</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-df[["name", "room_type", "price"]].head(3)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-                                    name        room_type    price
-0           luminosa mansarda con balcón     Private room  45647.0
-1  Cómoda habitación bien ubicada con …     Private room  19856.0
-2     Cómodo departamento Cerca de Metro  Entire home/apt  46776.0
-            </code></pre>
-          </div>
-          <p><span class="inline-code">head</span> xem đầu, <span class="inline-code">sample(5)</span>
-            xem ngẫu nhiên.</p>
-        </section>
+<section id="columns"><h2>Danh sách các cột</h2><p>Một hàng là một chỗ ở; mỗi cột là một thông tin về nó.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="9"><code class="language-python" data-trim>
+print(listings.columns)
+</code></pre><pre class="jp-output" data-jp-n="9"><code class="language-text" data-trim>
+Index([&#x27;id&#x27;, &#x27;name&#x27;, &#x27;host_id&#x27;, &#x27;host_profile_id&#x27;, &#x27;host_name&#x27;,
+       &#x27;neighbourhood_group&#x27;, &#x27;neighbourhood&#x27;, &#x27;latitude&#x27;, &#x27;longitude&#x27;,
+       &#x27;room_type&#x27;, &#x27;price&#x27;, &#x27;minimum_nights&#x27;, &#x27;number_of_reviews&#x27;,
+       &#x27;last_review&#x27;, &#x27;reviews_per_month&#x27;, &#x27;calculated_host_listings_count&#x27;,
+       &#x27;availability_365&#x27;, &#x27;number_of_reviews_ltm&#x27;, &#x27;license&#x27;],
+      dtype=&#x27;str&#x27;)
+</code></pre></div><p>Khoá: <code>id</code>, <code>host_id</code>. Số đo: <code>price</code>, <code>minimum_nights</code>. Nhãn phân loại: <code>room_type</code>, <code>neighbourhood</code>.</p><aside class="notes">Hoàn thiện slide GV thêm. columns trả tên cột, chưa cho biết đơn vị hoặc ý nghĩa đầy đủ. Không cần đọc thuộc 19 tên. Phân loại theo vai trò để biết cột nào tính được, cột nào chỉ để tra cứu: cộng trung bình một cột khoá như host_id là vô nghĩa. latitude/longitude là số nhưng là toạ độ, không phải số đo để cộng trung bình. Giá cao/thấp có thể liên quan loại chỗ ở nên giữ room_type cạnh price. Khoá dùng để tra lại bản ghi. Bài này bắt đầu với id, room_type và price.</aside></section>
 
-        <section data-jp-reset>
-          <h2>info: cấu trúc và mức thiếu của bảng</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-df.info()
-            </code></pre>
-            <pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
-RangeIndex: 18534 entries, 0 to 18533
-Data columns (total 19 columns):
- #   Column               Non-Null Count  Dtype
----  ------               --------------  -----
- 10  price                17688 non-null  float64
- 13  last_review          15243 non-null  str
-...
-            </code></pre>
-          </div>
-          <p>Đọc được ngay: cột nào, kiểu gì, <strong>thiếu bao nhiêu</strong>
-            (price: 18534 − 17688 = 846 ô trống).</p>
-        </section>
+<section id="look"><h2>Xem trước vài dòng</h2><p>Mỗi hàng là một chỗ ở; <code>price</code> là giá một đêm, tính bằng peso Chile (CLP).</p><div class="jp-cell"><pre class="jp-input" data-jp-n="10"><code class="language-python" data-trim>
+print(listings[[&quot;id&quot;, &quot;room_type&quot;, &quot;price&quot;]].head(3))
+</code></pre><pre class="jp-output" data-jp-n="10"><code class="language-text" data-trim>
+                    id        room_type    price
+0   978070332077815549     Private room  45647.0
+1  1069858035768058539     Private room  19856.0
+2             37181369  Entire home/apt  46776.0
+</code></pre></div><p><code>[[...]]</code> chọn các cột theo tên; <code>head(3)</code> lấy 3 hàng đầu.</p><p>Các số 0, 1, 2 bên trái là chỉ mục; <code>id</code> là mã chỗ ở từ file.</p><aside class="notes">Đây là lần đầu dùng nhiều tên cột: giải thích đủ để đọc ví dụ, phần 3 mới so Series/DataFrame và chọn chi tiết. head cho xem nhanh, không đại diện toàn bảng. read_csv tạo chỉ mục số mặc định; id vẫn là cột dữ liệu, không tự trở thành index. room_type là loại chỗ ở. Đơn vị CLP của bảng Santiago khác USD trong ví dụ giả lập. Ý nghĩa và đơn vị phải đối chiếu mô tả nguồn: https://insideairbnb.com/get-the-data/ .</aside></section>
 
-        <section data-jp-reset>
-          <h2>describe: thống kê nhanh mọi cột số</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-df["price"].describe().round()
-            </code></pre>
-            <pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>
-count       17688.0
-mean       118200.0
-std       1226089.0
-min           979.0
-50%         59000.0
-max      97000045.0
-            </code></pre>
-          </div>
-          <p>Trung bình 118 nghìn CLP nhưng trung vị 59 nghìn — và max <strong>97 triệu CLP/đêm</strong>
-            (~2,6 tỷ đồng). Chênh lệch này cho thấy phân phối lệch và có giá trị cần kiểm tra;
-            bài 10 sẽ trình bày cách xử lý.</p>
-        </section>
+<section id="missing-mechanism"><h2>Đếm giá trị thiếu</h2><p>Thử trên cột giá của bảng nhỏ trước:</p><table class="data-table"><thead><tr><th>Nhãn</th><th><code>gia</code></th><th><code>gia.isna()</code></th></tr></thead><tbody><tr><td>a</td><td>100</td><td>False</td></tr><tr><td>b</td><td>50</td><td>False</td></tr><tr><td>c</td><td>NaN</td><td><strong>True</strong></td></tr></tbody></table><div class="jp-cell"><pre class="jp-input" data-jp-n="11"><code class="language-python" data-trim>
+print(gia.isna().sum())
+</code></pre><pre class="jp-output" data-jp-n="11"><code class="language-text" data-trim>
+1
+</code></pre></div><p><code>isna()</code> đánh dấu ô thiếu. <code>sum()</code> đếm các giá trị <code>True</code>.</p><aside class="notes">Đếm bool: True đóng góp 1, False đóng góp 0. Không dùng gia == np.nan để phát hiện thiếu. Cách biểu diễn thiếu có thể khác theo dtype, dùng isna thay vì so một ký hiệu cụ thể.</aside></section>
 
-        <section data-jp-reset>
-          <h2>value_counts: đếm nhóm của cột phân loại</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
-df["room_type"].value_counts()
-            </code></pre>
-            <pre class="jp-output" data-jp-n="5"><code class="language-text" data-trim>
-room_type
-Entire home/apt    15004
-Private room        3413
-Shared room           61
-Hotel room            56
-            </code></pre>
-          </div>
-          <p>81% listing là nguyên căn, cho thấy loại hình này chiếm phần lớn thị trường Santiago.
-            Thêm <span class="inline-code">normalize=True</span> để tính trực tiếp tỷ lệ.</p>
-        </section>
+<section id="missing"><h2>Bao nhiêu chỗ ở chưa có giá?</h2><div class="jp-cell"><pre class="jp-input" data-jp-n="12"><code class="language-python" data-trim>
+print(listings[&quot;price&quot;].isna().sum())
+</code></pre><pre class="jp-output" data-jp-n="12"><code class="language-text" data-trim>
+846
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="13"><code class="language-python" data-trim>
+print(listings[&quot;price&quot;].count())
+</code></pre><pre class="jp-output" data-jp-n="13"><code class="language-text" data-trim>
+17688
+</code></pre></div><p>Trong 18.534 hàng: <strong>846 thiếu giá</strong>, <strong>17.688 có giá</strong>.<br><code>count()</code> chỉ đếm giá trị không thiếu.</p><aside class="notes">Nối chính xác cơ chế trên cột nhỏ sang cột thật. Số liệu kiểm bằng snapshot. Không cần cho dtypes ở đây vì không phục vụ câu hỏi đếm thiếu; dtype trong phần cấu trúc và notebook tự học.</aside></section>
 
-        <section>
-          <h2>Thói quen 5 bước với dataset lạ</h2>
-          <ol>
-            <li><span class="inline-code">shape</span> — to cỡ nào?</li>
-            <li><span class="inline-code">head / sample</span> — trông ra sao?</li>
-            <li><span class="inline-code">info</span> — kiểu gì, thiếu đâu?</li>
-            <li><span class="inline-code">describe</span> — phân phối cột số có gì lạ?</li>
-            <li><span class="inline-code">value_counts</span> — cột phân loại gồm những nhóm nào?</li>
-          </ol>
-          <div class="good-box">
-            <span class="box-title">Cách làm tốt</span>
-            Làm đủ 5 bước này <em>trước khi</em> viết bất kỳ phân tích nào — nhất là khi
-            code phân tích do AI viết.
-          </div>
-        </section>
+<section id="typical-price"><h2>Giá điển hình là bao nhiêu?</h2><p>Tính trên các giá được ghi nhận, đơn vị CLP/đêm.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="14"><code class="language-python" data-trim>
+thong_so = [&quot;mean&quot;, &quot;median&quot;, &quot;max&quot;]
+print(listings[&quot;price&quot;].agg(thong_so).round())
+</code></pre><pre class="jp-output" data-jp-n="14"><code class="language-text" data-trim>
+mean        118200.0
+median       59000.0
+max       97000045.0
+Name: price, dtype: float64
+</code></pre></div><p>Trung bình gấp đôi trung vị vì vài giá rất lớn kéo lên: bỏ ba giá cao nhất, trung bình còn khoảng 105.303; trung vị không đổi.</p><aside class="notes">Số đã kiểm trên snapshot 2026-06-29: mean 118.200, median 59.000, mean sau khi bỏ 3 giá cao nhất là 105.303, bản ghi lớn nhất chiếm 4,6395% tổng giá. Trung vị chỉ phụ thuộc thứ hạng nên vài giá lớn không kéo được nó. Các thống kê bỏ qua giá thiếu. Max 97000045 cần kiểm nguồn, đơn vị và bản ghi, chưa chứng minh là sai; mục 5 sẽ xem các hàng đó. Mức giá phổ biến cần xem phân bố, không tự đồng nhất với mean hay median. agg chạy các phép tổng hợp đã chọn; round() làm tròn để hiển thị. agg chạy các phép tổng hợp đã chọn; round() làm tròn để hiển thị. Riêng bản ghi 97 triệu chiếm khoảng 4,6% tổng giá.</aside></section>
+
+<section id="exercise-claim"><h2>Bài tập 2: Giá có giảm không?</h2><p>Giá của ba chỗ ở qua hai lần thu thập (giả lập, USD/đêm).</p>
+<table class="data-table"><thead><tr><th>Chỗ ở</th><th>Lần 1</th><th>Lần 2</th></tr></thead><tbody><tr><td>a</td><td>100</td><td>110</td></tr><tr><td>b</td><td>200</td><td>210</td></tr><tr><td>c</td><td>300</td><td>chưa có giá</td></tr></tbody></table>
+<ol><li>Tính trung bình các giá đã biết ở mỗi lần thu thập.</li><li>Tính lại hai trung bình khi chỉ xét a và b ở cả hai lần.</li><li>Vì sao cách thứ nhất cho thấy giá trung bình giảm, còn cách thứ hai lại tăng?</li></ol><aside class="notes">Mục đích: phân biệt thay đổi giá với thay đổi tập chỗ ở có dữ liệu. Bài độc lập với bài tập 1. Trung bình các giá đã biết: lần 1 là 200 từ a,b,c; lần 2 là 160 từ a,b. Trung bình giảm vì hai lần tính không cùng tập chỗ ở: giá 300 của c có trong lần 1, giá c thiếu ở lần 2. Chỉ xét a,b ở cả hai lần: trung bình từ 150 lên 160; từng chỗ đều tăng 10. Chưa biết giá lần 2 của c nên chưa kết luận cho cả ba chỗ ở. Cả hai phép tính trung bình đều đúng về số học, nhưng trả lời hai câu hỏi khác nhau. Không được coi NaN là 0 hoặc mặc định c giữ nguyên giá. Sinh viên có thể tính tay rồi tạo DataFrame với hai cột lan_1, lan_2 để kiểm chứng từng cột bằng mean(). Chưa yêu cầu cú pháp lọc pandas: câu 2 có thể tạo bảng riêng gồm a,b. Chấp nhận cách lấy phần đầu mỗi Series nếu sinh viên biết; không biến bài thành kiểm tra API chưa học.</aside></section>
+
       </section>
 
-      <!-- ====== Phần 3 ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">3.</span><br>Chọn cột, lọc hàng</h1>
-          <p class="text-light">Đây là nhóm thao tác thường dùng khi xử lý DataFrame.</p>
-        </section>
+<section>
 
-        <section data-jp-reset>
-          <h2>Chọn cột: một tên → Series, danh sách → DataFrame</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-df["price"]              # 1 tên  -> Series
-df[["name", "price"]]    # list   -> DataFrame (chú ý 2 lớp ngoặc!)
-            </code></pre>
-          </div>
-          <p>Quên lớp ngoặc thứ hai — <span class="inline-code">df["name", "price"]</span> —
-            thường gây lỗi <code>KeyError</code>.</p>
-        </section>
+<section><h1><span class="text-light">3.</span><br>Chọn hàng, chọn cột</h1><p class="text-light">Chọn theo nhãn, vị trí hoặc điều kiện.</p></section>
 
-        <section data-jp-reset>
-          <h2>Lọc hàng bằng mặt nạ bool — như NumPy</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-re_va_nguyen_can = df[(df["room_type"] == "Entire home/apt")
-                      & (df["price"] < 50000)]
-len(re_va_nguyen_can)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="2"><code class="language-text" data-trim>
-4273
-            </code></pre>
-          </div>
-          <p>Vẫn quy tắc của NumPy: <code>&amp;</code> <code>|</code> <code>~</code> + ngoặc quanh từng vế.
-            Kết quả: 4.273 căn nguyên căn dưới 50 nghìn CLP/đêm.</p>
-        </section>
+<section id="label-position"><h2>Chọn một ô</h2>
+<p>Lấy giá của chỗ ở <code>b</code> trong <code>df</code> đầu bài.</p>
+<table class="data-table"><thead><tr><th>Vị trí hàng</th><th>Chỉ mục</th><th>loai</th><th>gia</th></tr></thead><tbody><tr><td>0</td><td>a</td><td>Nguyên căn</td><td>100</td></tr><tr><td>1</td><td>b</td><td>Phòng riêng</td><td>50</td></tr><tr><td>2</td><td>c</td><td>Nguyên căn</td><td>NaN</td></tr></tbody></table>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="15"><code class="language-python" data-trim>
+print(df.loc[&quot;b&quot;, &quot;gia&quot;])
+</code></pre><pre class="jp-output" data-jp-n="15"><code class="language-text" data-trim>
+50.0
+</code></pre></div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="16"><code class="language-python" data-trim>
+print(df.iloc[1, 1])
+</code></pre><pre class="jp-output" data-jp-n="16"><code class="language-text" data-trim>
+50.0
+</code></pre></div>
+<p><code>loc</code> dùng nhãn; <code>iloc</code> dùng vị trí hàng và cột (từ 0).</p><aside class="notes">Cột loai ở vị trí 0, gia ở vị trí 1; chỉ mục a,b,c không phải một cột dữ liệu. Hai lệnh cùng lấy giá 50 nhưng diễn đạt hai cách xác định ô. Không giới thiệu chỉ mục số ở đây để tránh lẫn với vị trí.</aside></section>
 
-        <section data-jp-reset>
-          <h2>isin: lọc theo danh sách giá trị</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-khu_sang = df[df["neighbourhood"].isin(["Providencia", "Las Condes"])]
-len(khu_sang)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="3"><code class="language-text" data-trim>
-5859
-            </code></pre>
-          </div>
-          <p>Ngắn hơn chuỗi điều kiện <code>==</code> nối bằng <code>|</code> —
-            và đọc lên thành câu: "neighbourhood nằm trong danh sách này".</p>
-        </section>
+<section id="select-region"><h2>Chọn nhiều hàng và cột</h2>
+<p>Lấy loại và giá của hai chỗ ở <code>b, a</code>, theo đúng thứ tự đó.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="17"><code class="language-python" data-trim>
+print(df.loc[[&quot;b&quot;, &quot;a&quot;], [&quot;loai&quot;, &quot;gia&quot;]])
+</code></pre><pre class="jp-output" data-jp-n="17"><code class="language-text" data-trim>
+          loai    gia
+b  Phòng riêng   50.0
+a   Nguyên căn  100.0
+</code></pre></div>
+<p>Danh sách trước dấu phẩy chọn hàng; danh sách sau chọn cột.</p><aside class="notes">Danh sách nhãn vừa chọn vừa quy định thứ tự. Kết quả có 2 hàng, 2 cột. Không phải phép nối, không sửa thứ tự df. Có thể liên hệ chọn vùng bằng np.ix_ trong NumPy, nhưng không cần lôi cơ chế đó vào slide.</aside></section>
 
-        <section data-jp-reset>
-          <h2>loc: chọn hàng VÀ cột một lượt</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-df.loc[df["price"] < 30000, ["neighbourhood", "price"]].head(3)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>
-  neighbourhood    price
-1      Recoleta  19856.0
-3      Recoleta  25572.0
-9         Maipú  24013.0
-            </code></pre>
-          </div>
-          <p>Cú pháp <span class="inline-code">df.loc[chọn_hàng, chọn_cột]</span> tương tự
-            <span class="inline-code">M[hàng, cột]</span> của NumPy, nhưng sử dụng nhãn.</p>
-        </section>
+<section id="keep-dimension"><h2>Giữ kết quả dạng bảng</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="18"><code class="language-python" data-trim>
+print(df.loc[[&quot;a&quot;, &quot;b&quot;], &quot;gia&quot;])
+</code></pre><pre class="jp-output" data-jp-n="18"><code class="language-text" data-trim>
+a    100.0
+b     50.0
+Name: gia, dtype: float64
+</code></pre></div>
+<p>Tên cột <code>"gia"</code> → Series, shape <code>(2,)</code>.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="19"><code class="language-python" data-trim>
+print(df.loc[[&quot;a&quot;, &quot;b&quot;], [&quot;gia&quot;]])
+</code></pre><pre class="jp-output" data-jp-n="19"><code class="language-text" data-trim>
+     gia
+a  100.0
+b   50.0
+</code></pre></div>
+<p>Danh sách <code>["gia"]</code> → DataFrame, shape <code>(2, 1)</code>.</p><aside class="notes">Đọc output: Series có Name/dtype, DataFrame có tiêu đề cột. Muốn giữ dạng bảng để xuất file hoặc bổ sung cột thì dùng danh sách tên cột. df["gia"] và df[["gia"]] cũng khác nhau theo nguyên tắc này. Không cần nói một dạng tốt hơn dạng kia.</aside></section>
 
-        <section data-jp-reset>
-          <h2>iloc: khi cần đúng vị trí số</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
-df.iloc[0]          # dòng đầu tiên (Series)
-df.iloc[:3, :2]     # 3 dòng đầu, 2 cột đầu
-            </code></pre>
-          </div>
-          <ul>
-            <li><span class="inline-code">loc</span> = theo <strong>nhãn</strong> (tên cột, giá trị index).</li>
-            <li><span class="inline-code">iloc</span> = theo <strong>số thứ tự</strong>, luật lát cắt NumPy.</li>
-          </ul>
-          <p class="text-light">Bài 5 sẽ học kỹ về bộ đôi này khi index không còn là 0,1,2,…</p>
-        </section>
+<section id="slice-labels"><h2>Chọn các hàng liên tiếp</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<p>Lấy giá từ hàng <code>a</code> đến hết hàng <code>b</code>:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="20"><code class="language-python" data-trim>
+print(df.loc[&quot;a&quot;:&quot;b&quot;, &quot;gia&quot;])
+</code></pre><pre class="jp-output" data-jp-n="20"><code class="language-text" data-trim>
+a    100.0
+b     50.0
+Name: gia, dtype: float64
+</code></pre></div>
+<p><code>loc</code> lấy cả nhãn cuối <code>b</code>.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="21"><code class="language-python" data-trim>
+print(df.iloc[0:2, 1])
+</code></pre><pre class="jp-output" data-jp-n="21"><code class="language-text" data-trim>
+a    100.0
+b     50.0
+Name: gia, dtype: float64
+</code></pre></div>
+<p><code>iloc</code> bỏ vị trí cuối <code>2</code>, như lát cắt NumPy.</p><aside class="notes">Cả hai lệnh cho cùng kết quả vì đề cùng một yêu cầu. df có nhãn a,b,c duy nhất và đúng thứ tự đang thấy. Không giới thiệu các ngoại lệ lát cắt khi nhãn trùng hay mốc không tồn tại. Anchor slice-positions trước đây được gộp vào slide này.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Thêm cột mới: công thức từ cột cũ</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>
-df["price_trieu_vnd"] = df["price"] * 28 / 1e6   # 1 CLP ≈ 28 VND
+<section id="mask"><h2>Tạo điều kiện chọn hàng</h2>
+<p>Chỉ lấy những chỗ ở nguyên căn.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="22"><code class="language-python" data-trim>
+mask = df[&quot;loai&quot;] == &quot;Nguyên căn&quot;
+print(mask)
+</code></pre><pre class="jp-output" data-jp-n="22"><code class="language-text" data-trim>
+a     True
+b    False
+c     True
+Name: loai, dtype: bool
+</code></pre></div>
+<p>Phép so sánh chạy trên từng hàng, trả về một Series bool cùng chỉ mục a, b, c.</p><aside class="notes">Name: loai vì mask sinh ra từ cột loai; dtype: bool cho biết các giá trị là True/False. Đây là điều kiện về loại, không phải về giá, nên c vẫn được đánh dấu True dù thiếu giá. Nối bool mask đã học ở NumPy. Mask lấy trực tiếp từ df nên cùng chỉ mục. Việc khớp nhãn giữa các Series khác thứ tự để Bài 5.</aside></section>
 
-df["price_trieu_vnd"].median().round(2)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="6"><code class="language-text" data-trim>
-1.65
-            </code></pre>
-          </div>
-          <p>Phép toán vector hoá ở bài 3 được áp dụng trực tiếp: công thức viết một lần
-            và chạy trên 18 nghìn dòng. Trung vị ~1,65 triệu đồng/đêm.</p>
-        </section>
-      </section>
+<section id="filter-small"><h2>Dùng mask để lấy hàng</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="23"><code class="language-python" data-trim>
+nguyen_can = df.loc[mask, [&quot;loai&quot;, &quot;gia&quot;]]
+print(nguyen_can)
+</code></pre><pre class="jp-output" data-jp-n="23"><code class="language-text" data-trim>
+         loai    gia
+a  Nguyên căn  100.0
+c  Nguyên căn    NaN
+</code></pre></div>
+<p><code>loc</code> giữ các hàng có mask bằng True: <code>a</code> và <code>c</code>.</p><aside class="notes">Chỉ vào a/c trong bảng mask ở slide trước và kết quả ở slide này. Nhãn c vẫn là c, không tự đánh lại thành 1. Ô thiếu giá không bị loại bởi điều kiện về loại. df không bị thay đổi khi lấy kết quả.</aside></section>
 
-      <!-- ====== Phần 4 ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">4.</span><br>Thống kê &amp; sắp xếp</h1>
-          <p class="text-light">Trả lời câu hỏi thật bằng ba-bốn dòng.</p>
-        </section>
+<section id="bracket-loc"><h2>Ngoặc vuông và .loc</h2>
+<p>Tên cột trong ngoặc cho ra cột; Series bool trong ngoặc cho ra hàng.</p>
+<table class="data-table"><thead><tr><th>Cách viết</th><th>Kết quả</th></tr></thead><tbody><tr><td><code>df["gia"]</code></td><td>Một cột, trả về Series</td></tr><tr><td><code>df[["loai", "gia"]]</code></td><td>Nhiều cột, trả về bảng</td></tr><tr><td><code>df[mask]</code></td><td>Các hàng có True, giữ đủ mọi cột</td></tr><tr><td><code>df.loc[mask, "gia"]</code></td><td>Chọn hàng và cột trong một lệnh</td></tr></tbody></table>
+<p>Cần nói rõ cả hàng lẫn cột thì dùng <code>.loc</code>: hàng trước, cột sau.</p><aside class="notes">Cùng một cặp ngoặc vuông nhưng ý nghĩa đổi theo thứ đặt bên trong: tên cột chọn cột, Series bool chọn hàng. df[mask] và df.loc[mask] cho cùng kết quả; df[mask] không cho chọn cột trong cùng lệnh; muốn lấy cột phải mở thêm một cặp ngoặc nữa, và dạng hai lần ngoặc đó sẽ hỏng khi dùng để gán (mục 4). Không nói dạng nào tốt hơn tuyệt đối; điều cần là đọc được cả hai. Nối slide AI cuối bài: nhầm nhãn với vị trí là lỗi hay gặp khi đọc code có sẵn. Code trên mạng hoặc do AI sinh ra hay dùng df[mask]; sinh viên cần đọc được dạng này.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Thống kê trên cột — và trên bool</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-(df["room_type"] == "Entire home/apt").mean()
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="1"><code class="language-text" data-trim>
-0.81
-            </code></pre>
-          </div>
-          <p>Quy tắc bool của bài 3 dùng nguyên được ở pandas: <em>tỷ lệ nguyên căn = 81%</em>.</p>
-        </section>
+<section id="filter"><h2>Kết hợp nhiều điều kiện</h2>
+<p>Trong bảng Santiago, lấy nguyên căn có giá dưới <strong>50.000 CLP/đêm</strong>. Chỉ giữ mã và giá.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="24"><code class="language-python" data-trim>
+mask = ((listings[&quot;room_type&quot;] == &quot;Entire home/apt&quot;)
+        &amp; (listings[&quot;price&quot;] &lt; 50_000))
+chon = listings.loc[mask, [&quot;id&quot;, &quot;price&quot;]]
+print(chon.shape)
+</code></pre><pre class="jp-output" data-jp-n="24"><code class="language-text" data-trim>
+(4273, 2)
+</code></pre></div>
+<p><code>&amp;</code>: thoả mãn cả hai; <code>|</code>: thoả mãn ít nhất một điều kiện.<br>Đặt mỗi điều kiện trong ngoặc.</p><aside class="notes">Snapshot Santiago 2026-06-29 có 4273 hàng thoả, kết quả 2 cột. Đây là lọc theo điều kiện đã nêu, không phải kiểm tra đầy đủ chất lượng giá. So sánh giá NaN trong cột float trả False; chưa biết giá không có nghĩa giá cao. Không dùng and/or Python cho Series.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Giới thiệu nhanh groupby (nội dung chính của bài 5)</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-df.groupby("room_type")["price"].median()
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-room_type
-Entire home/apt     64900.0
-Hotel room         117138.5
-Private room        34235.0
-Shared room         20541.0
-            </code></pre>
-          </div>
-          <p>Đọc thành câu: <em>chia theo room_type, lấy cột price, tính trung vị mỗi nhóm</em>.
-            Một chuỗi thao tác thay cho vòng lặp và dict cộng dồn viết thủ công.</p>
-        </section>
+<section id="exercise-selection"><h2>Bài tập 3: Lọc theo ngân sách</h2>
+<p>Bảng <code>lua_chon</code> (giả lập, USD/đêm). Ngân sách: nguyên căn ≤ 100, phòng riêng ≤ 60.</p>
+<table class="data-table"><thead><tr><th>Chỉ mục</th><th>loai</th><th>gia</th></tr></thead><tbody><tr><td>a</td><td>Nguyên căn</td><td>90</td></tr><tr><td>b</td><td>Phòng riêng</td><td>70</td></tr><tr><td>c</td><td>Nguyên căn</td><td>120</td></tr><tr><td>d</td><td>Phòng riêng</td><td>60</td></tr></tbody></table>
+<ol><li>Dự đoán các hàng được chọn.</li><li>Viết mask để lấy hai cột <code>loai, gia</code> của các hàng đó.</li></ol><aside class="notes">Kết quả a, d; d nằm đúng biên 60 nên được chọn. b có giá 70 dưới ngưỡng nguyên căn nhưng vượt ngưỡng phòng riêng; c là nguyên căn nhưng vượt ngưỡng 100. mask = ((lua_chon["loai"] == "Nguyên căn") &amp; (lua_chon["gia"] &lt;= 100)) | ((lua_chon["loai"] == "Phòng riêng") &amp; (lua_chon["gia"] &lt;= 60)); lua_chon.loc[mask, ["loai", "gia"]]. Hai loại loại trừ nhau theo dữ liệu đề. Phân biệt OR giữa hai nhóm điều kiện với AND trong mỗi nhóm. Chạy đáp án kiểm bảng đúng a,d và không sửa lua_chon.</aside></section>
 
-        <section data-jp-reset>
-          <h2>sort_values &amp; nlargest</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-df.nlargest(2, "price")[["name", "price"]]
-            </code></pre>
-            <pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
-                                    name       price
-4485  Apartasuites EL CALEÑO 2 con e…  97000045.0
-513   Apartamentos totalmente equipa…  82566932.0
-            </code></pre>
-          </div>
-          <p>Hai "căn hộ" gần trăm triệu CLP/đêm là ví dụ về ngoại lai (outlier) trong dữ liệu thực.
-            Dùng <span class="inline-code">sort_values("price", ascending=False)</span> khi cần cả bảng xếp hạng.</p>
-        </section>
+</section>
 
-        <section data-jp-reset>
-          <h2>Chuỗi thao tác đọc như câu văn</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-(df[df["room_type"] == "Entire home/apt"]
-   .groupby("neighbourhood")["price"]
-   .median()
-   .nlargest(3))
-            </code></pre>
-            <pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>
-neighbourhood
-Lo Barnechea    441669.0
-Vitacura        148353.0
-La Granja       114118.0
-            </code></pre>
-          </div>
-          <p>Lọc → nhóm → trung vị → top 3. Mỗi dòng tương ứng với một thao tác trong chuỗi.
-            Kết quả của La Granja cần được kiểm tra vì nhóm có ít phòng; bài 5 và 10
-            sẽ trình bày cách đánh giá trường hợp này.</p>
-        </section>
-      </section>
+<section>
 
-      <!-- ====== Phần 5 ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">5.</span><br>Giá trị thiếu (giới thiệu)<br>&amp; ghi file</h1>
-          <p class="text-light">Bài này nhận diện — bài 10 xử lý.</p>
-        </section>
+<section><h1><span class="text-light">4.</span><br>Tính toán và sửa bảng</h1><p class="text-light">Tạo bảng giá mới, sửa giá rồi tính lại các khoản tiền.</p></section>
 
-        <section data-jp-reset>
-          <h2>Đo mức thiếu của từng cột</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-df.isna().sum().sort_values(ascending=False).head(4)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-neighbourhood_group    18534
-license                18355
-reviews_per_month       3291
-price                    846
-            </code></pre>
-          </div>
-          <p><span class="inline-code">neighbourhood_group</span> trống <strong>100%</strong>, nên cột này
-            không cung cấp thông tin trong snapshot hiện tại. NaN của NumPy chính là các ô này.</p>
-        </section>
+<section id="new-column"><h2>Tạo cột tính giá tiền cho ba đêm</h2>
+<p>Thêm vào <code>df</code> cột tiền ba đêm, tính từ giá mỗi đêm (USD).</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="25"><code class="language-python" data-trim>
+df[&quot;ba_dem&quot;] = df[&quot;gia&quot;] * 3
+print(df[[&quot;gia&quot;, &quot;ba_dem&quot;]])
+</code></pre><pre class="jp-output" data-jp-n="25"><code class="language-text" data-trim>
+     gia  ba_dem
+a  100.0   300.0
+b   50.0   150.0
+c    NaN     NaN
+</code></pre></div>
+<p>Gán vào tên cột mới sẽ thêm cột vào bảng.</p><aside class="notes">Thêm ba_dem trực tiếp vào df; cột gia vẫn giữ 100, 50, NaN. Phép nhân trả Series rồi phép gán tạo cột trong df. Với NaN, tiền cũng thiếu. Ví dụ ba đêm ở đây chỉ tính giá đêm; không dùng bảng phí dọn dẹp riêng của bài tập 1.</aside></section>
 
-        <section>
-          <h2>Chưa xử lý giá trị thiếu ngay</h2>
-          <ul>
-            <li><span class="inline-code">dropna()</span> — bỏ dòng thiếu;
-              <span class="inline-code">fillna(x)</span> — điền giá trị thay thế.</li>
-            <li>Cả hai đều là <strong>quyết định phân tích</strong>, không phải thao tác kỹ thuật:
-              846 phòng không giá — bỏ hay giữ tuỳ <em>câu hỏi bạn đang trả lời</em>.</li>
-          </ul>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Bài này chỉ cần <strong>biết đo</strong> mức thiếu; bài 10 sẽ trình bày cách xử lý.
-          </div>
-        </section>
+<section id="assign-cell"><h2>Sửa giá của một chỗ ở</h2>
+<p>Muốn thử giá mới cho b mà vẫn giữ giá trong <code>df</code>, tạo bản sao rồi sửa:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="26"><code class="language-python" data-trim>
+bang_gia = df.copy()
+bang_gia.loc[&quot;b&quot;, &quot;gia&quot;] = 60
+print(bang_gia[&quot;gia&quot;])
+</code></pre><pre class="jp-output" data-jp-n="26"><code class="language-text" data-trim>
+a    100.0
+b     60.0
+c      NaN
+Name: gia, dtype: float64
+</code></pre></div>
+<p><code>copy()</code> tạo bảng riêng. Giá của b trong <code>bang_gia</code> là 60; trong <code>df</code> vẫn là 50.</p><aside class="notes">copy() được giới thiệu khi cần giữ bảng giá cũ và thử giá mới riêng. Bản sao mang cả cột ba_dem vừa thêm. Nếu chỉ viết bang_gia = df thì hai tên cùng trỏ tới một bảng; sửa qua bang_gia cũng đổi df. Phép gán qua loc xác định ô cần sửa. Giá b trong bang_gia là 60, trong df vẫn là 50. Cột ba_dem chưa tính lại; sẽ xem rõ sau khi hoàn tất sửa giá.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Ghi kết quả ra file</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-ket_qua = df.groupby("room_type")["price"].median()
-ket_qua.to_csv("gia_theo_loai.csv")
+<section id="read-write"><h2>Sửa Series lấy ra từ bảng</h2>
+<p>pandas 3 dùng Copy-on-Write: Series chỉ tách khỏi bảng khi bị ghi, nên sửa nó không đổi bảng.</p>
+<pre><code class="language-python" data-trim>
+cot_gia = bang_gia[&quot;gia&quot;]
+cot_gia.loc[&quot;a&quot;] = 80
+</code></pre>
+<table class="data-table"><thead><tr><th>Chỉ mục</th><th>cot_gia</th><th>bang_gia["gia"]</th></tr></thead><tbody><tr><td>a</td><td><strong>80</strong></td><td>100</td></tr><tr><td>b</td><td>60</td><td>60</td></tr><tr><td>c</td><td>NaN</td><td>NaN</td></tr></tbody></table>
+<p>Muốn sửa bảng, gán vào <code>bang_gia.loc[hàng, cột]</code>. pandas 2 hành xử khác; notebook đã ghim pandas 3.</p><aside class="notes">Copy-on-Write có từ pandas 1.5 dưới dạng tuỳ chọn; từ pandas 3.0 trở thành mặc định và là chế độ duy nhất. Hành vi pandas 3.x Copy-on-Write: chọn Series rồi sửa không làm thay đổi bảng nguồn. Có thể chia sẻ bộ nhớ trước khi ghi; không khẳng định thao tác đọc luôn sao chép vật lý. Khác với sửa view NumPy ở Bài 3. Chained assignment bang_gia["gia"]["a"]=80 cũng không phải cách sửa bảng trong pandas 3. Nguồn https://pandas.pydata.org/docs/user_guide/copy_on_write.html .</aside></section>
 
-df.to_parquet("listings.parquet")   # nhanh + giữ dtype (bài 6)
-            </code></pre>
-          </div>
-          <p>Với DataFrame, thêm <span class="inline-code">index=False</span> khi index chỉ là 0,1,2…;
-            nếu không, khi đọc lại có thể xuất hiện thêm cột "Unnamed: 0".</p>
-        </section>
-      </section>
+<section id="chained"><h2>Hai lần ngoặc thì bảng không đổi</h2>
+<p>Dạng viết hay gặp trong code cũ và code do AI sinh ra:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="27"><code class="language-python" data-trim>
+bang_gia[&quot;gia&quot;][&quot;a&quot;] = 80
+</code></pre><pre class="jp-output" data-jp-n="27"><code class="language-text" data-trim>
+ChainedAssignmentError: A value is being set on a copy of a DataFrame or Series through chained assignment. […] Try using &#x27;.loc[row_indexer, col_indexer] = value&#x27; instead, to perform the assignment in a single step.
+</code></pre></div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="28"><code class="language-python" data-trim>
+print(bang_gia.loc[&quot;a&quot;, &quot;gia&quot;])
+</code></pre><pre class="jp-output" data-jp-n="28"><code class="language-text" data-trim>
+100.0
+</code></pre></div>
+<p>Ngoặc thứ nhất lấy ra một Series, ngoặc thứ hai ghi vào Series đó: bảng không đổi. Viết một lệnh: <code>bang_gia.loc["a", "gia"] = 80</code>.</p><aside class="notes">Đây là chained assignment. ChainedAssignmentError là một Warning chứ không phải exception: code vẫn chạy tiếp, chỉ in cảnh báo, nên lỗi này dễ bị bỏ qua và làm sai kết quả về sau. Output trên slide đã rút gọn phần giữa của thông báo; chạy notebook sẽ thấy đầy đủ kèm tên file và số dòng. Cùng một nguyên nhân với slide trước: Copy-on-Write. Sinh viên sẽ gặp dạng này khi chép code viết cho pandas 1.x. Không dạy cách tắt cảnh báo.</aside></section>
 
-      <!-- ====== Kết ====== -->
-      <section>
-        <section>
-          <h2>Tổng kết</h2>
-          <ul>
-            <li>DataFrame = các Series chung index; nhiều thao tác NumPy vẫn áp dụng được.</li>
-            <li>Thói quen 5 bước với dataset lạ: shape → head → info → describe → value_counts.</li>
-            <li>Lọc bool, <code>loc[hàng, cột]</code> và cột mới vector hoá là các thao tác thường dùng.</li>
-            <li>Đo được giá trị thiếu (<code>isna().sum()</code>) — xử trí để dành bài 10.</li>
-          </ul>
-        </section>
+<section id="assign-mask"><h2>Giảm giá cho chỗ ở nguyên căn</h2>
+<p>Giảm 10% giá nguyên căn trong <code>bang_gia</code>; giữ giá phòng riêng.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="29"><code class="language-python" data-trim>
+mask = bang_gia[&quot;loai&quot;] == &quot;Nguyên căn&quot;
+bang_gia.loc[mask, &quot;gia&quot;] = bang_gia.loc[mask, &quot;gia&quot;] * 0.9
+print(bang_gia[[&quot;loai&quot;, &quot;gia&quot;]])
+</code></pre><pre class="jp-output" data-jp-n="29"><code class="language-text" data-trim>
+          loai   gia
+a   Nguyên căn  90.0
+b  Phòng riêng  60.0
+c   Nguyên căn   NaN
+</code></pre></div><aside class="notes">Nối thao tác đọc ở mục 3 với phép gán: bên phải lấy giá nguyên căn và nhân 0,9; bên trái ghi kết quả vào đúng hàng và cột của bảng. Giá a từ 100 thành 90, b giữ 60 từ lần cập nhật trước, c vẫn NaN. df ban đầu không đổi. Nhân 0,9 là giảm 10%, không phải trừ 10 USD.</aside></section>
 
-        <section>
-          <h2>Làm việc với AI thì sao?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <div class="good-box">
-            <span class="box-title">AI làm tốt</span>
-            AI thường có thể chuyển câu hỏi thành chuỗi thao tác pandas
-            ("median giá theo quận, chỉ nguyên căn").
-          </div>
-          <div class="warn-box">
-            <span class="box-title">AI hay sai</span>
-            Bỏ qua 846 ô giá trống mà không nêu rõ; dùng <code>mean</code> khi phân phối lệch phù hợp hơn
-            với <code>median</code>; sử dụng tên cột không tồn tại trong dữ liệu <em>của bạn</em>.
-          </div>
-        </section>
+<section id="recalculate"><h2>Tính lại tiền sau khi sửa giá</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="30"><code class="language-python" data-trim>
+print(bang_gia[[&quot;gia&quot;, &quot;ba_dem&quot;]])
+</code></pre><pre class="jp-output" data-jp-n="30"><code class="language-text" data-trim>
+    gia  ba_dem
+a  90.0   300.0
+b  60.0   150.0
+c   NaN     NaN
+</code></pre></div>
+<p><code>ba_dem</code> vẫn giữ kết quả cũ. Chạy lại phép tính:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="31"><code class="language-python" data-trim>
+bang_gia[&quot;ba_dem&quot;] = bang_gia[&quot;gia&quot;] * 3
+print(bang_gia[[&quot;gia&quot;, &quot;ba_dem&quot;]])
+</code></pre><pre class="jp-output" data-jp-n="31"><code class="language-text" data-trim>
+    gia  ba_dem
+a  90.0   270.0
+b  60.0   180.0
+c   NaN     NaN
+</code></pre></div><p>Cột lưu giá trị đã tính, không lưu công thức như ô Excel.</p><aside class="notes">Trước tính lại a90/300,b60/150; sau tính lại a90/270,b60/180. Thứ tự đúng cho yêu cầu này: thay đổi giá trước, tính tiền sau. Đừng giải thích là lỗi Copy-on-Write: ngay cả gán trực tiếp thành công cũng không tự tính lại cột khác. Sửa giá xong, cột phụ thuộc vẫn giữ số cũ cho tới khi tính lại.</aside></section>
 
-        <section>
-          <h2>Kiểm chứng thế nào?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <ul>
-            <li>Chạy thói quen 5 bước <strong>trước</strong>, để biết cột nào có thật, thiếu bao nhiêu —
-              rồi mới đối chiếu code AI.</li>
-            <li>Với kết quả AI đưa ra: chọn một con số, tự tính lại bằng cách khác
-              (lọc trực tiếp + <code>describe</code>).</li>
-          </ul>
-        </section>
+<section id="exercise-assignment"><h2>Bài tập 4: Báo giá ba đêm</h2>
+<p>Dùng <code>df</code> đầu bài. Giảm 10% giá nguyên căn, rồi tính tiền ba đêm. Giữ nguyên <code>df</code>.</p>
+<pre><code class="language-python" data-trim>
+bao_gia = df.copy()
+bao_gia[&quot;ba_dem&quot;] = bao_gia[&quot;gia&quot;] * 3
+mask = bao_gia[&quot;loai&quot;] == &quot;Nguyên căn&quot;
+gia_nguyen_can = bao_gia.loc[mask, &quot;gia&quot;]
+gia_nguyen_can *= 0.9
+</code></pre>
+<ol><li>Code trên cho tiền ba đêm của a là bao nhiêu? Theo yêu cầu, phải là bao nhiêu?</li><li>Sửa code và kiểm tra cả ba hàng.</li></ol><aside class="notes">Trong pandas 3, code cho tiền ba đêm của a là 300, trong khi yêu cầu là 270; b là 150, c là NaN. Có hai lỗi: chỉ sửa Series đã lấy ra và tính ba_dem trước khi sửa giá. Đáp án: bao_gia = df.copy(); mask = bao_gia["loai"] == "Nguyên căn"; bao_gia.loc[mask, "gia"] = bao_gia.loc[mask, "gia"] * 0.9; bao_gia["ba_dem"] = bao_gia["gia"] * 3. Kiểm tra: giá trong df vẫn là 100, 50, NaN; giá trong bao_gia là 90, 50, NaN và tiền ba đêm là 270, 150, NaN. Chỉ sửa phép gán nhưng để phép tính ba_dem ở đầu vẫn chưa đúng. Giá c thiếu nên tiền ba đêm cũng thiếu. Chấp nhận cách khác nếu giữ nguyên df và cho kết quả đúng.</aside></section>
 
-        <section>
-          <h2>Đọc thêm</h2>
-          <ul>
-            <li>McKinney, <em>Python for Data Analysis</em>, 3rd ed. — ch. 5 (pandas Basics).</li>
-            <li>VanderPlas, <em>Python Data Science Handbook</em>, 2nd ed. — Part 3, các mục đầu.</li>
-            <li>📖 Tự học: <a href="https://pandas.pydata.org/docs/user_guide/10min.html" target="_blank"
-                rel="noopener">10 minutes to pandas</a> (pandas docs).</li>
-          </ul>
-        </section>
-      </section>
+</section>
+
+<section>
+
+<section><h1><span class="text-light">5.</span><br>Kiểm tra và lưu</h1><p class="text-light">Kiểm tra các giá trị cần chú ý và thông tin được giữ trong file.</p></section>
+
+<section id="largest"><h2>Xem những chỗ ở giá cao nhất</h2>
+<p>Ở mục 2, giá lớn nhất gần <strong>97 triệu CLP/đêm</strong>. Xem các hàng có giá cao nhất:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="32"><code class="language-python" data-trim>
+print(listings.nlargest(3, &quot;price&quot;)[[&quot;id&quot;, &quot;price&quot;]])
+</code></pre><pre class="jp-output" data-jp-n="32"><code class="language-text" data-trim>
+                        id       price
+4485    651018255986860283  97000045.0
+513     704362156276774524  82566932.0
+18477  1699499358806776408  48863551.0
+</code></pre></div>
+<p><code>nlargest(3, "price")</code> lấy ba hàng có giá cao nhất. Dùng <code>id</code> để tra lại chỗ ở trong nguồn dữ liệu.</p><aside class="notes">Số liệu từ snapshot 2026-06-29, giá lớn nhất là 97.000.045 CLP. Cần đối chiếu bản ghi nguồn, đơn vị và loại chỗ ở trước khi sửa hoặc xoá. Giá cao chưa chứng minh dữ liệu sai. Ba hàng này cũng chưa bao quát mọi trường hợp cần kiểm tra. Sinh viên đã học chọn cột nên có thể đọc được đoạn lấy id và price.</aside></section>
+
+<section id="denominator"><h2>Tỷ lệ giá dưới 80 USD/đêm</h2>
+<p>Với Series bool, <code>mean()</code> là tỷ lệ giá trị True.</p>
+<table class="data-table"><thead><tr><th>Chỉ mục</th><th>gia</th><th>gia &lt; 80</th></tr></thead><tbody><tr><td>a</td><td>100</td><td>False</td></tr><tr><td>b</td><td>50</td><td>True</td></tr><tr><td>c</td><td>NaN</td><td>False</td></tr></tbody></table>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="33"><code class="language-python" data-trim>
+print((df[&quot;gia&quot;] &lt; 80).mean())
+</code></pre><pre class="jp-output" data-jp-n="33"><code class="language-text" data-trim>
+0.3333333333333333
+</code></pre></div>
+<p>Trên cả bảng: 1/3. Chỉ xét hàng có giá bằng <code>notna()</code>:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="34"><code class="language-python" data-trim>
+co_gia = df[&quot;gia&quot;].notna()
+print((df.loc[co_gia, &quot;gia&quot;] &lt; 80).mean())
+</code></pre><pre class="jp-output" data-jp-n="34"><code class="language-text" data-trim>
+0.5
+</code></pre></div><aside class="notes">Kết quả là 1/3 khi tính trên toàn bảng; 1/2 khi chỉ xét hai giá đã biết. Mean của Series bool là số giá trị True chia cho số giá trị bool không thiếu. Bảng dùng float64 chứa np.nan: NaN &lt; 80 trả False, nhưng không có nghĩa giá c được xác nhận là cao. Với dtype nullable, phép so sánh có thể giữ NA. Vì vậy, cần xác định tập hàng trước khi tính. notna là phủ định của isna đã học: True khi có giá. Liên hệ bài tập 2: tập chỗ ở được đưa vào phép tính ảnh hưởng đến kết luận.</aside></section>
+
+<section id="denominator-real"><h2>Cùng câu hỏi trên bảng Santiago</h2>
+<p>Tỷ lệ giá dưới 50.000 CLP/đêm trên toàn bảng:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="35"><code class="language-python" data-trim>
+print((listings[&quot;price&quot;] &lt; 50_000).mean())
+</code></pre><pre class="jp-output" data-jp-n="35"><code class="language-text" data-trim>
+0.3600949606129276
+</code></pre></div>
+<p>Chỉ trên 17.688 hàng có giá:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="36"><code class="language-python" data-trim>
+co_gia = listings[&quot;price&quot;].notna()
+print((listings.loc[co_gia, &quot;price&quot;] &lt; 50_000).mean())
+</code></pre><pre class="jp-output" data-jp-n="36"><code class="language-text" data-trim>
+0.3773179556761646
+</code></pre></div>
+<p>Mẫu số đổi thì tỷ lệ đổi: 36,0% và 37,7% trả lời hai câu hỏi khác nhau.</p><aside class="notes">Số đã kiểm trên snapshot 2026-06-29: 0,3601 trên 18.534 hàng và 0,3773 trên 17.688 hàng có giá. 846 hàng thiếu giá bị tính là False ở phép thứ nhất, nên tỷ lệ thấp hơn. Chênh lệch nhỏ nhưng đủ để đổi kết luận nếu báo cáo làm tròn tới phần trăm. Câu hỏi thứ nhất là trong toàn bộ chỗ ở của snapshot; câu thứ hai là trong các chỗ ở đã biết giá. Không nói phép nào đúng hơn: phải nói rõ mẫu số. Ngưỡng 50.000 CLP lấy lại từ slide lọc ở mục 3. Xác định tập hàng trước, rồi mới tính.</aside></section>
+
+<section id="save"><h2>Lưu bảng giá để dùng tiếp</h2>
+<p>Chỉ giữ các hàng có giá và ba cột <code>id</code>, <code>room_type</code>, <code>price</code>.</p>
+<pre><code class="language-python" data-trim>
+cot = [&quot;id&quot;, &quot;room_type&quot;, &quot;price&quot;]
+co_gia = listings[&quot;price&quot;].notna()
+ket_qua = listings.loc[co_gia, cot]
+ket_qua.to_csv(&quot;gia_co_thong_tin.csv&quot;, index=False)
+</code></pre>
+<p><code>index=False</code> bỏ chỉ mục 0, 1, … khi ghi; mã chỗ ở vẫn nằm trong cột <code>id</code>.</p>
+<p>Bảng chưa kiểm tra xong: các giá rất lớn vẫn còn. Lưu để làm tiếp.</p><aside class="notes">File có 17.688 hàng và 3 cột, không thiếu price. Chỉ mục số được tạo khi đọc CSV nên không cần xuất trong ví dụ listings này; mã chỗ ở đã nằm trong cột id. Đây chưa phải bảng đã kiểm tra xong chất lượng: vẫn còn những giá cần xác minh. Giới thiệu to_csv đủ để sử dụng kết quả; định dạng và encoding sẽ học ở Bài 6. Không kết luận rằng luôn phải dùng index=False: bài tập sau dùng chỉ mục chứa mã chỗ ở.</aside></section>
+
+<section id="check-file"><h2>Đọc lại file vừa lưu</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="37"><code class="language-python" data-trim>
+doc_lai = pd.read_csv(&quot;gia_co_thong_tin.csv&quot;)
+print(doc_lai.shape)
+</code></pre><pre class="jp-output" data-jp-n="37"><code class="language-text" data-trim>
+(17688, 3)
+</code></pre></div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="38"><code class="language-python" data-trim>
+print(doc_lai[&quot;price&quot;].isna().sum())
+</code></pre><pre class="jp-output" data-jp-n="38"><code class="language-text" data-trim>
+0
+</code></pre></div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="39"><code class="language-python" data-trim>
+print(doc_lai[&quot;price&quot;].sum() == ket_qua[&quot;price&quot;].sum())
+</code></pre><pre class="jp-output" data-jp-n="39"><code class="language-text" data-trim>
+True
+</code></pre></div>
+<p>Đối chiếu: 17.688 hàng, 3 cột, không thiếu giá, tổng giá không đổi.</p><aside class="notes">shape chỉ kiểm kích thước, chưa xác nhận tên cột hay nội dung từng ô. Notebook có thêm print(doc_lai.columns) để đối chiếu. Giảng viên có thể kiểm toàn bộ dữ liệu bằng pd.testing.assert_frame_equal(doc_lai, ket_qua.reset_index(drop=True), check_exact=False); chưa yêu cầu sinh viên học API kiểm thử này. Những kiểm tra trên giúp phát hiện lỗi ghi và đọc file, chưa xác nhận dữ liệu nguồn là đúng.</aside></section>
+
+<section id="exercise-save"><h2>Bài tập 5: Giữ mã chỗ ở trong file</h2>
+<p>Bảng <code>df</code> đầu bài dùng <code>a, b, c</code> làm chỉ mục. Một bạn gửi bảng giá bằng cách:</p>
+<pre><code class="language-python" data-trim>
+bang_gui = df[[&quot;gia&quot;]]
+bang_gui.to_csv(&quot;bang_gui.csv&quot;, index=False)
+</code></pre>
+<ol><li>Người nhận chỉ có file CSV. Họ có biết mỗi giá thuộc chỗ ở nào không?</li><li>Sửa cách lưu để giữ cả mã chỗ ở và giá. Đọc lại file để kiểm tra.</li></ol><aside class="notes">File ban đầu có đúng bốn dòng: gia / 100.0 / 50.0 / "" — ô thiếu được ghi thành hai dấu nháy, vì bảng chỉ còn một cột nên một dòng rỗng sẽ không phân biệt được với dòng trống; mất các mã a, b, c. Số hàng và số giá thiếu vẫn đúng, nhưng không còn biết giá thuộc chỗ ở nào. Có hai cách hợp lệ: giữ chỉ mục khi xuất (index=True hoặc bỏ tham số index; có thể thêm index_label="ma"), hoặc đưa mã vào một cột rồi dùng index=False. Cách dùng kiến thức đã học: bang_gui = df[["gia"]].copy(); bang_gui["ma"] = bang_gui.index; bang_gui.to_csv("bang_gui.csv", index=False). Đọc lại phải giữ được các cặp a–100, b–50, c–NaN. Không bắt buộc thứ tự cột hay tên ma. Người nhận không có bảng gốc nên không thể dựa vào vị trí hàng để đoán mã. Ví dụ listings trước đó dùng index=False vẫn giữ được mã vì id là một cột dữ liệu.</aside></section>
+
+</section>
+
+<section>
+
+<section id="summary"><h2>Tổng kết</h2>
+<ol><li>DataFrame giữ nhãn hàng và tên cột; mỗi cột là một Series có dtype riêng.</li><li>Đọc dữ liệu xong, xem ngay kích thước, tên cột và số giá trị thiếu.</li><li>Dùng nhãn, vị trí hoặc điều kiện để chọn hàng và cột.</li><li>Muốn sửa bảng nào, gán trực tiếp vào bảng đó.</li><li>Tính lại các cột phụ thuộc sau khi sửa dữ liệu.</li><li>Kiểm tra tập hàng được tính và mã được giữ trong file.</li></ol></section>
+
+<section id="ai"><h2>Làm việc với AI thì sao?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div><div class="good-box"><span class="box-title">AI làm tốt</span>Viết biểu thức lọc, tính cột mới và xuất file khi yêu cầu rõ.</div><div class="warn-box"><span class="box-title">AI hay sai</span>Nhầm nhãn với vị trí; sửa Series thay vì bảng; quên tính lại cột hoặc làm mất mã khi lưu.</div></section>
+
+<section id="verify"><h2>Kiểm chứng thế nào?</h2>
+<ol><li>Dự đoán các hàng được chọn và tính tay vài kết quả.</li><li>Sau phép gán, xem bảng cần sửa và các cột phụ thuộc.</li><li>Đọc lại file: mã chỗ ở có còn đi cùng đúng giá không?</li></ol></section>
+
+<section id="reading"><h2>Đọc thêm</h2>
+<ol><li><a href="https://wesmckinney.com/book/pandas-basics">McKinney, chương 5: Series, DataFrame và thao tác cơ bản</a></li><li><a href="https://pandas.pydata.org/docs/user_guide/copy_on_write.html">pandas 3: Copy-on-Write khi sửa dữ liệu</a></li><li><a href="https://wesmckinney.com/book/accessing-data">McKinney, §6.1: đọc và ghi CSV</a></li></ol></section>
+
+</section>
 
       <!-- Footer -->
       <div class="footer">
