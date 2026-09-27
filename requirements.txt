@@ -13,6 +13,7 @@ matplotlib==3.11.1
 seaborn==0.13.2
 plotly==6.9.0
 duckdb==1.5.5          # lab-06
+pyarrow==25.0.1        # lecture-06: đọc/ghi Parquet
 requests==2.34.2       # tải dữ liệu Inside Airbnb
 pydantic==2.13.4       # lab-11, lecture-11
 geopandas==1.1.4       # lab-13

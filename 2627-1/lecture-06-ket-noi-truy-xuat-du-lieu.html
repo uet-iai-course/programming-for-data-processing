@@ -13,522 +13,443 @@
   <link rel="stylesheet" href="plugin/highlight/zenburn.css">
   <link rel="stylesheet" href="lecture-style.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+  <style>
+    #sql-purpose .pipeline, #api-purpose .pipeline { font-size: 1em; }
+    #sql-purpose .pipeline .stage, #api-purpose .pipeline .stage { width: 220px; }
+    #sql-purpose .pipeline .stage { width: 250px; }
+    #api-purpose .api-exchange { align-items: center; flex-wrap: nowrap; gap: 24px; margin-top: 1em; }
+    #api-purpose .api-exchange .stage { min-height: 150px; display: flex; flex-direction: column; justify-content: center; }
+    #api-purpose .api-messages { width: 360px; font-size: 0.72em; text-align: center; }
+    #api-purpose .api-message + .api-message { margin-top: 1.2em; }
+    #api-purpose .api-message strong { display: block; color: #1E93AB; }
+    #api-purpose .api-arrow { position: relative; border-top: 3px solid #1E93AB; margin: 10px 0; }
+    #api-purpose .api-arrow::after { content: ""; position: absolute; right: 1px; top: -8px; width: 12px; height: 12px; border-top: 3px solid #1E93AB; border-right: 3px solid #1E93AB; transform: rotate(45deg); }
+    #api-purpose .api-arrow-return::after { right: auto; left: 1px; transform: rotate(-135deg); }
+    #api-parameters .compact-table, #parquet-purpose .compact-table, #summary .compact-table { font-size: 0.7em; }
+  </style>
 </head>
 
 <body>
   <div class="reveal">
     <div class="slides">
 
-      <!-- ====== Mở bài ====== -->
       <section>
-        <section>
-          <h1>Lập trình <br /> xử lý dữ liệu</h1>
-          <div>
-            <p>Học kì 1, năm học 2026–2027</p>
-            <p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
-          </div>
-        </section>
+        <section id="course">
+          <h1>Lập trình <br> xử lý dữ liệu</h1>
+          <p>Học kì 1, năm học 2026–2027</p><p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
 
-        <section>
-          <h1>
-            <span class="text-light">Bài 6</span>
-            <br>
-            Kết nối &amp; truy xuất dữ liệu ngoài
-          </h1>
-          <p class="text-light">File, API, SQL, DuckDB.</p>
         </section>
+        <section id="title">
+          <h1><span class="text-light">Bài 6</span><br>Kết nối &amp; truy xuất<br>dữ liệu ngoài</h1>
+          <p class="text-light">Đọc file, gọi API và truy vấn SQL.</p>
 
-        <section>
+        </section>
+        <section id="previous">
           <h2>Bài trước</h2>
-          <ul>
-            <li>groupby, transform, pivot_table; concat/merge nhiều bảng.</li>
-            <li>Dữ liệu trong các ví dụ trước chủ yếu có sẵn dưới dạng file CSV.</li>
-          </ul>
-          <p class="text-light">Trong thực tế, dữ liệu có thể nằm trong file nén, API hoặc cơ sở dữ liệu.</p>
-        </section>
+          <p>Đã biết chọn hàng, tính theo nhóm và ghép bảng bằng pandas.</p><p>Bài này đưa dữ liệu từ file, API và cơ sở dữ liệu vào các phép xử lý đó.</p>
 
-        <section>
+        </section>
+        <section id="agenda">
           <h2>Tổng quan</h2>
-          <ol>
-            <li>Dữ liệu nằm ở đâu?</li>
-            <li>Đọc file đúng cách: CSV, nén, Parquet</li>
-            <li>Lấy dữ liệu qua API</li>
-            <li>SQL &amp; DuckDB</li>
-            <li>Làm việc với AI thì sao?</li>
-          </ol>
+          <ol><li>Đọc và lưu file</li><li>Lấy dữ liệu qua API</li><li>SQL và DuckDB</li></ol>
+
         </section>
       </section>
-
-      <!-- ====== Phần 1 ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">1.</span><br>Dữ liệu nằm ở đâu?</h1>
-          <p class="text-light">Thu thập là bước đầu tiên của pipeline dữ liệu.</p>
-        </section>
+        <section id="files">
+          <h1><span class="text-light">1.</span><br>Đọc và lưu file</h1>
+          <p class="text-light">Đọc đúng dữ liệu và lưu bảng để dùng lại.</p>
 
-        <section>
-          <h2>Bốn nguồn dữ liệu thường gặp</h2>
+        </section>
+        <section id="csv-inference">
+          <h2>CSV không lưu kiểu dữ liệu</h2>
+          <p>Giá giả lập (USD/đêm); <code>?</code> là chưa có giá.</p><div class="two-col"><div><h4>File gốc</h4><pre><code class="language-text" data-trim>
+id,khu,gia
+001,A,100
+002,B,80
+003,A,200
+004,B,120
+005,A,?
+</code></pre></div><div><h4>Đọc bằng pandas</h4><div class="jp-cell"><pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
+suy_luan = pd.read_csv(
+    &quot;data/raw/cho_o.csv&quot;
+)
+print(suy_luan.to_string(
+    index=False))
+</code></pre><pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
+ id khu gia
+  1   A 100
+  2   B  80
+  3   A 200
+  4   B 120
+  5   A   ?
+</code></pre></div></div></div><p>Mã <code>001</code> thành <code>1</code>; cột <code>gia</code> vẫn là chuỗi vì có <code>?</code>.</p>
+          <aside class="notes">Dùng cùng năm hàng này trong phần SQL. Cho sinh viên đoán kết quả trước khi chạy, rồi chỉ ra hai thông tin đã đổi. Notebook in kiểu từng cột: id int64, gia str. Hỏi thêm: ghép bảng này với một bảng lưu mã "001" dạng chuỗi thì sao? pandas báo lỗi vì hai cột khoá khác kiểu; nếu ép cả hai về số thì 001 và 1 bị coi là một.</aside>
+        </section>
+        <section id="csv-schema">
+          <h2>Khai báo cách đọc</h2>
+          <div class="jp-cell"><pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
+df = pd.read_csv(
+    &quot;data/raw/cho_o.csv&quot;,
+    dtype={&quot;id&quot;: &quot;str&quot;, &quot;gia&quot;: &quot;float64&quot;},
+    keep_default_na=False, na_values={&quot;gia&quot;: [&quot;?&quot;]},
+)
+print(df.to_string(index=False))
+</code></pre><pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
+ id khu   gia
+001   A 100.0
+002   B  80.0
+003   A 200.0
+004   B 120.0
+005   A   NaN
+</code></pre></div><p><code>dtype</code> đặt kiểu cột; <code>na_values</code> khai báo chuỗi nào là thiếu.</p><p>Mặc định pandas coi các chuỗi như <code>NA</code>, <code>null</code>, <code>N/A</code> và ô trống là thiếu; <code>keep_default_na=False</code> tắt danh sách này.</p>
+          <aside class="notes">Danh sách mặc định của pandas có 19 chuỗi. Với file này, bỏ keep_default_na=False vẫn ra cùng kết quả vì không cột nào chứa các chuỗi đó; tham số cần khi một giá trị hợp lệ trùng danh sách, như mã khu NA ở bài tập 1. Khi đã tắt danh sách, ô trống cũng không còn tự thành giá trị thiếu.</aside>
+        </section>
+        <section id="exercise-file">
+          <h2>Bài tập 1: Đọc bảng giá</h2>
+          <p>File <code>gia_theo_khu.csv</code> (giả lập, USD/đêm):</p><pre><code class="language-text" data-trim>
+khu,gia
+NA,100
+TB,80
+NA,
+TB,0
+</code></pre><p><code>NA</code> là mã khu hợp lệ; ô trống là chưa có giá; <code>0</code> là giá đã ghi nhận.</p><p><strong>Viết mã tính giá trung bình từng khu từ file này.</strong></p>
+          <aside class="notes">Trọng tâm là quy ước khi đọc, không phải cú pháp groupby. Lời giải: đọc với keep_default_na=False, na_values={"gia": [""]}, rồi groupby("khu")["gia"].mean(). Kết quả: NA = 100, TB = 40. Đọc mặc định thì mã NA thành giá trị thiếu và groupby bỏ nhóm đó; thêm dropna=False vẫn chưa đúng vì nhãn nhóm thành NaN. Chỉ tắt danh sách mặc định mà không khai báo ô trống thì cột gia còn chuỗi rỗng, không đọc thành số được. Điền giá thiếu bằng 0 cho NA = 50.</aside>
+        </section>
+        <section id="parquet-purpose">
+          <h2>Lưu bảng để dùng lại</h2>
+          <p>Bảng đã đọc đúng mã, kiểu cột và giá trị thiếu; cần lưu lại để lần sau không phải khai báo lại.</p>
+          <p><strong>Parquet</strong> là định dạng file nhị phân dành cho dữ liệu dạng bảng.</p>
           <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Nguồn</th>
-                <th>Ví dụ trong môn</th>
-                <th>Công cụ</th>
-              </tr>
-            </thead>
+            <thead><tr><th>Nhu cầu</th><th>Cách Parquet lưu dữ liệu</th></tr></thead>
             <tbody>
-              <tr>
-                <td>File cục bộ / URL</td>
-                <td>listings.csv.gz của Inside Airbnb</td>
-                <td><span class="inline-code">read_csv</span> &amp; họ hàng</td>
-              </tr>
-              <tr>
-                <td>API web</td>
-                <td>thời tiết Open-Meteo, Gemini (bài 11)</td>
-                <td><span class="inline-code">requests</span></td>
-              </tr>
-              <tr>
-                <td>Cơ sở dữ liệu</td>
-                <td>SQL: SELECT / JOIN / GROUP BY</td>
-                <td>DuckDB, SQLAlchemy</td>
-              </tr>
-              <tr>
-                <td>Trang web</td>
-                <td>Bảng trên Wikipedia</td>
-                <td>📖 tự học</td>
-              </tr>
+              <tr><td>Giữ kiểu cột đã xác định</td><td>Lưu kiểu cùng dữ liệu</td></tr>
+              <tr><td>Chỉ đọc các cột cần dùng</td><td>Tổ chức dữ liệu theo cột</td></tr>
+              <tr><td>Giảm dung lượng lưu trữ</td><td>Nén dữ liệu theo từng cột</td></tr>
             </tbody>
           </table>
+          <aside class="notes">Nếu ghi lại CSV, lần đọc sau lại phải khai báo kiểu. CSV vẫn tiện để xem và trao đổi; Parquet hợp với bảng trung gian được đọc nhiều lần. Parquet chia dữ liệu thành các nhóm hàng, trong mỗi nhóm lưu riêng từng cột, nên bộ đọc bỏ qua được cột không dùng; với CSV, usecols vẫn phải quét cả dòng văn bản. Kích thước và tốc độ tuỳ dữ liệu, không phải lúc nào cũng nhỏ hơn hay nhanh hơn CSV. Nguồn: McKinney §6.1–6.2; https://parquet.apache.org/docs/overview/.</aside>
         </section>
-
-        <section>
-          <h2>Nguyên tắc: không sửa dữ liệu gốc</h2>
-          <div class="pipeline pipeline-wide">
-            <div class="stage">
-              <div class="stage-title">data/raw/</div>
-              <div class="stage-desc">tải về, giữ nguyên<br>không sửa tay</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage stage-highlight">
-              <div class="stage-title">code xử lý</div>
-              <div class="stage-desc">mọi biến đổi<br>nằm trong script</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">data/processed/</div>
-              <div class="stage-desc">kết quả ghi<br>ra chỗ khác</div>
-            </div>
-          </div>
-          <div class="key-box" style="margin-top:0.9em">
-            <span class="box-title">Quan trọng</span>
-            Sửa trực tiếp dữ liệu gốc làm mất khả năng truy vết. Mọi biến đổi cần được thực hiện
-            bằng code và ghi sang vị trí khác để pipeline có thể chạy lại từ đầu.
-          </div>
+        <section id="parquet">
+          <h2>Lưu bảng bằng Parquet</h2>
+          <p>Lưu <code>df</code> đã đọc đúng ở đầu mục, rồi đọc lại:</p>
+          <div class="jp-cell"><pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
+df.to_parquet(&quot;data/processed/cho_o.parquet&quot;, index=False)
+lai = pd.read_parquet(&quot;data/processed/cho_o.parquet&quot;)
+print(lai.loc[0, &quot;id&quot;], lai[&quot;gia&quot;].dtype)
+</code></pre><pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
+001 float64
+</code></pre></div><p>Mã <code>001</code> vẫn là chuỗi; <code>gia</code> vẫn là số.</p><p>Giữ file gốc trong <code>raw/</code>, ghi kết quả vào <code>processed/</code>.</p>
+          <aside class="notes">Ví dụ kiểm trên pandas 3.0.3 và pyarrow. Parquet không sửa được kiểu đã đọc sai. So sánh tốc độ và kích thước file là phần tự học trong notebook; không kết luận công cụ nào luôn nhanh hơn.</aside>
         </section>
-      </section>
-
-      <!-- ====== Phần 2 ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">2.</span><br>Đọc file đúng cách</h1>
-          <p class="text-light">Tập trung vào năm tham số thường dùng của read_csv.</p>
-        </section>
-
-        <section data-jp-reset>
-          <h2>Năm tham số read_csv thường dùng</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-df = pd.read_csv(
-    "listings.csv.gz",            # đọc trực tiếp file .gz
-    usecols=["id", "price", "host_since", "room_type"],
-    parse_dates=["host_since"],   # chuyển cột ngày sang datetime
-    na_values=["N/A", ""],        # các biểu diễn được xem là thiếu
-    dtype={"id": "int64"},        # khai báo kiểu khi biết trước
+        <section id="snapshot">
+          <h2>Áp dụng cho dữ liệu Santiago</h2>
+          <p>Bản CSV rút gọn ngày <strong>29/06/2026</strong>: 19 cột; <code>price</code> đã là số, đơn vị CLP/đêm.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
+listings = pd.read_csv(
+    &quot;data/raw/santiago_2026-06-29.csv&quot;,
+    usecols=[&quot;id&quot;, &quot;neighbourhood&quot;, &quot;room_type&quot;, &quot;price&quot;],
+    dtype={&quot;id&quot;: &quot;str&quot;},
 )
-            </code></pre>
-          </div>
-          <p><span class="inline-code">usecols</span> chỉ đọc các cột cần thiết. Với bảng listings
-            có 90 cột, ví dụ này chỉ tải bốn cột vào bộ nhớ.</p>
-          <p class="caption">Mã tải dữ liệu và ví dụ đầy đủ nằm trong notebook Bài 6.</p>
-        </section>
-
-        <section data-jp-reset>
-          <h2>Đọc xong: dtype có như kỳ vọng?</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-df.dtypes
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-id                     int64
-price                    str    ← "$45,647.00" — vẫn là chuỗi!
-host_since    datetime64[s]
-room_type                str
-            </code></pre>
-          </div>
-          <p>pandas có thể suy luận nhiều kiểu dữ liệu, nhưng không tự hiểu quy ước tiền tệ có
-            <code>$</code> và dấu phẩy. Có thể xử lý cột này bằng <code>clean_price</code> từ các bài trước.
-            ID Airbnb dài 18–19 chữ số cũng cần giữ ở kiểu số nguyên hoặc chuỗi để tránh mất độ chính xác.</p>
-        </section>
-
-        <section>
-          <h2>CSV vs Parquet: hai cách lưu bảng</h2>
-          <div class="two-col">
-            <div>
-              <h4>CSV</h4>
-              <ul>
-                <li>Văn bản thuần — người đọc được.</li>
-                <li><strong>Không mang kiểu</strong>: mọi lần đọc là một lần đoán lại.</li>
-                <li>To, đọc chậm.</li>
-              </ul>
-            </div>
-            <div>
-              <h4>Parquet</h4>
-              <ul>
-                <li>Nhị phân, theo cột, nén sẵn.</li>
-                <li><strong>Lưu thông tin dtype</strong> cùng dữ liệu.</li>
-                <li>Thường nhỏ hơn và đọc nhanh hơn CSV.</li>
-              </ul>
-            </div>
-          </div>
-        </section>
-
-        <section data-jp-reset>
-          <h2>Đo trên dữ liệu Santiago</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-df.to_csv("data/processed/listings.csv", index=False)
-df.to_parquet("data/processed/listings.parquet")
-            </code></pre>
-            <pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
-listings.csv      1.4 MB   đọc lại:   9 ms
-listings.parquet  0.4 MB   đọc lại:   1 ms
-            </code></pre>
-          </div>
-          <div class="good-box">
-            <span class="box-title">Cách làm tốt</span>
-            Trong học phần, dữ liệu gốc được giữ nguyên ở định dạng tải về (<code>csv.gz</code>);
-            dữ liệu trung gian trong <code>processed/</code> ưu tiên <strong>Parquet</strong>.
-          </div>
-        </section>
-
-        <section data-jp-reset>
-          <h2>File lớn hơn RAM: đọc từng phần (chunk)</h2>
-          <div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-tong = 0
-for chunk in pd.read_csv("reviews_lon.csv.gz",
-                         chunksize=100_000):
-    tong += (chunk["date"] >= "2026-01-01").sum()
-            </code></pre>
-          </div>
-          <p>Mỗi vòng chỉ giữ 100 nghìn dòng trong RAM. Với các thao tác tổng hợp thường xuyên
-            trên file lớn, DuckDB ở phần 4 có thể phù hợp hơn.</p>
+print(listings.shape)
+listings.to_parquet(&quot;data/processed/listings.parquet&quot;, index=False)
+</code></pre><pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>
+(18534, 4)
+</code></pre></div><p><code>id</code> là mã, không dùng để tính: đọc thành chuỗi. <code>usecols</code> chỉ đọc bốn cột cần dùng.</p><p>File Parquet này dùng lại ở mục 3.</p>
+          <aside class="notes">Bản visualisations/listings.csv khác bản đầy đủ data/listings.csv.gz: bản đầy đủ lưu giá thành chuỗi tiền tệ, sẽ xử lý ở bài sau. Mã tải file và kiểm tra dữ liệu nằm trong notebook.</aside>
         </section>
       </section>
-
-      <!-- ====== Phần 3 ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">3.</span><br>Lấy dữ liệu qua API</h1>
-          <p class="text-light">Gửi yêu cầu đến máy chủ và nhận dữ liệu JSON.</p>
-        </section>
+        <section id="api">
+          <h1><span class="text-light">2.</span><br>Lấy dữ liệu qua API</h1>
+          <p class="text-light">Tự động lấy dữ liệu từ dịch vụ theo yêu cầu.</p>
 
-        <section>
-          <h2>API kết nối chương trình với máy chủ</h2>
-          <div class="pipeline pipeline-wide">
-            <div class="stage">
-              <div class="stage-title">Code của bạn</div>
-              <div class="stage-desc">requests.get(url, params)</div>
+        </section>
+        <section id="api-need">
+          <h2>Tự động lấy dữ liệu từ dịch vụ</h2>
+          <p>Dữ liệu nằm trên hệ thống của nhà cung cấp và thay đổi theo thời gian, như dự báo thời tiết.</p>
+          <ul>
+            <li>Chương trình cần cập nhật dữ liệu tự động.</li>
+            <li>Mỗi lần chỉ cần một phần dữ liệu: một địa điểm, vài ngày tới, một mã sản phẩm.</li>
+          </ul>
+          <p>Nhà cung cấp cần quy định cách chương trình gửi yêu cầu và nhận đúng phần dữ liệu đó.</p>
+          <aside class="notes">Bắt đầu từ nhu cầu trao đổi giữa các hệ thống, chưa nói đến code. Dự báo được cập nhật nhiều lần mỗi ngày; tải file bằng tay mỗi lần là không thực tế. Tải một file qua URL cũng tự động hoá được; khác biệt ở đây là dịch vụ trả đúng phần dữ liệu theo tham số đã quy định, chương trình không cần biết dữ liệu được lưu bên trong thế nào. Slide sau mới gọi tên API; ví dụ Open-Meteo bắt đầu từ slide thứ ba. Nguồn: McKinney §6.3.</aside>
+        </section>
+        <section id="api-purpose">
+          <h2>Trao đổi dữ liệu qua API</h2>
+          <p><strong>API</strong> (giao diện lập trình ứng dụng) quy định cách các chương trình tương tác với nhau.</p>
+          <p><strong>Web API</strong> trao đổi yêu cầu và phản hồi qua HTTP, giao thức truyền dữ liệu trên web.</p>
+          <div class="pipeline api-exchange">
+            <div class="stage"><div class="stage-title">Chương trình</div><div class="stage-desc">Cần lấy dữ liệu</div></div>
+            <div class="api-messages">
+              <div class="api-message"><strong>Yêu cầu</strong><div class="api-arrow" aria-hidden="true"></div>Địa chỉ, tham số</div>
+              <div class="api-message"><strong>Phản hồi</strong><div class="api-arrow api-arrow-return" aria-hidden="true"></div>Mã trạng thái, dữ liệu</div>
             </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">Máy chủ</div>
-              <div class="stage-desc">api.open-meteo.com</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">Response</div>
-              <div class="stage-desc">JSON + status code</div>
-            </div>
+            <div class="stage stage-highlight"><div class="stage-title">Dịch vụ</div><div class="stage-desc">Xử lý yêu cầu</div></div>
           </div>
-          <p style="margin-top:0.8em">API cung cấp dữ liệu có cấu trúc để chương trình xử lý,
-            thay vì giao diện được thiết kế chủ yếu cho người dùng.</p>
+          <aside class="notes">API là viết tắt của Application Programming Interface; khái niệm này còn dùng cho thư viện và hệ điều hành, bài này chỉ xét web API. Chương trình gọi API có thể là ứng dụng web, ứng dụng di động hay script. Địa chỉ và tham số là hai thành phần dùng trong ví dụ GET kế tiếp, chưa phải mọi thành phần của một yêu cầu HTTP. Cách gọi và cấu trúc phản hồi do tài liệu của dịch vụ quy định. Nguồn: McKinney §6.3.</aside>
         </section>
-
-        <section data-jp-reset>
-          <h2>Thực hành: thời tiết Santiago</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
+        <section id="api-parameters">
+          <h2>Ví dụ: lấy dự báo thời tiết</h2>
+          <p>Tra <a href="https://open-meteo.com/en/docs">tài liệu Open-Meteo</a> để lấy endpoint (địa chỉ nhận yêu cầu):</p>
+          <pre><code class="language-text" data-trim>
+https://api.open-meteo.com/v1/forecast
+</code></pre>
+          <table class="compact-table">
+            <thead><tr><th>Yêu cầu</th><th>Tham số</th><th>Giá trị</th></tr></thead>
+            <tbody>
+              <tr><td>Vị trí Santiago</td><td><code>latitude</code>, <code>longitude</code></td><td><code>-33.45</code>, <code>-70.66</code></td></tr>
+              <tr><td>Nhiệt độ tối đa ngày</td><td><code>daily</code></td><td><code>temperature_2m_max</code></td></tr>
+              <tr><td>Ba ngày kể từ hôm nay</td><td><code>forecast_days</code></td><td><code>3</code></td></tr>
+              <tr><td>Ngày theo giờ Santiago</td><td><code>timezone</code></td><td><code>America/Santiago</code></td></tr>
+            </tbody>
+          </table>
+          <aside class="notes">Dịch yêu cầu phân tích thành tham số trước khi viết code. Toạ độ là một điểm minh hoạ trong Santiago. daily là đại lượng tổng hợp theo ngày; timezone quyết định ranh giới ngày; forecast_days=3 gồm hôm nay và hai ngày tiếp theo. Tên tham số do dịch vụ quy định: AI hay bịa tên tham số, luôn đối chiếu tài liệu. Open-Meteo mặc định trả °C, nhưng vẫn đọc daily_units khi xử lý.</aside>
+        </section>
+        <section id="api-request">
+          <h2>Gửi yêu cầu bằng Python</h2>
+          <p><code>requests.get()</code> gửi yêu cầu HTTP; <code>params</code> là các tham số ở slide trước.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
 import requests
 
 r = requests.get(
-    "https://api.open-meteo.com/v1/forecast",
-    params={"latitude": -33.45, "longitude": -70.66,
-            "daily": "temperature_2m_max", "timezone": "auto"},
+    &quot;https://api.open-meteo.com/v1/forecast&quot;,
+    params={&quot;latitude&quot;: -33.45, &quot;longitude&quot;: -70.66,
+            &quot;daily&quot;: &quot;temperature_2m_max&quot;,
+            &quot;timezone&quot;: &quot;America/Santiago&quot;, &quot;forecast_days&quot;: 3},
     timeout=20,
 )
-r.status_code
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="1"><code class="language-text" data-trim>
+print(r.status_code)
+</code></pre><pre class="jp-output" data-jp-n="5"><code class="language-text" data-trim>
 200
-            </code></pre>
-          </div>
-          <p><span class="inline-code">params</span> = phần sau dấu <code>?</code> trên URL,
-            để requests tự mã hoá. 200 = thành công; 404 = không tìm thấy tài nguyên;
-            429 = gửi quá nhiều yêu cầu.</p>
+</code></pre></div><p><code>r</code> chứa phản hồi; mã <code>200</code> cho biết yêu cầu thành công.</p>
+          <aside class="notes">Requests mã hoá params và ghép vào URL. Mở r.url (notebook in ra) trên trình duyệt: thấy chuỗi truy vấn và đúng JSON thô mà chương trình nhận. timeout=20 giới hạn thời gian chờ kết nối và chờ dữ liệu, không phải tổng thời gian tải; mất kết nối hay chờ quá lâu thì get báo lỗi ngay. Mã 200 chỉ nói yêu cầu HTTP thành công; vẫn phải kiểm cấu trúc, đơn vị và dữ liệu.</aside>
         </section>
-
-        <section data-jp-reset>
-          <h2>JSON → DataFrame</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-d = r.json()                      # từ điển lồng nhau
-
-thoi_tiet = pd.DataFrame(d["daily"])
-thoi_tiet.head(3)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-         time  temperature_2m_max
-0  2026-07-05                14.2
-1  2026-07-06                21.2
-2  2026-07-07                22.1
-            </code></pre>
-          </div>
-          <p>JSON phẳng có thể truyền trực tiếp vào <code>pd.DataFrame</code>; dữ liệu lồng nhiều tầng có thể dùng
-            <span class="inline-code">pd.json_normalize</span>.</p>
+        <section id="api-response">
+          <h2>Đọc dữ liệu trong phản hồi</h2>
+          <p>Open-Meteo trả nội dung dạng <strong>JSON</strong>: văn bản chứa các cặp tên–giá trị và mảng.</p>
+          <div class="jp-cell"><pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>
+r.raise_for_status()
+du_lieu = r.json()
+print(type(du_lieu).__name__, len(du_lieu))
+</code></pre><pre class="jp-output" data-jp-n="6"><code class="language-text" data-trim>
+dict 9
+</code></pre></div>
+          <p><code>raise_for_status()</code> báo lỗi HTTP trước khi đọc dữ liệu.</p>
+          <p><code>json()</code> chuyển đối tượng JSON thành <code>dict</code>, mảng thành <code>list</code>: ở đây là <code>dict</code> có 9 khoá.</p>
+          <aside class="notes">JSON (JavaScript Object Notation) là định dạng văn bản để trao đổi dữ liệu. Chín khoá ở lớp ngoài: latitude, longitude, generationtime_ms, utc_offset_seconds, timezone, timezone_abbreviation, elevation, daily_units, daily; notebook in đủ danh sách. Đọc được JSON chưa chứng tỏ yêu cầu thành công, vì nội dung báo lỗi cũng có thể là JSON; vì vậy gọi raise_for_status trước (báo lỗi với mã 4xx, 5xx). Phản hồi không phải JSON hợp lệ thì r.json() báo JSONDecodeError. Nguồn: https://requests.readthedocs.io/en/latest/user/quickstart/#json-response-content.</aside>
         </section>
-
-        <section data-jp-reset>
-          <h2>Các biện pháp an toàn khi gọi API</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-for thanh_pho in ds_thanh_pho:
-    r = requests.get(URL, params=..., timeout=20)
-    r.raise_for_status()      # phát sinh ngoại lệ nếu HTTP báo lỗi
-    ket_qua.append(r.json())
-    time.sleep(1)             # tạo khoảng nghỉ giữa các yêu cầu
-            </code></pre>
-          </div>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            Nếu thiếu <code>timeout</code>, yêu cầu có thể chờ quá lâu khi kết nối gặp sự cố.
-            Nếu gọi liên tục mà không tạo khoảng nghỉ, máy chủ có thể trả mã 429 hoặc giới hạn truy cập.
-          </div>
+        <section id="json-structure">
+          <h2>Chọn phần JSON để tạo bảng</h2>
+          <p>Bản rút gọn còn ba khoá cần dùng; số liệu giả lập:</p><pre><code class="language-json" data-trim>
+{
+  &quot;timezone&quot;: &quot;America/Santiago&quot;,
+  &quot;daily_units&quot;: {&quot;temperature_2m_max&quot;: &quot;°C&quot;},
+  &quot;daily&quot;: {
+    &quot;time&quot;: [&quot;2026-10-01&quot;, &quot;2026-10-02&quot;, &quot;2026-10-03&quot;],
+    &quot;temperature_2m_max&quot;: [22.0, 26.0, 24.0]
+  }
+}
+</code></pre><p>Hai danh sách trong <code>daily</code> khớp theo vị trí, mỗi vị trí một ngày.</p><p><code>daily_units</code> cho biết đơn vị; <code>timezone</code> cho biết múi giờ.</p>
+          <aside class="notes">01/10 ứng với 22°C, 02/10 với 26°C, 03/10 với 24°C. Số liệu cố định để học cấu trúc, không phải dự báo của lần gọi API trên lớp; tháng 10, nhiệt độ cao nhất ở Santiago trung bình khoảng 22°C (Open-Meteo, 2016–2025). Không đưa cả phản hồi vào DataFrame: lớp ngoài là thông tin mô tả, không phải cột của bảng theo ngày. Trước khi tạo bảng, xác định mỗi hàng biểu diễn điều gì.</aside>
         </section>
+        <section id="json-table">
+          <h2>Tạo bảng theo ngày</h2>
+          <p><code>mau</code> là <code>dict</code> đọc từ JSON giả lập ở slide trước.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>
+thoi_tiet = pd.DataFrame(mau[&quot;daily&quot;])
+print(thoi_tiet.to_string(index=False))
+</code></pre><pre class="jp-output" data-jp-n="7"><code class="language-text" data-trim>
+      time  temperature_2m_max
+2026-10-01                22.0
+2026-10-02                26.0
+2026-10-03                24.0
+</code></pre></div><p>Mỗi hàng là một ngày; nhiệt độ tính bằng °C.</p>
 
-        <section>
-          <h2>Lưu response thô để hỗ trợ tái lập</h2>
-          <ul>
-            <li>API là nguồn dữ liệu <em>sống</em>: hôm nay hỏi có thể khác ngày mai. Ghi JSON thô vào
-              <span class="inline-code">data/raw/</span> kèm ngày giờ.</li>
-            <li>Pipeline đọc lại từ file đã lưu để không phải gọi mạng và giữ đầu vào nhất quán.</li>
-          </ul>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Lưu dữ liệu một lần và xử lý nhiều lần. Cách làm này hỗ trợ tái lập kết quả
-            và sẽ được dùng lại khi làm việc với API ở bài 11.
-          </div>
         </section>
+        <section id="api-save">
+          <h2>Giữ lại bản dự báo đã lấy</h2>
+          <p>Gọi lại API có thể nhận được dự báo khác. Lưu nguyên phản hồi để phân tích lại cùng dữ liệu.</p><pre><code class="language-python" data-trim>
+# Khi tải dữ liệu
+moc = pd.Timestamp.now(tz=&quot;UTC&quot;).strftime(&quot;%Y%m%d-%H%M%S&quot;)
+tep_json = Path(&quot;data/raw&quot;) / f&quot;du_bao_{moc}.json&quot;
+tep_json.write_bytes(r.content)
 
-        <section>
-          <h2>API cần khoá (API key)</h2>
-          <ul>
-            <li>Nhiều API yêu cầu <strong>API key</strong> để tính quota — như Gemini ở bài 11.</li>
-            <li>Khóa API được đọc từ <strong>biến môi trường / Colab Secrets</strong>, không viết vào code,
-              không commit vào kho mã nguồn — theo quy tắc đã nêu ở bài 1.</li>
-          </ul>
+# Khi phân tích lại
+du_lieu = json.loads(tep_json.read_text(encoding=&quot;utf-8&quot;))
+du_bao = pd.DataFrame(du_lieu[&quot;daily&quot;])
+</code></pre>
+          <aside class="notes">r.content là nguyên văn phản hồi, gồm cả dữ liệu và đơn vị. Tên file ghi thời điểm tải theo giờ UTC, vd. du_bao_20261001-083000.json, nên mỗi lần tải có một file riêng; cách định dạng thời gian học ở Bài 8. json.loads chuyển văn bản trong file thành dict, như r.json(). Notebook lưu thêm URL và thời điểm tải vào file .meta.json. Muốn phân tích lại cùng đầu vào thì đọc file cũ, không gọi lại get. Trong chương trình thực tế, lưu ngay sau khi nhận và kiểm phản hồi.</aside>
+        </section>
+        <section id="exercise-api">
+          <h2>Bài tập 2: Lọc ngày nóng</h2>
+          <p>Phản hồi giả lập:</p><pre><code class="language-json" data-trim>
+{
+  &quot;daily_units&quot;: {&quot;temperature_2m_max&quot;: &quot;°F&quot;},
+  &quot;daily&quot;: {
+    &quot;time&quot;: [&quot;2026-10-01&quot;, &quot;2026-10-02&quot;, &quot;2026-10-03&quot;],
+    &quot;temperature_2m_max&quot;: [77, 82, 68]
+  }
+}
+</code></pre><p>Đổi đơn vị: °C = (°F − 32) / 1,8.</p><p><strong>Lấy các ngày có nhiệt độ tối đa từ 25°C trở lên.</strong></p>
+          <aside class="notes">Kết quả: 01/10 và 02/10. Nhiệt độ sau đổi là 25; 27,8; 20°C. Ngày 01/10 đúng bằng ngưỡng nên phải dùng ≥; phép tính (77 − 32)/1,8 cho đúng 25.0, không có sai số làm tròn. Có thể đổi cả cột sang °C hoặc đổi ngưỡng 25°C thành 77°F; chấp nhận mọi cách đúng. Trọng tâm: đọc daily_units trước khi lọc; so trực tiếp với 25 sẽ chọn cả ba ngày.</aside>
         </section>
       </section>
-
-      <!-- ====== Phần 4 ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">4.</span><br>SQL &amp; DuckDB</h1>
-          <p class="text-light">Ngôn ngữ truy vấn bảng phổ biến nhất — chạy ngay trong notebook.</p>
-        </section>
+        <section id="sql">
+          <h1><span class="text-light">3.</span><br>SQL và DuckDB</h1>
+          <p class="text-light">Truy vấn dữ liệu tại nguồn, lấy kết quả về phân tích.</p>
 
-        <section>
-          <h2>Vì sao phải biết SQL?</h2>
+        </section>
+        <section id="sql-purpose">
+          <h2>Lấy kết quả từ cơ sở dữ liệu</h2>
+          <p>Các bảng nằm trong cơ sở dữ liệu (CSDL); báo cáo chỉ cần giá trung bình từng khu.</p>
+          <p><strong>SQL</strong> là ngôn ngữ mô tả kết quả cần lấy từ các bảng.</p>
+          <div class="pipeline">
+            <div class="stage"><div class="stage-title">Bảng nguồn</div><div class="stage-desc">Dữ liệu từng<br>chỗ ở</div></div>
+            <div class="arrow" aria-hidden="true">→</div>
+            <div class="stage stage-highlight"><div class="stage-title">Hệ quản trị CSDL</div><div class="stage-desc">Thực hiện<br>truy vấn SQL</div></div>
+            <div class="arrow" aria-hidden="true">→</div>
+            <div class="stage"><div class="stage-title">Bảng kết quả</div><div class="stage-desc">Một hàng mỗi khu<br>đưa về Python</div></div>
+          </div>
+          <aside class="notes">Tình huống: dữ liệu nằm trong một CSDL, chưa phải DataFrame trong bộ nhớ. Báo cáo chỉ cần bảng tổng hợp, nên để hệ quản trị CSDL tính rồi chỉ chuyển kết quả về chương trình. SQL (Structured Query Language) mô tả kết quả cần lấy; hệ quản trị chọn cách thực hiện, người viết không phải viết vòng lặp qua từng hàng. Lọc, nhóm, ghép là các thao tác đã gặp ở Bài 5; cú pháp và hàm cụ thể có thể khác nhau giữa các hệ quản trị. Nguồn: McKinney §6.4.</aside>
+        </section>
+        <section id="duckdb">
+          <h2>Dùng DuckDB trong Python</h2>
+          <p>Dữ liệu của bài là file và DataFrame trên máy; cần chạy SQL ngay trong Python.</p>
+          <p><strong>DuckDB</strong> là hệ quản trị cơ sở dữ liệu dành cho phân tích:</p>
           <ul>
-            <li>Nhiều tổ chức lưu dữ liệu trong cơ sở dữ liệu và truy xuất bằng SQL.</li>
-            <li>Các thao tác lọc, nhóm và nối có cách biểu đạt tương ứng trong SQL.</li>
-            <li>Môn học này yêu cầu đọc–viết được truy vấn cơ bản.</li>
+            <li>Chạy cùng chương trình, không cần máy chủ riêng.</li>
+            <li>Truy vấn trực tiếp file CSV, Parquet hoặc DataFrame.</li>
+            <li>Lấy kết quả về pandas bằng <code>.df()</code>.</li>
           </ul>
+          <aside class="notes">SQL là ngôn ngữ, DuckDB là công cụ thực hiện. Chọn DuckDB vì dùng được ngay trên file và DataFrame đã có ở mục 1, không phải dựng máy chủ hay nhập dữ liệu vào một hệ quản trị khác. Bắt đầu với df năm hàng để tính tay, cuối mục truy vấn file Parquet. DuckDB được thiết kế cho tổng hợp và ghép bảng, nhưng không phải lúc nào cũng nhanh hơn pandas. Nguồn: https://duckdb.org/why_duckdb, https://duckdb.org/docs/current/clients/python/overview.</aside>
         </section>
-
-        <section>
-          <h2>SQL ↔ pandas: thao tác tương ứng</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>SQL</th>
-                <th>pandas</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><span class="inline-code">SELECT name, price FROM listings</span></td>
-                <td><span class="inline-code">df[["name", "price"]]</span></td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">WHERE price &lt; 50000</span></td>
-                <td><span class="inline-code">df[df["price"] &lt; 50000]</span></td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">GROUP BY room_type</span></td>
-                <td><span class="inline-code">df.groupby("room_type")</span></td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">JOIN vung USING (quan)</span></td>
-                <td><span class="inline-code">df.merge(vung, on="quan")</span></td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">ORDER BY price DESC LIMIT 5</span></td>
-                <td><span class="inline-code">df.nlargest(5, "price")</span></td>
-              </tr>
-            </tbody>
-          </table>
-          <p>Các thao tác lọc, nhóm và nối quen thuộc trong pandas có thể được biểu diễn bằng SQL.</p>
-        </section>
-
-        <section data-jp-reset>
-          <h2>DuckDB: cơ sở dữ liệu phân tích trong notebook</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
+        <section id="sql-select">
+          <h2>Lọc hàng bằng SQL</h2>
+          <p><code>duckdb.sql()</code> chạy câu SQL. <code>FROM df</code> là DataFrame <code>df</code> của mục 1: DuckDB tìm bảng theo tên biến Python.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>
 import duckdb
 
-duckdb.query("""
-    SELECT room_type,
-           median(price_num) AS gia_trung_vi,
-           count(*)      AS n
-    FROM 'data/processed/listings.parquet'
-    GROUP BY room_type
-    ORDER BY gia_trung_vi DESC
-""").df()
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-         room_type  gia_trung_vi      n
-0       Hotel room      117138.5     56
-1  Entire home/apt       64900.0  15004
-2     Private room       34235.0   3413
-3      Shared room       20541.0     61
-            </code></pre>
-          </div>
-          <p>Không cần vận hành máy chủ cơ sở dữ liệu riêng. DuckDB có thể đọc trực tiếp
-            file CSV hoặc Parquet trong mệnh đề <code>FROM</code>.</p>
+ket_qua = duckdb.sql(&quot;&quot;&quot;
+    SELECT id, khu, gia
+    FROM df
+    WHERE gia &gt;= 100
+    ORDER BY gia DESC
+&quot;&quot;&quot;).df()
+print(ket_qua.to_string(index=False))
+</code></pre><pre class="jp-output" data-jp-n="8"><code class="language-text" data-trim>
+ id khu   gia
+003   A 200.0
+004   B 120.0
+001   A 100.0
+</code></pre></div><p><code>WHERE</code> lọc hàng; <code>ORDER BY … DESC</code> sắp xếp giảm dần.</p>
+          <aside class="notes">Chỉ lần lượt: FROM là bảng nguồn, WHERE là điều kiện, SELECT là cột kết quả. Hỏi trước khi chạy: hàng 005 (giá thiếu) có trong kết quả không? Không: phép so sánh giá thiếu với 100 không trả về true, nên hàng bị loại. Thứ tự viết các mệnh đề không phải thứ tự máy thực hiện.</aside>
         </section>
-
-        <section>
-          <h2>Đối chiếu kết quả với pandas</h2>
-          <ul>
-            <li>Kết quả ở slide trước trùng với
-              <span class="inline-code">df.groupby("room_type")["price_num"].median()</span> trong pandas.</li>
-            <li>Đối chiếu kết quả từ hai công cụ độc lập là một cách <em>kiểm chứng</em>,
-              kể cả khi mã được tạo với sự hỗ trợ của AI.</li>
-          </ul>
+        <section id="sql-group">
+          <h2>Tính theo nhóm bằng SQL</h2>
+          <div class="jp-cell"><pre class="jp-input" data-jp-n="9"><code class="language-python" data-trim>
+theo_khu = duckdb.sql(&quot;&quot;&quot;
+    SELECT khu, AVG(gia) AS trung_binh,
+           COUNT(*) AS so_cho_o, COUNT(gia) AS so_gia
+    FROM df
+    GROUP BY khu
+    ORDER BY khu
+&quot;&quot;&quot;).df()
+print(theo_khu.to_string(index=False))
+</code></pre><pre class="jp-output" data-jp-n="9"><code class="language-text" data-trim>
+khu  trung_binh  so_cho_o  so_gia
+  A       150.0         3       2
+  B       100.0         2       2
+</code></pre></div><p>Khu A có ba chỗ ở nhưng chỉ hai giá đã biết.</p><p>NaN của pandas thành <code>NULL</code> trong SQL; <code>AVG</code> và <code>COUNT(gia)</code> bỏ qua <code>NULL</code>.</p>
+          <aside class="notes">Liên hệ size và count của Bài 5: COUNT(*) đếm mọi hàng, COUNT(gia) chỉ đếm giá khác NULL. Cho sinh viên tính tay trước: A = (100 + 200)/2 = 150. AS chỉ đặt tên cột kết quả. Chỉ NaN đọc từ DataFrame mới thành NULL; một giá trị NaN thật trong SQL không bị bỏ qua (AVG trả NaN).</aside>
         </section>
-
-        <section data-jp-reset>
-          <h2>JOIN trong SQL</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-duckdb.query("""
-    SELECT v.vung, median(l.price_num) AS gia
-    FROM 'data/processed/listings.parquet' AS l
-    LEFT JOIN vung_df AS v USING (neighbourhood_cleansed)
-    GROUP BY v.vung
-    ORDER BY gia
-""").df()
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-        vung        gia
-0  Trung tâm  47755.165
-1       NULL  57687.750
-2       Đông  76628.250
-            </code></pre>
-          </div>
-          <p>DuckDB có thể truy vấn DataFrame đang tồn tại trong notebook (<code>vung_df</code>).
-            Giá trị NULL tương ứng với các quận không khớp khi nối bảng.</p>
+        <section id="sql-filter">
+          <h2>Lọc hàng và lọc nhóm</h2>
+          <div class="two-col"><div><h4>Lọc hàng trước khi tính</h4><pre><code class="language-sql" data-trim>
+SELECT khu, AVG(gia) AS tb
+FROM df
+WHERE gia &gt;= 150
+GROUP BY khu
+</code></pre><table class="compact-table"><thead><tr><th>khu</th><th>tb</th></tr></thead><tbody><tr><td>A</td><td>200</td></tr></tbody></table></div><div><h4>Lọc nhóm sau khi tính</h4><pre><code class="language-sql" data-trim>
+SELECT khu, AVG(gia) AS tb
+FROM df
+GROUP BY khu
+HAVING AVG(gia) &gt;= 150
+</code></pre><table class="compact-table"><thead><tr><th>khu</th><th>tb</th></tr></thead><tbody><tr><td>A</td><td>150</td></tr></tbody></table></div></div><p><code>WHERE</code> lọc từng hàng; <code>HAVING</code> lọc kết quả theo nhóm.</p><p>Khu B vắng mặt ở cả hai kết quả, vì hai lý do khác nhau.</p>
+          <aside class="notes">Bên trái: WHERE loại hàng giá 100 của khu A nên trung bình còn 200; khu B không còn hàng nào nên không có nhóm B. Bên phải: khu A tính đủ 100 và 200; nhóm B có trung bình 100 &lt; 150 nên HAVING loại. Ý bên trái dùng ngay ở bài tập 3. Hai câu trả lời hai câu hỏi khác nhau, không câu nào sai.</aside>
         </section>
-
-        <section>
-          <h2>Khi nào dùng gì?</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Tình huống</th>
-                <th>Chọn</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Bảng vừa RAM, biến đổi linh hoạt, vẽ biểu đồ</td>
-                <td><strong>pandas</strong></td>
-              </tr>
-              <tr>
-                <td>File lớn hơn RAM, cần tổng hợp hoặc JOIN</td>
-                <td><strong>DuckDB</strong> (rồi kết quả nhỏ → pandas)</td>
-              </tr>
-              <tr>
-                <td>Dữ liệu nằm sẵn trong CSDL của tổ chức</td>
-                <td>SQL trên CSDL đó</td>
-              </tr>
-            </tbody>
-          </table>
-          <p>Lựa chọn công cụ phụ thuộc vào quy mô và thao tác: DuckDB phù hợp với bảng
-            <code>reviews</code> khoảng 690 nghìn dòng; pandas thuận tiện với bảng KPI nhỏ.</p>
+        <section id="exercise-sql">
+          <h2>Bài tập 3: Đếm giá thiếu</h2>
+          <table class="compact-table"><thead><tr><th>id</th><th>khu</th><th>gia (USD/đêm)</th></tr></thead><tbody><tr><td>001</td><td>A</td><td>100</td></tr><tr><td>002</td><td>B</td><td>80</td></tr><tr><td>003</td><td>A</td><td>200</td></tr><tr><td>004</td><td>B</td><td>120</td></tr><tr><td>005</td><td>A</td><td>NaN</td></tr></tbody></table><p><strong>Viết một truy vấn SQL đếm số chỗ ở chưa có giá của từng khu, kể cả khu không thiếu giá.</strong></p>
+          <aside class="notes">SELECT khu, COUNT(*) - COUNT(gia) AS so_thieu FROM df GROUP BY khu ORDER BY khu. A = 1, B = 0. Nếu chỉ WHERE gia IS NULL rồi GROUP BY khu sẽ mất khu B. Chấp nhận các cách đúng khác; không bắt buộc ghi nhớ CASE WHEN chưa được dạy.</aside>
+        </section>
+        <section id="sql-join">
+          <h2>Ghép bảng bằng SQL</h2>
+          <p>Bảng <code>khu_vung</code> có một hàng: khu <strong>A</strong> thuộc vùng <strong>Bắc</strong>.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="10"><code class="language-python" data-trim>
+ghep = duckdb.sql(&quot;&quot;&quot;
+    SELECT df.id, df.khu, khu_vung.vung
+    FROM df LEFT JOIN khu_vung ON df.khu = khu_vung.khu
+    ORDER BY df.id
+&quot;&quot;&quot;).df()
+print(ghep.to_string(index=False))
+</code></pre><pre class="jp-output" data-jp-n="10"><code class="language-text" data-trim>
+ id khu vung
+001   A  Bắc
+002   B  NaN
+003   A  Bắc
+004   B  NaN
+005   A  Bắc
+</code></pre></div><p><code>LEFT JOIN</code> giữ cả hai chỗ ở khu B dù chưa có vùng tương ứng.</p>
+          <aside class="notes">Liên hệ left merge của Bài 5. khu_vung.vung là cột vung của bảng khu_vung; ON là điều kiện ghép. NULL trong SQL về pandas thành NaN. Khoá lặp ở bảng phải cũng nhân hàng như merge.</aside>
+        </section>
+        <section id="sql-parquet">
+          <h2>Truy vấn file Parquet</h2>
+          <p>Lấy bảng tổng hợp từ file đã lưu, đưa kết quả về pandas.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="11"><code class="language-python" data-trim>
+ket_qua_that = duckdb.sql(&quot;&quot;&quot;
+SELECT room_type, MEDIAN(price) AS trung_vi,
+       COUNT(price) AS so_gia
+FROM &#x27;data/processed/listings.parquet&#x27;
+GROUP BY room_type
+ORDER BY trung_vi DESC
+&quot;&quot;&quot;).df()
+print(ket_qua_that.to_string(index=False))
+</code></pre><pre class="jp-output" data-jp-n="11"><code class="language-text" data-trim>
+      room_type  trung_vi  so_gia
+     Hotel room  117138.5      56
+Entire home/apt   64900.0   14425
+   Private room   34235.0    3148
+    Shared room   20541.0      59
+</code></pre></div>
+          <p>Santiago 29/06/2026, CLP/đêm; khớp với <code>groupby</code> của pandas.</p>
+          <p>Trung vị cao nhất (Hotel room) chỉ dựa trên 56 giá.</p>
+          <aside class="notes">Khép lại nhu cầu đầu mục: lấy bảng tổng hợp mà không đọc cả file vào DataFrame. DuckDB chỉ đọc hai cột room_type và price; .df() đưa bảng kết quả nhỏ về pandas. Notebook đối chiếu bằng groupby trên cùng dữ liệu (assert_frame_equal). Hỏi lớp: xếp hạng theo trung vị có đáng tin khi Hotel room chỉ có 56 giá, Shared room 59 giá? Nguồn: https://duckdb.org/docs/current/data/parquet/overview.</aside>
         </section>
       </section>
-
-      <!-- ====== Kết ====== -->
       <section>
-        <section>
+        <section id="summary">
           <h2>Tổng kết</h2>
-          <ul>
-            <li>Giữ nguyên dữ liệu gốc — mọi biến đổi qua code, kết quả ghi ra vị trí khác.</li>
-            <li><code>read_csv</code>: usecols, parse_dates, na_values, dtype và khả năng đọc trực tiếp
-              file nén; dữ liệu trung gian ưu tiên <strong>Parquet</strong>.</li>
-            <li>API: params + timeout + raise_for_status + sleep; lưu response thô.</li>
-            <li>SQL biểu diễn các thao tác lọc–nhóm–nối; <strong>DuckDB</strong> truy vấn trực tiếp
-              file ngay trong notebook.</li>
-          </ul>
-        </section>
+          <table class="compact-table">
+            <thead><tr><th>Nhu cầu</th><th>Công cụ trong bài</th></tr></thead>
+            <tbody>
+              <tr><td>Đọc bảng văn bản từ nguồn</td><td>CSV: khai báo kiểu và giá trị thiếu</td></tr>
+              <tr><td>Lưu bảng đã xử lý để dùng lại</td><td>Parquet: giữ kiểu, đọc theo cột</td></tr>
+              <tr><td>Lấy dữ liệu từ dịch vụ theo yêu cầu</td><td>API: gửi yêu cầu, đọc phản hồi</td></tr>
+              <tr><td>Lọc, nhóm, ghép rồi lấy kết quả</td><td>SQL; DuckDB thực hiện truy vấn</td></tr>
+            </tbody>
+          </table>
 
-        <section>
+        </section>
+        <section id="ai">
           <h2>Làm việc với AI thì sao?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <div class="good-box">
-            <span class="box-title">AI làm tốt</span>
-            Viết truy vấn SQL từ mô tả tiếng Việt; dịch pandas ↔ SQL; tra cứu tham số read_csv.
-          </div>
-          <div class="warn-box">
-            <span class="box-title">AI hay sai</span>
-            Suy đoán sai cấu trúc JSON khi chưa có dữ liệu mẫu; bỏ qua timeout hoặc khoảng nghỉ;
-            viết truy vấn cho schema không tồn tại.
-          </div>
-        </section>
+          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div><div class="good-box"><span class="box-title">AI làm tốt</span>Viết mã đọc file, gọi API và truy vấn SQL khi có file mẫu, cấu trúc JSON và quy ước dữ liệu.</div><div class="warn-box"><span class="box-title">AI hay sai</span>Bịa tên tham số API, đoán cấu trúc JSON, coi mã là số, bỏ qua đơn vị hoặc chọn sai tập hàng để tính.</div>
 
-        <section>
+        </section>
+        <section id="verify">
           <h2>Kiểm chứng thế nào?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <ul>
-            <li>Kiểm tra response thật bằng <code>r.json()</code>, sau đó cung cấp mẫu cho AI
-              để tránh suy đoán sai schema.</li>
-            <li>Với truy vấn SQL quan trọng, tính lại bằng pandas (hoặc ngược lại) và kiểm tra
-              hai kết quả có khớp nhau không.</li>
-          </ul>
+          <ul><li>Đối chiếu tên tham số với tài liệu API; xem <code>r.url</code> để biết yêu cầu đã gửi.</li><li>Tính tay trên bảng nhỏ có mã đặc biệt và giá trị thiếu.</li><li>Đối chiếu SQL với pandas trên cùng bản dữ liệu đã lưu.</li></ul>
+          <aside class="notes">Hai công cụ có thể cùng thực hiện một yêu cầu hiểu sai. Vì vậy luôn kiểm chứng ý nghĩa và một kết quả tính tay trước khi chỉ so hai output. Không gửi API key hay dữ liệu riêng vào prompt.</aside>
         </section>
-
-        <section>
+        <section id="references">
           <h2>Đọc thêm</h2>
-          <ul>
-            <li>McKinney, <em>Python for Data Analysis</em>, 3rd ed. — ch. 6 (Data Loading,
-              Storage, and File Formats).</li>
-            <li>DuckDB docs — <a href="https://duckdb.org/docs/" target="_blank"
-                rel="noopener">duckdb.org/docs</a> (mục CSV/Parquet import, SQL introduction).</li>
-            <li>📖 Tự học: <span class="inline-code">pd.read_html</span> — đọc bảng từ trang web tĩnh.</li>
-          </ul>
+          <ul><li><a href="https://wesmckinney.com/book/accessing-data">McKinney, chương 6: đọc file, API và cơ sở dữ liệu</a></li><li><a href="https://pandas.pydata.org/docs/reference/api/pandas.read_csv.html">pandas: quy ước khi đọc CSV</a></li><li><a href="https://parquet.apache.org/docs/overview/">Parquet: lưu trữ theo cột</a></li><li>Web API: <a href="https://open-meteo.com/en/docs">tài liệu Open-Meteo</a>, <a href="https://requests.readthedocs.io/en/latest/user/quickstart/">thư viện Requests</a></li><li>DuckDB: <a href="https://duckdb.org/why_duckdb">giới thiệu</a>, <a href="https://duckdb.org/docs/current/guides/python/sql_on_pandas">truy vấn trên DataFrame</a></li></ul>
+
         </section>
       </section>
 
