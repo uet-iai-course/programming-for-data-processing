@@ -14,9 +14,21 @@
   <link rel="stylesheet" href="lecture-style.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
   <style>
-    #sql-purpose .pipeline, #api-purpose .pipeline { font-size: 1em; }
-    #sql-purpose .pipeline .stage, #api-purpose .pipeline .stage { width: 220px; }
-    #sql-purpose .pipeline .stage { width: 250px; }
+    #api-purpose .pipeline { font-size: 1em; }
+    #api-purpose .pipeline .stage { width: 220px; }
+    #sql-purpose .sql-flows { display: grid; grid-template-columns: auto 220px 200px 220px; gap: 22px 14px; align-items: center; justify-content: center; font-size: 1em; margin: 0.8em 0; }
+    #sql-purpose .sql-flows .stage { width: auto; }
+    #sql-purpose .flow-label { font-weight: bold; font-size: 0.75em; text-align: right; padding-right: 4px; }
+    #sql-purpose .flow-arrow { font-size: 0.6em; text-align: center; color: #1E93AB; }
+    #sql-purpose .flow-line { position: relative; border-top: 3px solid #1E93AB; margin: 8px 4px 0 0; }
+    #sql-vs-pandas .compact-table { width: 100%; table-layout: fixed; }
+    #sql-vs-pandas .compact-table th:nth-child(1) { width: 15%; }
+    #sql-vs-pandas .compact-table th:nth-child(2) { width: 42%; }
+    #sql-vs-pandas .compact-table td:first-child { white-space: nowrap; }
+    #sql-filter .filter-q { font-size: 0.72em; font-weight: bold; color: #1E93AB; margin: 0 0 0.3em; }
+    #sql-filter .filter-steps { font-size: 0.72em; margin-top: 0.5em; padding-left: 1.4em; }
+    #sql-filter .filter-steps li { margin-bottom: 0.15em; }
+    #sql-purpose .flow-line::after { content: ""; position: absolute; right: 1px; top: -8px; width: 12px; height: 12px; border-top: 3px solid #1E93AB; border-right: 3px solid #1E93AB; transform: rotate(45deg); }
     #api-purpose .api-exchange { align-items: center; flex-wrap: nowrap; gap: 24px; margin-top: 1em; }
     #api-purpose .api-exchange .stage { min-height: 150px; display: flex; flex-direction: column; justify-content: center; }
     #api-purpose .api-messages { width: 360px; font-size: 0.72em; text-align: center; }
@@ -266,30 +278,38 @@ print(thoi_tiet.to_string(index=False))
         </section>
         <section id="api-save">
           <h2>Giữ lại bản dự báo đã lấy</h2>
-          <p>Gọi lại API có thể nhận được dự báo khác. Lưu nguyên phản hồi để phân tích lại cùng dữ liệu.</p><pre><code class="language-python" data-trim>
-# Khi tải dữ liệu
+          <p>Gọi lại API có thể nhận được dự báo khác. Lưu nguyên phản hồi để phân tích lại cùng dữ liệu.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>
 moc = pd.Timestamp.now(tz=&quot;UTC&quot;).strftime(&quot;%Y%m%d-%H%M%S&quot;)
 tep_json = Path(&quot;data/raw&quot;) / f&quot;du_bao_{moc}.json&quot;
 tep_json.write_bytes(r.content)
-
-# Khi phân tích lại
+print(tep_json)
+</code></pre><pre class="jp-output" data-jp-n="8"><code class="language-text" data-trim>
+data/raw/du_bao_20260928-041605.json
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="9"><code class="language-python" data-trim>
 du_lieu = json.loads(tep_json.read_text(encoding=&quot;utf-8&quot;))
 du_bao = pd.DataFrame(du_lieu[&quot;daily&quot;])
-</code></pre>
-          <aside class="notes">r.content là nguyên văn phản hồi, gồm cả dữ liệu và đơn vị. Tên file ghi thời điểm tải theo giờ UTC, vd. du_bao_20261001-083000.json, nên mỗi lần tải có một file riêng; cách định dạng thời gian học ở Bài 8. json.loads chuyển văn bản trong file thành dict, như r.json(). Notebook lưu thêm URL và thời điểm tải vào file .meta.json. Muốn phân tích lại cùng đầu vào thì đọc file cũ, không gọi lại get. Trong chương trình thực tế, lưu ngay sau khi nhận và kiểm phản hồi.</aside>
+print(du_bao.to_string(index=False))
+</code></pre><pre class="jp-output" data-jp-n="9"><code class="language-text" data-trim>
+      time  temperature_2m_max
+2026-09-28                19.7
+2026-09-29                18.8
+2026-09-30                16.0
+</code></pre></div><p>Đọc lại file này lúc nào cũng ra đúng bảng trên.</p>
+          <aside class="notes">r.content là nguyên văn phản hồi, gồm cả dữ liệu và đơn vị. Tên file ghi thời điểm tải theo giờ UTC nên mỗi lần tải có một file riêng; cách định dạng thời gian học ở Bài 8. Out [8] và Out [9] là lần chạy lúc soạn slide (04:16 UTC ngày 28/09/2026); chạy trên lớp sẽ ra tên file và số liệu khác. Mở ngăn Files (biểu tượng thư mục) bên trái Colab để thấy file vừa ghi trong data/raw. json.loads chuyển văn bản trong file thành dict, như r.json(). Notebook lưu thêm URL và thời điểm tải vào file .meta.json. Muốn phân tích lại cùng đầu vào thì đọc file cũ, không gọi lại get. Trong chương trình thực tế, lưu ngay sau khi nhận và kiểm phản hồi.</aside>
         </section>
         <section id="exercise-api">
           <h2>Bài tập 2: Lọc ngày nóng</h2>
           <p>Phản hồi giả lập:</p><pre><code class="language-json" data-trim>
 {
+  &quot;timezone&quot;: &quot;America/Phoenix&quot;,
   &quot;daily_units&quot;: {&quot;temperature_2m_max&quot;: &quot;°F&quot;},
   &quot;daily&quot;: {
     &quot;time&quot;: [&quot;2026-10-01&quot;, &quot;2026-10-02&quot;, &quot;2026-10-03&quot;],
-    &quot;temperature_2m_max&quot;: [77, 82, 68]
+    &quot;temperature_2m_max&quot;: [95, 100, 88]
   }
 }
-</code></pre><p>Đổi đơn vị: °C = (°F − 32) / 1,8.</p><p><strong>Lấy các ngày có nhiệt độ tối đa từ 25°C trở lên.</strong></p>
-          <aside class="notes">Kết quả: 01/10 và 02/10. Nhiệt độ sau đổi là 25; 27,8; 20°C. Ngày 01/10 đúng bằng ngưỡng nên phải dùng ≥; phép tính (77 − 32)/1,8 cho đúng 25.0, không có sai số làm tròn. Có thể đổi cả cột sang °C hoặc đổi ngưỡng 25°C thành 77°F; chấp nhận mọi cách đúng. Trọng tâm: đọc daily_units trước khi lọc; so trực tiếp với 25 sẽ chọn cả ba ngày.</aside>
+</code></pre><p>Đổi đơn vị: °C = (°F − 32) / 1,8.</p><p><strong>Lấy các ngày có nhiệt độ tối đa từ 35°C trở lên.</strong></p>
+          <aside class="notes">Kết quả: 01/10 và 02/10. Nhiệt độ sau đổi là 35; 37,8; 31,1°C. Ngày 01/10 đúng bằng ngưỡng nên phải dùng ≥; phép tính (95 − 32)/1,8 cho đúng 35.0, không có sai số làm tròn. Có thể đổi cả cột sang °C hoặc đổi ngưỡng 35°C thành 95°F; chấp nhận mọi cách đúng. Trọng tâm: đọc daily_units trước khi lọc; so trực tiếp với 35 sẽ chọn cả ba ngày. 35°C là ngưỡng nắng nóng của cơ quan khí tượng Việt Nam (từ 37°C là nắng nóng gay gắt). Phoenix (Arizona, Mỹ) dùng °F; nhiệt độ cao nhất ngày 01–03/10 ở đó trung bình khoảng 94°F (Open-Meteo, 2016–2025).</aside>
         </section>
       </section>
       <section>
@@ -300,16 +320,19 @@ du_bao = pd.DataFrame(du_lieu[&quot;daily&quot;])
         </section>
         <section id="sql-purpose">
           <h2>Lấy kết quả từ cơ sở dữ liệu</h2>
-          <p>Các bảng nằm trong cơ sở dữ liệu (CSDL); báo cáo chỉ cần giá trung bình từng khu.</p>
-          <p><strong>SQL</strong> là ngôn ngữ mô tả kết quả cần lấy từ các bảng.</p>
-          <div class="pipeline">
-            <div class="stage"><div class="stage-title">Bảng nguồn</div><div class="stage-desc">Dữ liệu từng<br>chỗ ở</div></div>
-            <div class="arrow" aria-hidden="true">→</div>
-            <div class="stage stage-highlight"><div class="stage-title">Hệ quản trị CSDL</div><div class="stage-desc">Thực hiện<br>truy vấn SQL</div></div>
-            <div class="arrow" aria-hidden="true">→</div>
-            <div class="stage"><div class="stage-title">Bảng kết quả</div><div class="stage-desc">Một hàng mỗi khu<br>đưa về Python</div></div>
+          <p>Bảng chỗ ở nằm trong cơ sở dữ liệu (CSDL) trên máy chủ; báo cáo chỉ cần giá trung bình từng khu.</p>
+          <div class="pipeline sql-flows">
+            <div class="flow-label">pandas</div>
+            <div class="stage"><div class="stage-title">CSDL</div><div class="stage-desc">Lưu bảng<br>chỗ ở</div></div>
+            <div class="flow-arrow">cả bảng<div class="flow-line" aria-hidden="true"></div></div>
+            <div class="stage stage-highlight"><div class="stage-title">Python</div><div class="stage-desc">Nạp vào RAM<br>rồi <code>groupby</code></div></div>
+            <div class="flow-label">SQL</div>
+            <div class="stage stage-highlight"><div class="stage-title">CSDL</div><div class="stage-desc">Tính theo<br>truy vấn SQL</div></div>
+            <div class="flow-arrow">một hàng mỗi khu<div class="flow-line" aria-hidden="true"></div></div>
+            <div class="stage"><div class="stage-title">Python</div><div class="stage-desc">Nhận<br>bảng kết quả</div></div>
           </div>
-          <aside class="notes">Tình huống: dữ liệu nằm trong một CSDL, chưa phải DataFrame trong bộ nhớ. Báo cáo chỉ cần bảng tổng hợp, nên để hệ quản trị CSDL tính rồi chỉ chuyển kết quả về chương trình. SQL (Structured Query Language) mô tả kết quả cần lấy; hệ quản trị chọn cách thực hiện, người viết không phải viết vòng lặp qua từng hàng. Lọc, nhóm, ghép là các thao tác đã gặp ở Bài 5; cú pháp và hàm cụ thể có thể khác nhau giữa các hệ quản trị. Nguồn: McKinney §6.4.</aside>
+          <p><strong>SQL</strong> mô tả kết quả cần lấy; hệ quản trị CSDL tính ngay tại nơi lưu dữ liệu.</p>
+          <aside class="notes">Tình huống: dữ liệu nằm trong CSDL trên máy chủ, chưa phải DataFrame trong bộ nhớ. pandas chỉ tính được trên bảng đã nạp vào RAM của chương trình, nên phải tải cả bảng về: tốn thời gian truyền, và bảng phải vừa bộ nhớ. Với SQL, hệ quản trị tính tại chỗ và chỉ gửi bảng kết quả, ở đây mỗi khu một hàng. Khung cam là nơi thực hiện phép tính. Lệnh tải bảng về pandas (pd.read_sql) thật ra cũng là một câu SQL, SELECT * lấy cả bảng; khác biệt nằm ở chỗ để CSDL tính hay tải hết về rồi mới tính. SQL (Structured Query Language) mô tả kết quả cần lấy; hệ quản trị chọn cách thực hiện, người viết không viết vòng lặp qua từng hàng. Lọc, nhóm, ghép là các thao tác đã gặp ở Bài 5; cú pháp và hàm cụ thể có thể khác nhau giữa các hệ quản trị. Hỏi lớp: nếu bảng lớn hơn RAM của laptop thì cách nào còn làm được? Nguồn: McKinney §6.4.</aside>
         </section>
         <section id="duckdb">
           <h2>Dùng DuckDB trong Python</h2>
@@ -324,7 +347,7 @@ du_bao = pd.DataFrame(du_lieu[&quot;daily&quot;])
         </section>
         <section id="sql-select">
           <h2>Lọc hàng bằng SQL</h2>
-          <p><code>duckdb.sql()</code> chạy câu SQL. <code>FROM df</code> là DataFrame <code>df</code> của mục 1: DuckDB tìm bảng theo tên biến Python.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>
+          <p><code>duckdb.sql()</code> chạy câu SQL. <code>FROM df</code> là DataFrame <code>df</code> của mục 1: DuckDB tìm bảng theo tên biến Python.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="10"><code class="language-python" data-trim>
 import duckdb
 
 ket_qua = duckdb.sql(&quot;&quot;&quot;
@@ -334,7 +357,7 @@ ket_qua = duckdb.sql(&quot;&quot;&quot;
     ORDER BY gia DESC
 &quot;&quot;&quot;).df()
 print(ket_qua.to_string(index=False))
-</code></pre><pre class="jp-output" data-jp-n="8"><code class="language-text" data-trim>
+</code></pre><pre class="jp-output" data-jp-n="10"><code class="language-text" data-trim>
  id khu   gia
 003   A 200.0
 004   B 120.0
@@ -344,7 +367,7 @@ print(ket_qua.to_string(index=False))
         </section>
         <section id="sql-group">
           <h2>Tính theo nhóm bằng SQL</h2>
-          <div class="jp-cell"><pre class="jp-input" data-jp-n="9"><code class="language-python" data-trim>
+          <div class="jp-cell"><pre class="jp-input" data-jp-n="11"><code class="language-python" data-trim>
 theo_khu = duckdb.sql(&quot;&quot;&quot;
     SELECT khu, AVG(gia) AS trung_binh,
            COUNT(*) AS so_cho_o, COUNT(gia) AS so_gia
@@ -353,7 +376,7 @@ theo_khu = duckdb.sql(&quot;&quot;&quot;
     ORDER BY khu
 &quot;&quot;&quot;).df()
 print(theo_khu.to_string(index=False))
-</code></pre><pre class="jp-output" data-jp-n="9"><code class="language-text" data-trim>
+</code></pre><pre class="jp-output" data-jp-n="11"><code class="language-text" data-trim>
 khu  trung_binh  so_cho_o  so_gia
   A       150.0         3       2
   B       100.0         2       2
@@ -362,18 +385,19 @@ khu  trung_binh  so_cho_o  so_gia
         </section>
         <section id="sql-filter">
           <h2>Lọc hàng và lọc nhóm</h2>
-          <div class="two-col"><div><h4>Lọc hàng trước khi tính</h4><pre><code class="language-sql" data-trim>
+          <p>Giá trong <code>df</code>: khu A có 100, 200, NaN; khu B có 80, 120.</p>
+          <div class="two-col"><div><p class="filter-q">Trung bình các chỗ ở giá từ 150</p><pre><code class="language-sql" data-trim>
 SELECT khu, AVG(gia) AS tb
 FROM df
 WHERE gia &gt;= 150
 GROUP BY khu
-</code></pre><table class="compact-table"><thead><tr><th>khu</th><th>tb</th></tr></thead><tbody><tr><td>A</td><td>200</td></tr></tbody></table></div><div><h4>Lọc nhóm sau khi tính</h4><pre><code class="language-sql" data-trim>
+</code></pre><ol class="filter-steps"><li>Lọc hàng: còn (A, 200); B hết hàng</li><li>Tính theo khu: A 200</li></ol></div><div><p class="filter-q">Các khu có giá trung bình từ 150</p><pre><code class="language-sql" data-trim>
 SELECT khu, AVG(gia) AS tb
 FROM df
 GROUP BY khu
 HAVING AVG(gia) &gt;= 150
-</code></pre><table class="compact-table"><thead><tr><th>khu</th><th>tb</th></tr></thead><tbody><tr><td>A</td><td>150</td></tr></tbody></table></div></div><p><code>WHERE</code> lọc từng hàng; <code>HAVING</code> lọc kết quả theo nhóm.</p><p>Khu B vắng mặt ở cả hai kết quả, vì hai lý do khác nhau.</p>
-          <aside class="notes">Bên trái: WHERE loại hàng giá 100 của khu A nên trung bình còn 200; khu B không còn hàng nào nên không có nhóm B. Bên phải: khu A tính đủ 100 và 200; nhóm B có trung bình 100 &lt; 150 nên HAVING loại. Ý bên trái dùng ngay ở bài tập 3. Hai câu trả lời hai câu hỏi khác nhau, không câu nào sai.</aside>
+</code></pre><ol class="filter-steps"><li>Tính theo khu: A 150, B 100</li><li>Lọc nhóm: còn A 150; B bị loại</li></ol></div></div><p><code>WHERE</code> lọc hàng trước khi tính; <code>HAVING</code> lọc nhóm sau khi tính.</p>
+          <aside class="notes">Hỏi lớp trước khi chỉ vào hai bước: khu B có trong kết quả không? Bên trái: WHERE loại hàng giá 100 và hàng thiếu giá của khu A, nên trung bình còn 200; cả hai hàng khu B (80, 120) đều bị loại nên không còn nhóm B. Bên phải: khu A tính đủ 100 và 200; nhóm B có trung bình 100 &lt; 150 nên HAVING loại. Hai truy vấn trả lời hai câu hỏi khác nhau (dòng chữ xanh trên mỗi cột), không câu nào sai. Ý bên trái dùng ngay ở bài tập 3.</aside>
         </section>
         <section id="exercise-sql">
           <h2>Bài tập 3: Đếm giá thiếu</h2>
@@ -382,14 +406,14 @@ HAVING AVG(gia) &gt;= 150
         </section>
         <section id="sql-join">
           <h2>Ghép bảng bằng SQL</h2>
-          <p>Bảng <code>khu_vung</code> có một hàng: khu <strong>A</strong> thuộc vùng <strong>Bắc</strong>.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="10"><code class="language-python" data-trim>
+          <p>Bảng <code>khu_vung</code> có một hàng: khu <strong>A</strong> thuộc vùng <strong>Bắc</strong>.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="12"><code class="language-python" data-trim>
 ghep = duckdb.sql(&quot;&quot;&quot;
     SELECT df.id, df.khu, khu_vung.vung
     FROM df LEFT JOIN khu_vung ON df.khu = khu_vung.khu
     ORDER BY df.id
 &quot;&quot;&quot;).df()
 print(ghep.to_string(index=False))
-</code></pre><pre class="jp-output" data-jp-n="10"><code class="language-text" data-trim>
+</code></pre><pre class="jp-output" data-jp-n="12"><code class="language-text" data-trim>
  id khu vung
 001   A  Bắc
 002   B  NaN
@@ -401,7 +425,7 @@ print(ghep.to_string(index=False))
         </section>
         <section id="sql-parquet">
           <h2>Truy vấn file Parquet</h2>
-          <p>Lấy bảng tổng hợp từ file đã lưu, đưa kết quả về pandas.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="11"><code class="language-python" data-trim>
+          <p>Truy vấn thẳng file đã lưu; DuckDB chỉ đọc hai cột cần dùng.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="13"><code class="language-python" data-trim>
 ket_qua_that = duckdb.sql(&quot;&quot;&quot;
 SELECT room_type, MEDIAN(price) AS trung_vi,
        COUNT(price) AS so_gia
@@ -410,7 +434,7 @@ GROUP BY room_type
 ORDER BY trung_vi DESC
 &quot;&quot;&quot;).df()
 print(ket_qua_that.to_string(index=False))
-</code></pre><pre class="jp-output" data-jp-n="11"><code class="language-text" data-trim>
+</code></pre><pre class="jp-output" data-jp-n="13"><code class="language-text" data-trim>
       room_type  trung_vi  so_gia
      Hotel room  117138.5      56
 Entire home/apt   64900.0   14425
@@ -419,7 +443,22 @@ Entire home/apt   64900.0   14425
 </code></pre></div>
           <p>Santiago 29/06/2026, CLP/đêm; khớp với <code>groupby</code> của pandas.</p>
           <p>Trung vị cao nhất (Hotel room) chỉ dựa trên 56 giá.</p>
-          <aside class="notes">Khép lại nhu cầu đầu mục: lấy bảng tổng hợp mà không đọc cả file vào DataFrame. DuckDB chỉ đọc hai cột room_type và price; .df() đưa bảng kết quả nhỏ về pandas. Notebook đối chiếu bằng groupby trên cùng dữ liệu (assert_frame_equal). Hỏi lớp: xếp hạng theo trung vị có đáng tin khi Hotel room chỉ có 56 giá, Shared room 59 giá? Nguồn: https://duckdb.org/docs/current/data/parquet/overview.</aside>
+          <aside class="notes">Khép lại nhu cầu đầu mục: lấy bảng tổng hợp mà không nạp cả file thành DataFrame. DuckDB chỉ đọc hai cột room_type và price; phần tự học của notebook in kế hoạch truy vấn để kiểm. Với pandas, muốn bớt cột phải tự ghi columns=... khi đọc. .df() đưa bảng kết quả bốn hàng về pandas. Notebook đối chiếu bằng groupby trên cùng dữ liệu (assert_frame_equal). Hỏi lớp: xếp hạng theo trung vị có đáng tin khi Hotel room chỉ có 56 giá, Shared room 59 giá? Nguồn: https://duckdb.org/docs/current/data/parquet/overview.</aside>
+        </section>
+        <section id="sql-vs-pandas">
+          <h2>Chọn SQL hay pandas?</h2>
+          <p>Cùng lọc, nhóm, ghép được; khác ở nơi tính và cách viết.</p>
+          <table class="compact-table">
+            <thead><tr><th></th><th>SQL</th><th>pandas</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Nơi tính</strong></td><td>Tại CSDL, file; chỉ kết quả về Python</td><td>Trong RAM, sau khi nạp cả bảng</td></tr>
+              <tr><td><strong>Cách viết</strong></td><td>Mô tả kết quả; hệ thống tự chọn cách đọc, cách tính</td><td>Từng bước; tự chọn cột cần đọc</td></tr>
+              <tr><td><strong>Dùng ở</strong></td><td>Hầu hết hệ quản trị CSDL</td><td>Chương trình Python</td></tr>
+              <tr><td><strong>Hợp với</strong></td><td>Lấy, lọc, gộp bảng lớn tại nguồn</td><td>Phân tích tiếp, hàm tuỳ ý, vẽ biểu đồ</td></tr>
+            </tbody>
+          </table>
+          <p>Thường dùng cả hai: SQL lấy, gộp tại nguồn; pandas xử lý tiếp.</p>
+          <aside class="notes">Khép lại mục 3. Bằng chứng ở ví dụ Parquet: kế hoạch truy vấn (phần tự học của notebook) cho thấy DuckDB chỉ đọc room_type và price. DuckDB xử lý được dữ liệu lớn hơn RAM với GROUP BY, JOIN, ORDER BY; pandas cần cả bảng trong RAM, hoặc người viết tự đọc từng khối (cũng ở phần tự học). Trên bảng nhỏ đã nằm trong RAM như df, hai cách cho cùng kết quả: chọn cách dễ đọc hơn; không khẳng định SQL luôn nhanh hơn. SQL dùng được ở hầu hết CSDL quan hệ như PostgreSQL, MySQL, SQLite, BigQuery; hàm và cú pháp chi tiết khác nhau đôi chút. Nguồn: https://duckdb.org/docs/current/guides/performance/how_to_tune_workloads.</aside>
         </section>
       </section>
       <section>
@@ -431,7 +470,7 @@ Entire home/apt   64900.0   14425
               <tr><td>Đọc bảng văn bản từ nguồn</td><td>CSV: khai báo kiểu và giá trị thiếu</td></tr>
               <tr><td>Lưu bảng đã xử lý để dùng lại</td><td>Parquet: giữ kiểu, đọc theo cột</td></tr>
               <tr><td>Lấy dữ liệu từ dịch vụ theo yêu cầu</td><td>API: gửi yêu cầu, đọc phản hồi</td></tr>
-              <tr><td>Lọc, nhóm, ghép rồi lấy kết quả</td><td>SQL; DuckDB thực hiện truy vấn</td></tr>
+              <tr><td>Tính tại nơi lưu, chỉ lấy kết quả về</td><td>SQL; DuckDB thực hiện truy vấn</td></tr>
             </tbody>
           </table>
 
