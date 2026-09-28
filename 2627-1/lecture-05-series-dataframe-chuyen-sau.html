@@ -518,22 +518,34 @@ trai.merge(phai, on="khu", how="left")
 <section id="pipeline-intro"><h1><span class="text-light">5.</span><br>Viết phân tích <br> thành một chuỗi</h1><p class="text-light">Một chuỗi trả bảng mới: chạy lại bao nhiêu lần cũng ra một kết quả.</p></section>
 
 <section id="rerun"><h2>Chạy lại một ô có đổi kết quả không?</h2>
-<p>Một ô tăng giá 10%:</p><div class="jp-cell"><pre class="jp-input" data-jp-n="34"><code class="language-python" data-trim>
-bang_gia = pd.DataFrame({&quot;gia&quot;: [100.0, 80.0]}, index=[&quot;P1&quot;, &quot;P2&quot;])
-bang_gia[&quot;gia&quot;] = bang_gia[&quot;gia&quot;] * 1.1
-print(bang_gia)
+<p>Đổi giá sang nghìn CLP cho dễ đọc, gán đè lên cột <code>price</code>:</p><div class="jp-cell"><pre class="jp-input" data-jp-n="34"><code class="language-python" data-trim>
+co_gia = listings.loc[listings[&quot;price&quot;].notna()]
+co_gia[&quot;price&quot;] = co_gia[&quot;price&quot;] / 1000
+print(co_gia[&quot;price&quot;].median())
 </code></pre><pre class="jp-output" data-jp-n="34"><code class="language-text" data-trim>
-      gia
-P1  110.0
-P2   88.0
+59.0
 </code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="35"><code class="language-python" data-trim>
-bang_gia[&quot;gia&quot;] = bang_gia[&quot;gia&quot;] * 1.1   # chạy lại đúng dòng trên
-print(bang_gia)
+co_gia[&quot;price&quot;] = co_gia[&quot;price&quot;] / 1000   # chạy lại đúng dòng trên
+print(co_gia[&quot;price&quot;].median())
 </code></pre><pre class="jp-output" data-jp-n="35"><code class="language-text" data-trim>
-      gia
-P1  121.0
-P2   96.8
-</code></pre></div><p>Gán chồng lên cột cũ: mỗi lần chạy lại là một kết quả khác.</p><aside class="notes">Đây là lỗi hay gặp nhất khi làm việc trong notebook. Liên hệ Bài 4: cột dẫn xuất không tự tính lại khi cột nguồn đổi, và ở đây thì ngược lại, nó tự tính lại thêm một lần nữa. Cách chữa ở slide sau. Cách chữa tạm thời khi vẫn muốn gán: luôn tính từ cột gốc (bang_gia["gia_moi"] = bang_gia["gia"] * 1.1).</aside></section>
+0.059
+</code></pre></div><p>Gán đè lên cột cũ: mỗi lần chạy lại, giá bị chia thêm cho 1000.</p><aside class="notes">Đây là lỗi hay gặp nhất khi làm việc trong notebook, và không có thông báo lỗi nào. Nếu sau đó chia phân khúc theo ngưỡng CLP (30.000 và 100.000), gần như mọi chỗ ở rơi vào nhóm thấp: 17.681/17.688 chỉ sau một lần đổi. co_gia là bảng lấy ra từ listings nên listings không bị ảnh hưởng (Copy-on-Write, Bài 4). Cách chữa tạm thời khi vẫn muốn gán: ghi vào cột mới, co_gia["gia_nghin"] = co_gia["price"] / 1000. Cách chữa ở slide sau.</aside></section>
+
+<section id="assign"><h2>Thêm cột mà không sửa bảng gốc</h2>
+<p><code>assign(gia_nghin=...)</code> trả về một bảng mới có thêm cột <code>gia_nghin</code>; bảng gốc giữ nguyên.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="36"><code class="language-python" data-trim>
+co_gia = listings.loc[listings[&quot;price&quot;].notna()]
+moi = co_gia.assign(gia_nghin=co_gia[&quot;price&quot;] / 1000)
+print(moi[[&quot;price&quot;, &quot;gia_nghin&quot;]].head(3))
+</code></pre><pre class="jp-output" data-jp-n="36"><code class="language-text" data-trim>
+     price  gia_nghin
+0  45647.0     45.647
+1  19856.0     19.856
+2  46776.0     46.776
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="37"><code class="language-python" data-trim>
+print(co_gia[&quot;price&quot;].median())
+</code></pre><pre class="jp-output" data-jp-n="37"><code class="language-text" data-trim>
+59000.0
+</code></pre></div><p><code>co_gia</code> vẫn giữ giá CLP, nên chạy lại ô trên bao nhiêu lần thì <code>moi</code> vẫn như vậy.</p><aside class="notes">Cách chữa cho slide trước: không gán vào bảng gốc mà tạo bảng mới. Dòng đầu tạo lại co_gia với giá CLP vì slide trước đã làm hỏng nó. Tên tham số (gia_nghin) thành tên cột mới; nếu trùng tên một cột có sẵn thì cột đó chỉ bị thay trong bảng mới. Bẫy hay gặp: viết co_gia = co_gia.assign(price=co_gia["price"] / 1000) thì tên co_gia trỏ sang bảng mới, chạy lại vẫn chia chồng; hãy đặt tên mới cho kết quả.</aside></section>
 
 <section id="pipeline-steps"><h2>Đặt tên cho từng bước</h2>
 <p>Mỗi bước là một hàm: nhận bảng, trả một cột.</p><pre><code class="language-python" data-trim>
@@ -545,20 +557,20 @@ def dem_host(d):
 </code></pre><aside class="notes">Hai hàm dùng lại đúng cut và transform đã học; tên hàm nói rõ bước đó làm gì. Tham số d là bảng mà bước trước trả về. Đặt tên bước trước khi ghép chuỗi để chuỗi đọc được như một danh sách việc. Không dùng lambda dài trên slide: khó đọc và không đặt tên được.</aside></section>
 
 <section id="pipeline-assign"><h2>Thêm cột, trả bảng mới</h2>
-<div class="jp-cell"><pre class="jp-input" data-jp-n="36"><code class="language-python" data-trim>
+<p>Giá trị là hàm thì <code>assign</code> tự gọi hàm với bảng: cột <code>phan_khuc</code> là kết quả của <code>chia_phan_khuc(co_gia)</code>.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="38"><code class="language-python" data-trim>
 co_gia = listings.loc[listings[&quot;price&quot;].notna()]
 mo_rong = co_gia.assign(phan_khuc=chia_phan_khuc, n_host=dem_host)
 print(co_gia.shape, mo_rong.shape)
-</code></pre><pre class="jp-output" data-jp-n="36"><code class="language-text" data-trim>
+</code></pre><pre class="jp-output" data-jp-n="38"><code class="language-text" data-trim>
 (17688, 19) (17688, 21)
-</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="37"><code class="language-python" data-trim>
+</code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="39"><code class="language-python" data-trim>
 print(&quot;phan_khuc&quot; in listings.columns)
-</code></pre><pre class="jp-output" data-jp-n="37"><code class="language-text" data-trim>
+</code></pre><pre class="jp-output" data-jp-n="39"><code class="language-text" data-trim>
 False
-</code></pre></div><p>Bảng mới có thêm hai cột. <code>listings</code> không đổi.</p><aside class="notes">assign nhận hàm, gọi hàm trên bảng hiện tại và trả một bảng mới có thêm cột. Khác với bang_gia["gia"] = ... ở slide trước: không có phép gán vào bảng gốc, nên chạy ô này bao nhiêu lần cũng chỉ tạo bảng mới giống nhau. assign nhận cả giá trị lẫn hàm; hàm nhận bảng đang được xây (đã có các cột trước đó trong cùng lời gọi assign).</aside></section>
+</code></pre></div><p>Bảng mới có thêm hai cột. <code>listings</code> không đổi.</p><aside class="notes">Viết tên hàm, không có ngoặc: assign tự gọi chia_phan_khuc(co_gia) và dem_host(co_gia). Các hàm được gọi lần lượt trên bảng đang được xây, nên hàm sau dùng được cột mà hàm trước vừa thêm trong cùng lời gọi assign. Không có phép gán vào bảng gốc như co_gia["price"] = ... ở đầu mục, nên chạy ô này bao nhiêu lần cũng chỉ tạo bảng mới giống nhau.</aside></section>
 
 <section id="pipeline"><h2>Ghép thành một chuỗi</h2>
-<div class="jp-cell"><pre class="jp-input" data-jp-n="38"><code class="language-python" data-trim>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="40"><code class="language-python" data-trim>
 ket_qua = (listings
     .loc[listings[&quot;price&quot;].notna()]
     .assign(phan_khuc=chia_phan_khuc, n_host=dem_host)
@@ -567,7 +579,7 @@ ket_qua = (listings
          trung_vi_gia=(&quot;price&quot;, &quot;median&quot;),
          tv_n_host=(&quot;n_host&quot;, &quot;median&quot;)))
 print(ket_qua)
-</code></pre><pre class="jp-output" data-jp-n="38"><code class="language-text" data-trim>
+</code></pre><pre class="jp-output" data-jp-n="40"><code class="language-text" data-trim>
            so_cho_o  trung_vi_gia  tv_n_host
 phan_khuc
 thấp           1660       23617.5        1.0
