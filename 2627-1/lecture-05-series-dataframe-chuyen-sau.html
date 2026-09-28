@@ -92,7 +92,7 @@ id
 P1  100
 P2   80
 P3   50
-</code></pre></div><p><code>set_index("id")</code> dùng cột mã làm nhãn của hàng.</p><p><code>set_index</code> không kiểm mã lặp: hỏi <code>phong.index.is_unique</code> hoặc dùng <code>verify_integrity=True</code>.</p><aside class="notes">Bảng giả lập mới, đơn vị USD/đêm. Mục đích là để gán Series theo mã ở slide sau. Bảng này có mỗi mã một lần nên is_unique trả True. Ví dụ chỉ mục lặp và verify_integrity nằm trong phần tự học notebook.</aside></section>
+</code></pre></div><p><code>set_index("id")</code> dùng cột mã làm nhãn của hàng.</p><p><code>set_index</code> không kiểm mã lặp: tự kiểm bằng <code>phong.index.is_unique</code>.</p><aside class="notes">Bảng giả lập mới, đơn vị USD/đêm. Mục đích là để gán Series theo mã ở slide sau. Bảng này có mỗi mã một lần nên is_unique trả True. Ví dụ mã lặp nằm trong phần tự học của notebook. Tham số verify_integrity=True của set_index đã bị pandas 3 đánh dấu sắp bỏ, nhưng tài liệu cũ và AI vẫn hay gợi ý; dùng is_unique thay thế.</aside></section>
 
 <section id="assign-align"><h2>Gán cột cũng khớp theo nhãn</h2>
 <div class="jp-cell"><pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
