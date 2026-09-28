@@ -298,11 +298,12 @@ B    Nguyên căn     120.0
 Name: gia, dtype: float64
 </code></pre></div><p>Mỗi cặp <code>(khu, loai)</code> là một nhóm.</p><aside class="notes">A nguyên căn có 100 và NaN → 100; A phòng riêng 200; B nguyên căn 120; B phòng riêng 80. Một nhãn nhóm giờ gồm hai thành phần. Không mở chi tiết MultiIndex ở đây. Nhu cầu so sánh các loại riêng là lý do thêm khoá, không phải cứ càng nhiều khoá càng tốt.</aside></section>
 
-<section id="unstack"><h2>Cùng dữ liệu, hai hình dạng bảng</h2>
+<section id="unstack"><h2>Bảng dạng dài và dạng rộng</h2>
 <div class="jp-cell"><pre class="jp-input" data-jp-n="18"><code class="language-python" data-trim>
-dai = listings.groupby([&quot;neighbourhood&quot;, &quot;room_type&quot;])[&quot;price&quot;].median()
-rong = dai.loc[[&quot;Santiago&quot;, &quot;Providencia&quot;, &quot;Las Condes&quot;]]
-print(rong.head(4))
+dai = listings.groupby(
+    [&quot;neighbourhood&quot;, &quot;room_type&quot;])[&quot;price&quot;].median()
+ba_khu = dai.loc[[&quot;Santiago&quot;, &quot;Providencia&quot;, &quot;Las Condes&quot;]]
+print(ba_khu.head(4))
 </code></pre><pre class="jp-output" data-jp-n="18"><code class="language-text" data-trim>
 neighbourhood  room_type
 Santiago       Entire home/apt    49352.5
@@ -311,14 +312,14 @@ Santiago       Entire home/apt    49352.5
                Shared room        16207.5
 Name: price, dtype: float64
 </code></pre></div><div class="jp-cell"><pre class="jp-input" data-jp-n="19"><code class="language-python" data-trim>
-print(rong.unstack(&quot;room_type&quot;))
+print(ba_khu.unstack(&quot;room_type&quot;))
 </code></pre><pre class="jp-output" data-jp-n="19"><code class="language-text" data-trim>
 room_type      Entire home/apt  Hotel room  Private room  Shared room
 neighbourhood
 Santiago               49352.5     40991.0       31250.5      16207.5
 Providencia            81709.0    129093.0       38400.0      25000.0
 Las Condes            106129.0    116213.0       40365.5      26277.0
-</code></pre></div><p>Dạng rộng dễ cho người đọc; dạng dài dễ cho máy vẽ biểu đồ hoặc ghép tiếp.</p><aside class="notes">Cùng một dữ liệu, chỉ khác cách sắp: unstack đưa một mức chỉ mục lên thành cột. Ô trống xuất hiện khi một khu không có loại chỗ ở nào đó. Chiều ngược lại là stack, và pivot_table gộp cả hai bước tính và sắp; cả hai ở phần tự học notebook. Ba khu được chọn để output vừa slide; bảng đầy đủ có 31 khu.</aside></section>
+</code></pre></div><p>Dạng rộng dễ đọc; dạng dài tiện để vẽ biểu đồ và ghép bảng.</p><aside class="notes">Cùng một dữ liệu, chỉ khác cách sắp: unstack đưa room_type từ chỉ mục lên thành cột. Dạng dài: mỗi hàng một cặp (khu, loại chỗ ở). Dạng rộng: mỗi khu một hàng, mỗi loại chỗ ở một cột; ô trống xuất hiện khi một khu không có loại chỗ ở nào đó. Seaborn ở Bài 13 cần dạng dài. Chiều ngược lại là stack, còn pivot_table gộp hai bước nhóm và sắp; cả hai ở phần tự học của notebook. Chọn ba khu để output vừa slide; bảng đầy đủ có 31 khu.</aside></section>
 
 <section id="transform-need"><h2>Trừ giá cho trung bình của khu</h2>
 <p>Muốn biết mỗi chỗ ở cao hay thấp hơn trung bình khu của nó. Nhưng <code>df["gia"]</code> có chỉ mục 0, 1, 2, 3, 4 còn <code>tb_khu</code> có chỉ mục A, B.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="20"><code class="language-python" data-trim>
@@ -367,7 +368,8 @@ nguyen_can = nguyen_can.copy()
 nguyen_can[&quot;tv_khu&quot;] = nguyen_can.groupby(
     &quot;neighbourhood&quot;)[&quot;price&quot;].transform(&quot;median&quot;)
 nguyen_can[&quot;lech&quot;] = nguyen_can[&quot;price&quot;] - nguyen_can[&quot;tv_khu&quot;]
-print(nguyen_can[[&quot;neighbourhood&quot;, &quot;price&quot;, &quot;tv_khu&quot;, &quot;lech&quot;]].head())
+print(nguyen_can[[&quot;neighbourhood&quot;, &quot;price&quot;,
+                  &quot;tv_khu&quot;, &quot;lech&quot;]].head())
 </code></pre><pre class="jp-output" data-jp-n="23"><code class="language-text" data-trim>
    neighbourhood     price   tv_khu     lech
 2       Recoleta   46776.0  52494.0  -5718.0
