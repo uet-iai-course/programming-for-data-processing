@@ -13,518 +13,352 @@
   <link rel="stylesheet" href="plugin/highlight/zenburn.css">
   <link rel="stylesheet" href="lecture-style.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<style>
+    .reveal table.compact-table { font-size: 0.8em; }
+  </style>
 </head>
 
 <body>
   <div class="reveal">
     <div class="slides">
 
-      <!-- ====== Mở bài ====== -->
       <section>
-        <section>
-          <h1>Lập trình <br /> xử lý dữ liệu</h1>
-          <div>
-            <p>Học kì 1, năm học 2026–2027</p>
-            <p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
-          </div>
-        </section>
+        <section id="course"><h1>Lập trình<br>xử lý dữ liệu</h1>
+<p>Học kì 1, năm học 2026–2027</p><p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
+</section>
 
-        <section>
-          <h1>
-            <span class="text-light">Bài 7</span>
-            <br>
-            Xử lý dữ liệu chuỗi
-          </h1>
-          <p class="text-light"><code>.str</code> và biểu thức chính quy cho dữ liệu văn bản.</p>
-        </section>
+        <section id="title"><h1><span class="text-light">Bài 7</span><br>Xử lý dữ liệu chuỗi</h1>
+<p class="text-light">Tên chỗ ở, giá tiền và danh sách tiện nghi.</p>
+</section>
 
-        <section>
-          <h2>Bài trước</h2>
-          <ul>
-            <li>Đọc CSV đúng kiểu và giá trị thiếu, lưu bằng Parquet.</li>
-            <li>Lấy dữ liệu qua API và truy vấn SQL bằng DuckDB.</li>
-            <li>Cột giá dạng <span class="inline-code">"$45,647.00"</span> cho thấy dữ liệu chuỗi
-              cần được chuẩn hoá trước khi phân tích.</li>
-          </ul>
-        </section>
+        <section id="previous"><h2>Bài trước</h2>
+<ul><li>Đọc file và giữ đúng kiểu dữ liệu, giá trị thiếu.</li><li>Lấy dữ liệu qua API; truy vấn bằng SQL và DuckDB.</li><li>Bài này xử lý các cột còn ở dạng văn bản.</li></ul>
+</section>
 
-        <section>
-          <h2>Tổng quan</h2>
-          <ol>
-            <li>Họ phương thức <span class="inline-code">.str</span></li>
-            <li>Biểu thức chính quy — mô tả mẫu chuỗi</li>
-            <li>Trích xuất thông tin từ văn bản</li>
-            <li>Làm việc với AI thì sao?</li>
-          </ol>
-          <p class="text-light">Dữ liệu: cột <code>name</code>, <code>amenities</code>,
-            <code>price</code> của 18.534 chỗ ở tại Santiago.</p>
-        </section>
+        <section id="agenda"><h2>Tổng quan</h2>
+<ol><li>Chuẩn hoá và lọc chuỗi</li><li>Trích xuất bằng biểu thức chính quy</li><li>Tách danh sách trong một ô</li><li>Làm việc với AI thì sao?</li></ol><p class="text-light">Ví dụ thật dùng bảng <code>df</code>: chỗ ở tại Santiago, snapshot 29/06/2026. Giá: CLP/đêm.</p>
+<aside class="notes">Nguồn dữ liệu: https://data.insideairbnb.com/chile/rm/santiago/2026-06-29/data/listings.csv.gz. Notebook có ô tải dữ liệu và import pandas, re, json. Đầu mỗi mục dùng ví dụ nhỏ để tính tay trước khi áp dụng lên dữ liệu thật.</aside></section>
       </section>
 
-      <!-- ====== Phần 1: .str ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">1.</span><br>Họ phương thức .str</h1>
-          <p class="text-light">Các thao tác chuỗi phổ biến được áp dụng đồng thời cho cả Series.</p>
-        </section>
+        <section id="strings"><h1><span class="text-light">1.</span><br>Chuẩn hoá<br>và lọc chuỗi</h1>
+<p class="text-light">Bỏ dấu cách thừa, đổi về chữ thường và lọc theo từ khoá.</p>
+</section>
 
-        <section data-jp-reset>
-          <h2>Chuẩn hoá: strip + lower</h2>
-          <p>Ba cách viết một quận tạo ra ba giá trị khác nhau:</p>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-s = pd.Series(["  Ñuñoa ", "ñuñoa", "NUNOA?  "])
+        <section id="string-column"><h2>Xử lý chuỗi với .str</h2>
+<p>Với một chuỗi: <code>"  Ñuñoa ".strip().lower()</code>.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
+s = pd.Series([&quot;  Ñuñoa &quot;, &quot;ÑUÑOA&quot;, &quot;ñuñoa&quot;, &quot;Nunoa&quot;])
+chuan = s.str.strip().str.lower()
+print(chuan.tolist())
+</code></pre><pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
+[&#x27;ñuñoa&#x27;, &#x27;ñuñoa&#x27;, &#x27;ñuñoa&#x27;, &#x27;nunoa&#x27;]
+</code></pre></div><p><code>strip</code> bỏ khoảng trắng ở hai đầu; <code>lower</code> đổi sang chữ thường.</p>
+<aside class="notes">So sánh với cách viết vòng for ở Python. Kết quả là Series mới, cùng số hàng và chỉ mục. Không khẳng định .str luôn nhanh hơn map; kiểu lưu trữ và phép toán ảnh hưởng tốc độ.</aside></section>
 
-s.str.strip().str.lower()
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-0    ñuñoa
-1    ñuñoa
-2    nunoa?
-            </code></pre>
-          </div>
-          <p>Hai dòng đầu đã gộp được; dòng ba cần thêm biểu thức chính quy ở phần 2.
-            Cần chuẩn hoá cột chuỗi trước khi đếm hoặc gộp nhóm.</p>
-        </section>
+        <section id="normalize-count"><h2>Chuẩn hoá tên trước khi đếm</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
+print(chuan.value_counts())
+</code></pre><pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
+ñuñoa    3
+nunoa    1
+Name: count, dtype: int64
+</code></pre></div><p><code>nunoa</code> vẫn khác <code>ñuñoa</code>. Sửa chính tả cần quy tắc riêng.</p>
+<aside class="notes">Ba cách viết chỉ khác hoa thường hoặc khoảng trắng gộp được. Nunoa không có dấu ñ: strip/lower hay regex không tự biết đây là lỗi chính tả hay một tên khác. Có thể dùng bảng ánh xạ khi có căn cứ; không tự động xoá dấu mọi tên.</aside></section>
 
-        <section data-jp-reset>
-          <h2>contains: hỏi "có chứa … không?"</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-gan_metro = df["name"].str.contains("metro", case=False, na=False)
+        <section id="contains"><h2>Lọc tên có từ khoá</h2>
+<p>Lấy những tên có nhắc đến <code>metro</code>.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
+ten = pd.Series([&quot;Metro centro&quot;, &quot;Casa con jardín&quot;, None])
+mask = ten.str.contains(
+    &quot;metro&quot;, case=False, regex=False, na=False)
+print(ten[mask].tolist())
+</code></pre><pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
+[&#x27;Metro centro&#x27;]
+</code></pre></div><p><code>case=False</code>: bỏ qua hoa thường. <code>regex=False</code>: tìm nguyên chuỗi đã cho.<br>Regex sẽ được giải thích ở mục 2.</p>
+<aside class="notes">mask có cùng chỉ mục với ten, nối với lọc bằng mask của Bài 3–4. Kết quả nói về nội dung tên, chưa đo khoảng cách đến metro.</aside></section>
 
-gan_metro.sum(), gan_metro.mean().round(3)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="2"><code class="language-text" data-trim>
-(2959, 0.16)
-            </code></pre>
-          </div>
-          <p>2.959 tên (16%) nhắc đến "metro". Tín hiệu này có thể dùng để so sánh
-            các nhóm chỗ ở khác nhau trong phần sau.</p>
-        </section>
+        <section id="string-missing"><h2>Lọc chuỗi khi có giá trị thiếu</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
+s_thieu = pd.Series([&quot;metro&quot;, None, &quot;centro&quot;], dtype=&quot;string&quot;)
+kq = pd.DataFrame({
+    &quot;mac_dinh&quot;: s_thieu.str.contains(&quot;metro&quot;),
+    &quot;na_False&quot;: s_thieu.str.contains(&quot;metro&quot;, na=False),
+})
+print(kq)
+</code></pre><pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>
+   mac_dinh  na_False
+0      True      True
+1      &lt;NA&gt;     False
+2     False     False
+</code></pre></div><p><code>na=False</code> loại tên thiếu khỏi kết quả lọc. Điều đó không chứng minh chỗ ở ấy không có metro.</p>
+<aside class="notes">Trong pandas 3, str mặc định trả False ở contains cho giá trị thiếu; dtype=&quot;string&quot; trả pd.NA, object có thể trả None/NaN. Không nói mọi mask thiếu đều gây lỗi: mask kiểu boolean nullable được lọc với NA coi là False. Ví dụ khai báo string để ý nghĩa chưa biết hiện rõ. Nếu tính tỷ lệ trên mọi hàng với na=False thì hàng thiếu nằm trong mẫu số; bỏ tên thiếu trước sẽ dùng mẫu số khác. Nguồn: pandas.Series.str.contains.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Giá trị thiếu trong cột chuỗi</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-s = pd.Series(["Depto centro", None, "Casa vista"], dtype=object)
+        <section id="price"><h2>Đổi giá dạng chuỗi thành số</h2>
+<p>Trong nguồn này, <code>$</code> là ký hiệu giá bằng CLP; dấu phẩy phân cách hàng nghìn.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
+gia_chu = (df[&quot;price&quot;]
+    .str.replace(&quot;$&quot;, &quot;&quot;, regex=False)
+    .str.replace(&quot;,&quot;, &quot;&quot;, regex=False))
+df[&quot;price_num&quot;] = pd.to_numeric(gia_chu, errors=&quot;coerce&quot;)
+print(df[[&quot;price&quot;, &quot;price_num&quot;]].head(3))
+</code></pre><pre class="jp-output" data-jp-n="5"><code class="language-text" data-trim>
+        price  price_num
+0  $45,647.00    45647.0
+1  $19,856.00    19856.0
+2  $46,776.00    46776.0
+</code></pre></div><p><code>errors="coerce"</code> chuyển chuỗi không hợp lệ thành <code>NaN</code> (giá trị thiếu), thay vì báo lỗi.<br>Ví dụ: <code>"hỏi chủ"</code> → <code>NaN</code>.</p>
+<aside class="notes">Cùng việc làm sạch giá ở Bài 2, nay viết trên cả cột. to_numeric chuyển sang số; errors=&quot;coerce&quot; biến chuỗi không đọc được thành giá trị thiếu. Đây là quy tắc cho định dạng đã xác nhận của nguồn này, không áp dụng mù cho dấu phẩy thập phân hay ngoại tệ khác.</aside></section>
 
-s.str.contains("centro")
-            </code></pre>
-            <pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
-0     True
-1     None
-2    False
-            </code></pre>
-          </div>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            Với Series kiểu object, <code>contains</code> giữ lại <code>None</code>; dùng mask này
-            để lọc sẽ báo lỗi. <code>na=False</code> quy ước giá trị thiếu là "không chứa".
-          </div>
-        </section>
+        <section id="replace-speed"><h2>So sánh .str.replace với apply</h2>
+<div class="jp-cell jp-plain"><pre class="jp-input"><code class="language-python" data-trim>
+def bo_ky_hieu(x):
+    if isinstance(x, str):
+        return x.replace(&quot;$&quot;, &quot;&quot;).replace(&quot;,&quot;, &quot;&quot;)
+    return x
+gia_chu = df[&quot;price&quot;].apply(bo_ky_hieu)
+</code></pre></div>
+<table class="compact-table"><caption>18.534 giá · thời gian thay chuỗi (ms)</caption><thead><tr><th>Lưu chuỗi</th><th><code>.str.replace</code> × 2</th><th>Hàm + <code>apply</code></th></tr></thead><tbody><tr><td><code>PyArrow</code></td><td><strong class="text-green">2,7</strong></td><td>13,0</td></tr><tr><td><code>object</code></td><td>13,1</td><td><strong class="text-green">11,1</strong></td></tr></tbody></table>
+<p><strong><a href="https://arrow.apache.org/docs/python/index.html">PyArrow</a></strong> là thư viện Python của Apache Arrow: lưu theo cột, xử lý bằng C++. pandas 3 dùng cho chuỗi khi đã cài.</p>
+<p><code>apply</code> gọi hàm Python cho từng giá trị. Với <code>object</code>, <code>.str</code> cũng xử lý từng chuỗi Python. <strong>Cần kiểm kết quả rồi đo.</strong></p>
+<aside class="notes">So sánh cùng hai phép thay literal ở slide trước; hàm giữ nguyên giá trị thiếu. Đo trên cột price của 18.534 chỗ ở Santiago, snapshot 29/06/2026, có 846 giá thiếu. Môi trường: Python 3.12.3, pandas 3.0.3, PyArrow 25.0.1. Các ô là trung vị của chín lượt đo lặp; không tính đọc CSV, chuyển kiểu lưu chuỗi hoặc to_numeric. Đã kiểm hai cách có cùng giá trị, chỉ mục và vị trí thiếu; kiểu dữ liệu kết quả có thể khác. pandas 3 mặc định dùng dtype str, ưu tiên PyArrow nếu đã cài; nếu không có thì dùng cách lưu bằng object. Với phép thay literal này, .str gọi xử lý C++ của Arrow khi cột dùng Arrow; với object, .str vẫn gọi thao tác trên chuỗi Python, hai lần replace tạo hai lượt xử lý và kết quả trung gian. apply gọi bo_ky_hieu cho từng giá trị và gộp cả hai lần thay trong một hàm. Đây là kết quả của phép đo này, không suy ra .str luôn nhanh hơn hay apply luôn chậm hơn. Các phép .str khác hoặc regex có thể dùng đường xử lý khác. Có thể liên hệ PyArrow cũng được dùng khi đọc/ghi Parquet ở Bài 6. Notebook có đoạn kiểm kết quả và đo lại; không yêu cầu tốc độ hoặc thứ hạng cố định trên máy SV. Nguồn: https://arrow.apache.org/docs/python/index.html; https://pandas.pydata.org/docs/user_guide/migration-3-strings.html.</aside></section>
 
-        <section data-jp-reset>
-          <h2>replace: sửa cả cột một lần</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-df["price_num"] = (df["price"]
-    .str.replace("$", "", regex=False)
-    .str.replace(",", "", regex=False)
-    .astype(float))
-df["price_num"].head(3)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>
-0    45647.0
-1    19856.0
-2    46776.0
-            </code></pre>
-          </div>
-          <p>Phép xử lý giống <code>clean_price</code> ở Bài 2, nhưng được vector hoá
-            trên toàn bộ cột.</p>
-        </section>
+        <section id="conversion-check"><h2>Phân biệt giá thiếu và lỗi chuyển đổi</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>
+loi_doc = df[&quot;price&quot;].notna() &amp; df[&quot;price_num&quot;].isna()
+print(pd.Series({
+    &quot;thieu_tu_nguon&quot;: df[&quot;price&quot;].isna().sum(),
+    &quot;khong_doc_duoc&quot;: loi_doc.sum(),
+}))
+</code></pre><pre class="jp-output" data-jp-n="6"><code class="language-text" data-trim>
+thieu_tu_nguon    846
+khong_doc_duoc      0
+dtype: int64
+</code></pre></div><p>Giữ giá gốc để phân biệt dữ liệu đã thiếu với lỗi do chuyển đổi.</p>
+<aside class="notes">Snapshot này có 846 giá thiếu từ nguồn và 0 chuỗi có giá nhưng chuyển đổi thất bại. errors=&quot;coerce&quot; không tự bảo đảm dữ liệu đúng; nếu xuất hiện lỗi đọc phải xem nguyên văn. Không fillna(0): giá chưa biết khác giá bằng 0.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Từ danh sách JSON thành nhiều dòng với explode</h2>
-          <p>Cột <span class="inline-code">amenities</span> là danh sách JSON nằm trong một ô:</p>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
-df["amenities"].iloc[0]
-            </code></pre>
-            <pre class="jp-output" data-jp-n="5"><code class="language-text" data-trim>
-'["Free parking on premises", "Wifi", "Kitchen", …]'
-            </code></pre>
-          </div>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>
-tien_nghi = df["amenities"].map(json.loads).explode()
-tien_nghi.value_counts().head(3)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="6"><code class="language-text" data-trim>
-Kitchen    17231
-Wifi       16772
-Hot water  13990
-            </code></pre>
-          </div>
-        </section>
-
-        <section>
-          <h2>Bảng tra nhanh .str</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Việc</th>
-                <th>Công cụ</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Chuẩn hoá</td>
-                <td><span class="inline-code">.str.strip() / .lower() / .title()</span></td>
-              </tr>
-              <tr>
-                <td>Tìm / lọc</td>
-                <td><span class="inline-code">.str.contains(pat, case, na)</span>, <span
-                    class="inline-code">.str.startswith</span></td>
-              </tr>
-              <tr>
-                <td>Sửa</td>
-                <td><span class="inline-code">.str.replace(a, b)</span></td>
-              </tr>
-              <tr>
-                <td>Tách / độ dài</td>
-                <td><span class="inline-code">.str.split()</span> + <span class="inline-code">explode</span>,
-                  <span class="inline-code">.str.len()</span></td>
-              </tr>
-              <tr>
-                <td>Trích xuất theo mẫu</td>
-                <td><span class="inline-code">.str.extract(pat)</span> — phần 3</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
+        <section id="exercise-normalize"><h2>Bài tập 1: giá trung vị theo loại chỗ ở</h2>
+<p>Dữ liệu giả lập, USD/đêm:</p><table class="compact-table"><thead><tr><th>Loại</th><th>Giá</th></tr></thead><tbody><tr><td><code>" Entire home "</code></td><td>100</td></tr><tr><td><code>"entire HOME"</code></td><td>300</td></tr><tr><td><code>"PRIVATE ROOM"</code></td><td>50</td></tr><tr><td><code>"Private room "</code></td><td>thiếu</td></tr><tr><td><code>"private room"</code></td><td>150</td></tr></tbody></table><p><strong>Tính giá trung vị theo loại, gộp các nhãn chỉ khác hoa thường hoặc khoảng trắng.</strong></p>
+<aside class="notes">Một yêu cầu chính: tổng hợp theo đúng nhãn. Lời giải: loai_chuan = bang[&quot;loai&quot;].str.strip().str.lower(); bang.groupby(loai_chuan)[&quot;gia&quot;].median(). Entire home: 200; private room: 100. Nếu coi thiếu là 0, trung vị private room thành 50. Không bắt buộc sửa cột loai gốc.</aside></section>
       </section>
 
-      <!-- ====== Phần 2: Biểu thức chính quy ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">2.</span><br>Biểu thức chính quy<br>mô tả mẫu chuỗi</h1>
-          <p class="text-light">Khi tìm một từ cụ thể không đủ, biểu thức chính quy mô tả cấu trúc của chuỗi cần tìm.</p>
-        </section>
+        <section id="regex"><h1><span class="text-light">2.</span><br>Trích xuất bằng<br>biểu thức chính quy</h1>
+<p class="text-light">Lấy số phòng, diện tích ghi trong tên chỗ ở.</p>
+</section>
 
-        <section>
-          <h2>Biểu thức chính quy mô tả cấu trúc cần tìm</h2>
-          <div class="question-box">
-            <div class="question-title">Bài toán</div>
-            <div class="question-content">
-              Các tên "2BR", "3 bedrooms", "1 dorm", "2 hab"… có chung một cấu trúc:
-              <em>con số, khoảng trắng tuỳ ý, rồi một từ chỉ phòng ngủ</em>. Biểu thức chính quy
-              mô tả cấu trúc này mà không cần liệt kê mọi biến thể.
-            </div>
-          </div>
-          <p style="margin-top:0.6em">Biểu thức tương ứng:
-            <span class="inline-code">\d+\s*(?:BR|bed|dorm|hab)</span></p>
-        </section>
+        <section id="literal-regex"><h2>Biểu thức chính quy (regex)</h2>
+<p><strong>Biểu thức chính quy</strong> (<em>regular expression</em>, gọi tắt là <strong>regex</strong>) mô tả mẫu ký tự cần tìm trong chuỗi.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>
+s_cham = pd.Series([&quot;a.b&quot;, &quot;axb&quot;])
+print(pd.DataFrame({
+    &quot;regex&quot;: s_cham.str.contains(&quot;.&quot;),
+    &quot;chuoi&quot;: s_cham.str.contains(&quot;.&quot;, regex=False),
+}))
+</code></pre><pre class="jp-output" data-jp-n="7"><code class="language-text" data-trim>
+   regex  chuoi
+0   True   True
+1   True  False
+</code></pre></div><p>Trong regex, <code>.</code> khớp một ký tự bất kỳ,<br>trừ ký tự xuống dòng theo mặc định.</p>
+<aside class="notes">Regex là tên gọi tắt của regular expression, tiếng Việt là biểu thức chính quy. Mẫu được viết bằng các ký tự có ý nghĩa quy ước; cùng một mẫu có thể khớp nhiều chuỗi. Ví dụ dấu chấm khác với tìm đúng dấu chấm khi không dùng regex. contains kiểm tra trong chuỗi có đoạn khớp mẫu hay không, trả kết quả True/False. contains mặc định regex=True, còn str.replace mặc định regex=False trong pandas hiện tại. Ghi rõ tham số giúp diễn đạt ý định. Muốn dùng regex để tìm dấu chấm thì viết r&quot;\.&quot;.</aside></section>
 
-        <section>
-          <h2>Bộ ký hiệu lõi (1): lớp ký tự</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Mẫu</th>
-                <th>Khớp với</th>
-                <th>Ví dụ</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><span class="inline-code">\d</span></td>
-                <td>một chữ số</td>
-                <td>"<u>2</u>BR"</td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">\w</span></td>
-                <td>chữ cái / số / _</td>
-                <td>"<u>W</u>ifi"</td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">\s</span></td>
-                <td>khoảng trắng</td>
-                <td>"2<u> </u>BR"</td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">[abc]</span>, <span class="inline-code">[0-9]</span></td>
-                <td>một ký tự trong tập</td>
-                <td><code>[$€]</code> khớp $ hoặc €</td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">.</span></td>
-                <td>bất kỳ ký tự nào</td>
-                <td>cẩn thận — khớp quá rộng</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
+        <section id="regex-need"><h2>Tìm số phòng ghi trong tên</h2>
+<table class="compact-table"><thead><tr><th>Tên (giả lập)</th><th>Phần cần lấy</th></tr></thead><tbody><tr><td>Modern <strong>1BR</strong> Oasis</td><td>1</td></tr><tr><td>Casa <strong>3 bedrooms</strong></td><td>3</td></tr><tr><td>Studio <strong>2 br</strong> centro</td><td>2</td></tr><tr><td>Torre 2024</td><td>không có</td></tr></tbody></table><p>Mẫu cần tìm: <strong>chữ số → khoảng trắng tuỳ ý → BR hoặc bedroom(s)</strong>.</p>
+<aside class="notes">BR là viết tắt bedroom. Hỏi lớp: tại sao tìm một con số bất kỳ chưa đủ? Năm 2024 cũng là số. Để số đi cùng một đơn vị/từ khoá giúp thu hẹp bài toán; vẫn cần kiểm các trường hợp khác.</aside></section>
 
-        <section>
-          <h2>Bộ ký hiệu lõi (2): lặp và neo</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Mẫu</th>
-                <th>Nghĩa</th>
-                <th>Ví dụ</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><span class="inline-code">+</span> / <span class="inline-code">*</span></td>
-                <td>lặp ≥1 lần / ≥0 lần</td>
-                <td><span class="inline-code">\d+</span> khớp "45647"</td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">?</span></td>
-                <td>có hoặc không</td>
-                <td><span class="inline-code">apts?</span> khớp apt/apts</td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">{2,4}</span></td>
-                <td>lặp 2–4 lần</td>
-                <td><span class="inline-code">\d{4}</span> = năm</td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">^</span> / <span class="inline-code">$</span></td>
-                <td>đầu / cuối chuỗi</td>
-                <td><span class="inline-code">^\$</span> = bắt đầu bằng $</td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">a|b</span></td>
-                <td>a hoặc b</td>
-                <td><span class="inline-code">BR|bed|hab</span></td>
-              </tr>
-            </tbody>
-          </table>
-          <p class="caption">Bộ ký hiệu này đủ cho nhiều thao tác làm sạch và trích xuất thường gặp.</p>
-        </section>
+        <section id="regex-pieces"><h2>Các thành phần của mẫu regex</h2>
+<p class="text-blue"><code>r"(\d+)\s*(?:BR|bedrooms?)"</code></p><table class="compact-table"><thead><tr><th>Phần</th><th>Ý nghĩa</th></tr></thead><tbody><tr><td><code>\d+</code></td><td>một hoặc nhiều chữ số</td></tr><tr><td><code>\s*</code></td><td>không có hoặc có nhiều ký tự trắng</td></tr><tr><td><code>BR|bedrooms?</code></td><td>BR, bedroom hoặc bedrooms</td></tr><tr><td><code>(\d+)</code></td><td><code>extract</code> trả về chữ số:<br><code>3 bedrooms</code> → <code>"3"</code></td></tr><tr><td><code>(?:BR|bedrooms?)</code></td><td>Khớp từ chỉ phòng, nhưng <code>extract</code><br>không trả về phần chữ này.</td></tr></tbody></table><p><code>r"..."</code> giữ dấu <code>\</code> cho regex.</p>
+<aside class="notes">Với 3 bedrooms, toàn bộ mẫu khớp cụm 3 bedrooms; nhóm (\d+) lưu chuỗi 3 để extract trả về. Nhóm (?:BR|bedrooms?) chỉ dùng để nhận diện từ chỉ phòng: bedrooms vẫn phải khớp, nhưng không tạo thêm một nhóm kết quả. Nếu viết (BR|bedrooms?) bằng ngoặc thường, extract sẽ trả thêm cột chứa bedrooms. Nhấn mạnh phạm vi: ? chỉ tác động lên chữ s ngay trước nó; + lên \d, * lên \s. Dùng r trước chuỗi để Python không biến \b thành ký tự backspace ở ví dụ kế tiếp. Không bắt lớp học thuộc cả bảng ký hiệu regex.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Nhóm ( ) và str.extract: lấy đúng phần cần</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-ten = pd.Series(["Modern 1BR Oasis", "Casa 3 dorm centro",
-                 "Depto frente al metro"])
+        <section id="extract"><h2>Lấy số phòng bằng extract</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>
+ten_mau = pd.Series([&quot;Modern 1BR Oasis&quot;, &quot;Casa 3 bedrooms&quot;,
+                    &quot;12bravo centro&quot;, &quot;Torre 2024&quot;])
+pat = r&quot;(\d+)\s*(?:BR|bedrooms?)&quot;
+print(ten_mau.str.extract(pat, flags=re.I, expand=False))
+</code></pre><pre class="jp-output" data-jp-n="8"><code class="language-text" data-trim>
+0      1
+1      3
+2     12
+3    NaN
+dtype: str
+</code></pre></div><p><code>extract</code> lấy nhóm trong lần khớp đầu tiên. <code>12bravo</code> cũng khớp: mẫu còn quá rộng.</p>
+<aside class="notes">expand=False với một nhóm cho một Series. Các giá trị 1/3/12 vẫn là chuỗi, chưa phải số. Tên không khớp nhận giá trị thiếu; không suy ra tên đó có 0 phòng ngủ. Mẫu khớp chữ BR ở đầu bravo, nên cần ranh giới ở slide sau.</aside></section>
 
-ten.str.extract(r"(\d+)\s*(?:BR|bed|dorm|hab)", expand=False)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
+        <section id="regex-boundary"><h2>Tránh khớp nhầm bằng ranh giới từ</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="9"><code class="language-python" data-trim>
+PAT_PHONG = r&quot;\b(\d+)\s*(?:BR|bedrooms?)\b&quot;
+trich = ten_mau.str.extract(
+    PAT_PHONG, flags=re.I, expand=False)
+print(trich)
+</code></pre><pre class="jp-output" data-jp-n="9"><code class="language-text" data-trim>
 0      1
 1      3
 2    NaN
-            </code></pre>
-          </div>
-          <p>Ngoặc tròn <span class="inline-code">( )</span> đánh dấu phần muốn trích xuất;
-            <span class="inline-code">(?: )</span> tạo nhóm nhưng không trả nhóm đó về kết quả.
-            Tên thứ ba không khớp nên nhận giá trị NaN.</p>
-        </section>
+3    NaN
+dtype: str
+</code></pre></div><p><code>\b</code> là ranh giới từ. Sau <code>BR</code> trong <code>bravo</code> vẫn là chữ, nên không khớp.</p>
+<aside class="notes">\b là ranh giới giữa ký tự từ và ký tự không phải từ (hoặc đầu/cuối chuỗi); chữ số và _ cũng là ký tự từ. Mẫu không xử lý số thập phân, số âm hay mọi ngôn ngữ; phạm vi đã nêu là các số nguyên không dấu trong những cách viết ví dụ. Bộ test diện tích ở bài tập có quy tắc riêng.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Cùng bài giá tiền, lời giải bằng biểu thức chính quy</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-gia = (df["price"]
-       .str.extract(r"\$([\d,]+(?:\.\d+)?)", expand=False)
-       .str.replace(",", "", regex=False)
-       .astype(float))
-gia.head(3)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-0    45647.0
-1    19856.0
-2    46776.0
-            </code></pre>
-          </div>
-          <p>Mẫu bắt đầu bằng dấu <code>$</code>, sau đó trích nhóm gồm chữ số, dấu phẩy
-            và phần thập phân nếu có. Giá trị không đúng định dạng sẽ trả về NaN để kiểm tra.</p>
-        </section>
+        <section id="extract-number"><h2>Chuyển kết quả trích xuất sang số</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="10"><code class="language-python" data-trim>
+so_phong = pd.to_numeric(trich, errors=&quot;coerce&quot;)
+print(so_phong.tolist())
+</code></pre><pre class="jp-output" data-jp-n="10"><code class="language-text" data-trim>
+[1.0, 3.0, nan, nan]
+</code></pre></div><p>Giá trị thiếu nghĩa là <em>quy tắc này chưa lấy được số</em>, không phải số phòng bằng 0.</p>
+<aside class="notes">Có thể astype(&quot;Int64&quot;) nếu muốn số nguyên có giá trị thiếu; để phần tự học. Nếu tên có hai thông tin khớp, extract chỉ lấy lần đầu: xem extractall ở notebook. Không xem số trích từ tên là số phòng ngủ đã xác minh.</aside></section>
 
-        <section>
-          <h2>Viết biểu thức chính quy an toàn</h2>
-          <div class="good-box">
-            <span class="box-title">Cách làm tốt</span>
-            <ol style="margin:0.2em 0 0 1em">
-              <li>Chọn 5–10 <strong>ví dụ thật</strong>, gồm cả trường hợp thường và khác biệt.</li>
-              <li>Viết mẫu <em>hẹp nhất</em> khớp các trường hợp đơn giản; chạy thử.</li>
-              <li>Nới dần cho từng trường hợp khó; mỗi lần nới, chạy lại toàn bộ ví dụ.</li>
-              <li>Đếm số dòng khớp/không khớp trên cả cột; kiểm tra một số dòng ở mỗi nhóm.</li>
-            </ol>
-          </div>
-          <p class="text-light">regex101.com hỗ trợ kiểm thử và giải thích mẫu. AI có thể đề xuất
-            mẫu ban đầu, nhưng vẫn cần kiểm chứng như quy trình trên.</p>
-        </section>
+        <section id="fullmatch"><h2>Kiểm tra mã bằng fullmatch</h2>
+<p>Đầu vào: <code>P12</code>, <code>P12x</code>, <code>mã P12</code>.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="11"><code class="language-python" data-trim>
+ma = pd.Series([&quot;P12&quot;, &quot;P12x&quot;, &quot;mã P12&quot;])
+print(pd.DataFrame({
+    &quot;co_doan_khop&quot;: ma.str.contains(r&quot;P\d+&quot;, na=False),
+    &quot;khop_ca_chuoi&quot;: ma.str.fullmatch(r&quot;P\d+&quot;, na=False),
+}))
+</code></pre><pre class="jp-output" data-jp-n="11"><code class="language-text" data-trim>
+   co_doan_khop  khop_ca_chuoi
+0          True           True
+1          True          False
+2          True          False
+</code></pre></div><p>Tìm được một đoạn khớp không có nghĩa cả chuỗi đúng định dạng.</p>
+<aside class="notes">contains tìm ở bất kỳ đâu, match chỉ kiểm từ đầu chuỗi, fullmatch kiểm toàn bộ. extract tìm và trả các nhóm. Khi cần kiểm định dạng, xác định rõ yêu cầu khớp toàn bộ hay chỉ tìm một phần.</aside></section>
 
-        <section>
-          <h2><code>re</code> thuần: khi rời khỏi pandas</h2>
-          <div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
-          <ul>
-            <li><span class="inline-code">re.search(pat, s)</span> — tìm vị trí đầu tiên;
-              <span class="inline-code">re.findall</span> — tất cả; <span class="inline-code">re.sub</span> — thay.</li>
-            <li>Dùng chuỗi thô <span class="inline-code">r"..."</span> để <code>\d</code> không bị Python
-              hiểu nhầm.</li>
-            <li>Các phương thức như <span class="inline-code">contains</span>,
-              <span class="inline-code">replace</span> và <span class="inline-code">extract</span>
-              có thể dùng biểu thức chính quy; module <code>re</code> áp dụng cùng mẫu ngoài DataFrame.</li>
-          </ul>
-        </section>
+        <section id="exercise-extract"><h2>Bài tập 2: trích diện tích</h2>
+<table class="compact-table"><thead><tr><th>Tên (giả lập)</th><th>Kết quả mong muốn (m²)</th></tr></thead><tbody><tr><td>Depto 45 m2</td><td>45</td></tr><tr><td>Studio 30m²</td><td>30</td></tr><tr><td>80 M2 luxury</td><td>80</td></tr><tr><td>Torre 2024</td><td>thiếu</td></tr><tr><td>30m2x</td><td>thiếu</td></tr></tbody></table><p><strong>Viết mẫu trích diện tích để cho đúng kết quả trong bảng.</strong></p>
+<aside class="notes">Lời giải cho phạm vi đã nêu: r&quot;\b(\d+)\s*m(?:2|²)\b&quot;, flags=re.I, expand=False, rồi to_numeric. Không dùng contains vì cần lấy con số. Nếu sinh viên nêu thêm trường hợp số âm hoặc thập phân, ghi thành yêu cầu mở rộng; mẫu này chưa đủ cho mọi định dạng diện tích.</aside></section>
+
+        <section id="regex-real"><h2>Trích số phòng từ dữ liệu Santiago</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="12"><code class="language-python" data-trim>
+trich_that = df[&quot;name&quot;].str.extract(
+    PAT_PHONG, flags=re.I, expand=False)
+print(pd.Series({
+    &quot;so_ten&quot;: len(df),
+    &quot;khop_mau&quot;: trich_that.notna().sum(),
+}))
+</code></pre><pre class="jp-output" data-jp-n="12"><code class="language-text" data-trim>
+so_ten      18534
+khop_mau      339
+dtype: int64
+</code></pre></div>
+<ul><li><code>flags=re.I</code>: bỏ qua hoa thường, khớp cả <code>BR</code>, <code>br</code>.</li>
+<li><code>expand=False</code>: trả về Series với một nhóm cần lấy.<br>Mặc định <code>expand=True</code>: trả về DataFrame.</li></ul>
+<p>Mẫu chỉ khớp các cách viết <code>BR</code>, <code>bedroom(s)</code>. Cần xem cả tên khớp và tên không khớp.</p>
+<aside class="notes">re.I là tên ngắn của re.IGNORECASE, nên BR, br, Br đều được nhận diện. PAT_PHONG có đúng một nhóm lấy kết quả là (\d+); nhóm (?:BR|bedrooms?) không tạo thêm cột. Với đầu vào Series này, expand=False trả về Series cùng chỉ mục, còn expand=True (mặc định) trả về DataFrame một cột. Nếu mẫu có nhiều nhóm lấy kết quả, expand=False vẫn trả về DataFrame. Tham khảo: https://docs.python.org/3/library/re.html#re.I và https://pandas.pydata.org/docs/reference/api/pandas.Series.str.extract.html. Các tên tiếng Tây Ban Nha hoặc mô tả không có từ khoá này có thể không khớp. Không gọi số khớp là số chỗ ở có phòng ngủ. Notebook giữ tên gốc và lấy một mẫu cố định ở hai nhóm để kiểm; thêm từ khoá chỉ khi hiểu nghĩa và đã có ví dụ kiểm chứng.</aside></section>
+
+        <section id="mention-meaning"><h2>Có chữ metro chưa chắc là ở gần</h2>
+<table class="compact-table"><thead><tr><th>Tên (giả lập)</th><th>Có chữ metro?</th></tr></thead><tbody><tr><td>Apartment near metro</td><td>True</td></tr><tr><td>No metro nearby</td><td>True</td></tr></tbody></table><p>Nên đặt tên cột <code>nhac_metro</code>. Muốn kết luận <em>gần metro</em>, cần thêm thông tin.</p>
+<aside class="notes">Regex khớp hình thức, không xác minh thực tế. Ngay cả xử lý phủ định cũng không đo được khoảng cách. Bài 11 dùng đánh giá có nhãn tay để đo chất lượng trích ngữ nghĩa.</aside></section>
       </section>
 
-      <!-- ====== Phần 3: Ứng dụng ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">3.</span><br>Trích xuất thông tin<br>từ văn bản</h1>
-          <p class="text-light">Biến cột chữ thành cột <em>tín hiệu</em> — bước chuẩn bị cho Bài 11.</p>
-        </section>
+        <section id="multi-value"><h1><span class="text-light">3.</span><br>Tách danh sách<br>trong một ô</h1>
+<p class="text-light">Tách danh sách tiện nghi để đếm và tính tỷ lệ.</p>
+</section>
 
-        <section data-jp-reset>
-          <h2>Ví dụ: cột name → ba cột tín hiệu</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-df["so_phong_ngu"] = df["name"].str.extract(
-    r"(\d+)\s*(?:BR|bed|dorm|hab)", expand=False).astype(float)
-df["gan_metro"] = df["name"].str.contains("metro", case=False, na=False)
-df["co_view"]  = df["name"].str.contains(r"view|vista", case=False, na=False)
+        <section id="split"><h2>Tách chuỗi bằng dấu phân cách</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="13"><code class="language-python" data-trim>
+nhan = pd.Series([&quot;Wifi;Kitchen&quot;, &quot;Kitchen;Parking&quot;],
+                 index=[&quot;P1&quot;, &quot;P2&quot;])
+print(nhan.str.split(&quot;;&quot;, regex=False))
+</code></pre><pre class="jp-output" data-jp-n="13"><code class="language-text" data-trim>
+P1       [Wifi, Kitchen]
+P2    [Kitchen, Parking]
+dtype: object
+</code></pre></div><p>Kết quả là một danh sách trong mỗi ô. Dấu <code>;</code> là quy ước của ví dụ này.</p>
+<aside class="notes">Dấu phân cách phải được biết từ định dạng nguồn. str.split(expand=True) có thể thành các cột; explode thành nhiều hàng. Ví dụ này chưa dùng file JSON.</aside></section>
 
-pd.Series({
-    "so_phong_ngu": df["so_phong_ngu"].notna().sum(),
-    "gan_metro": df["gan_metro"].sum(),
-    "co_view": df["co_view"].sum(),
-})
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-so_phong_ngu     665
-gan_metro       2959
-co_view         1989
-            </code></pre>
-          </div>
-          <p>Ba tín hiệu cho biết số tên khớp từng mẫu. Sau khi trích xuất, có thể dùng chúng
-            để lọc hoặc <code>groupby</code> như các cột khác.</p>
-        </section>
+        <section id="json-lists"><h2>Đọc danh sách bằng json.loads</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="14"><code class="language-python" data-trim>
+raw = pd.Series([&#x27;[&quot;Wifi&quot;, &quot;Kitchen&quot;]&#x27;,
+                 &#x27;[&quot;Kitchen&quot;, &quot;Stove, gas&quot;]&#x27;, &#x27;[]&#x27;],
+                index=[&quot;P1&quot;, &quot;P2&quot;, &quot;P3&quot;])
+ds = raw.map(json.loads)
+print(ds)
+</code></pre><pre class="jp-output" data-jp-n="14"><code class="language-text" data-trim>
+P1          [Wifi, Kitchen]
+P2    [Kitchen, Stove, gas]
+P3                       []
+dtype: object
+</code></pre></div><p><code>Stove, gas</code> là một giá trị. Cắt chuỗi JSON theo dấu phẩy sẽ làm sai danh sách.</p>
+<aside class="notes">json.loads biến chuỗi JSON thành đối tượng Python (ở đây là list). map gọi hàm cho từng ô. Nếu có giá trị thiếu hoặc JSON sai, cần xử lý/ghi nhận riêng; ví dụ này và amenities của snapshot đều có JSON hợp lệ. Danh sách rỗng [] là biết không có mục nào được liệt kê, khác với dữ liệu chưa biết.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Tín hiệu mới trả lời câu hỏi thật</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-df.groupby("gan_metro")["price_num"].median()
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-gan_metro
-False    60478.25
-True     53926.50
-            </code></pre>
-          </div>
-          <p>Nhóm tên có chữ "metro" có giá trung vị thấp hơn khoảng 11%. Khác biệt này chưa cho biết
-            nguyên nhân; cần kiểm tra thêm loại phòng và khu vực trước khi diễn giải.</p>
-        </section>
+        <section id="explode"><h2>Tách tiện nghi thành từng hàng</h2>
+<p><code>explode()</code> đưa mỗi phần tử trong danh sách thành một hàng.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="15"><code class="language-python" data-trim>
+tien_nghi = ds.explode()
+print(tien_nghi)
+</code></pre><pre class="jp-output" data-jp-n="15"><code class="language-text" data-trim>
+P1          Wifi
+P1       Kitchen
+P2       Kitchen
+P2    Stove, gas
+P3           NaN
+dtype: str
+</code></pre></div>
+<p>Chỉ mục vẫn là mã chỗ ở. Danh sách rỗng <code>[]</code> của <code>P3</code> tạo một hàng <code>NaN</code>.</p>
+<aside class="notes">Đối chiếu với ds ở slide trước: P1 có hai phần tử nên thành hai hàng P1; P2 cũng thành hai hàng. Mỗi giá trị mới giữ mã chỗ ở trong chỉ mục. P3 có danh sách rỗng: explode vẫn giữ một hàng và đặt NaN, chưa bỏ P3. Tiện nghi Stove, gas vẫn là một phần tử; explode không cắt chuỗi ở dấu phẩy. Đây là đổi đơn vị từ một chỗ ở sang một mục tiện nghi. Nguồn: https://pandas.pydata.org/docs/reference/api/pandas.Series.explode.html.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Tín hiệu thô về tiếng Tây Ban Nha</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-df["co_dau_tbn"] = df["name"].str.contains(
-    r"ción|ñ|á|é|í|ó|ú", case=False, na=False, regex=True)
+        <section id="explode-dropna"><h2>Bỏ hàng có giá trị thiếu</h2>
+<p><code>dropna()</code> bỏ các hàng có giá trị thiếu trong Series.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="16"><code class="language-python" data-trim>
+tien_nghi = tien_nghi.dropna()
+print(tien_nghi)
+</code></pre><pre class="jp-output" data-jp-n="16"><code class="language-text" data-trim>
+P1          Wifi
+P1       Kitchen
+P2       Kitchen
+P2    Stove, gas
+dtype: str
+</code></pre></div>
+<p>Hàng <code>P3: NaN</code> bị bỏ. Dữ liệu gốc <code>ds</code> vẫn có đủ ba chỗ ở.</p>
+<aside class="notes">dropna trả về một Series mới khi không dùng inplace=True; ta gán kết quả lại cho tien_nghi. Trong ví dụ này chỉ P3 có giá trị thiếu. Có thể ghép hai bước thành ds.explode().dropna() sau khi lớp hiểu từng bước. Các hàng còn lại giữ chỉ mục; nếu reset_index thì lưu mã chỗ ở thành cột. Giữ ds để tính tỷ lệ theo chỗ ở ở slide tiếp theo: danh sách rỗng vẫn thuộc mẫu số. Trong dữ liệu khác, NaN có thể đã thiếu từ nguồn; sau explode không tự phân biệt được với danh sách rỗng, nên cần giữ dữ liệu gốc. dropna không loại chuỗi rỗng hay giá trị 0. Nguồn: https://pandas.pydata.org/docs/reference/api/pandas.Series.dropna.html.</aside></section>
 
-df["co_dau_tbn"].mean().round(2)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="3"><code class="language-text" data-trim>
-0.35
-            </code></pre>
-          </div>
-          <p>35% tên chứa dấu hoặc cụm ký tự thường gặp trong tiếng Tây Ban Nha. Đây không phải
-            bộ phân loại ngôn ngữ, nhưng có thể dùng làm phương pháp đối chứng (baseline)
-            nhanh và giải thích được ở Bài 11.</p>
-        </section>
+        <section id="amenity-denominator"><h2>Tính tỷ lệ chỗ ở có Wifi</h2>
+<p>Ví dụ có <strong>3 chỗ ở</strong> và <strong>4 mục tiện nghi</strong>.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="17"><code class="language-python" data-trim>
+co_wifi = ds.map(lambda x: &quot;Wifi&quot; in x)
+print(f&quot;{co_wifi.sum()}/{len(ds)} chỗ ở có Wifi &quot;
+      f&quot;({co_wifi.mean():.1%})&quot;)
+</code></pre><pre class="jp-output" data-jp-n="17"><code class="language-text" data-trim>
+1/3 chỗ ở có Wifi (33.3%)
+</code></pre></div><p>Chia cho 4 sẽ tính tỷ lệ Wifi trong các mục tiện nghi được liệt kê.</p>
+<aside class="notes">map kiểm danh sách từng chỗ ở trước explode. [] của P3 cho False nhưng vẫn nằm trong mẫu số ba. So với tien_nghi.eq(&quot;Wifi&quot;).mean() = 25%, đó là tỷ lệ mục tiện nghi, không phải tỷ lệ chỗ ở. Nếu amenities thiếu thì chưa biết; không tự biến thiếu thành [] cho việc tính tỷ lệ.</aside></section>
 
-        <section>
-          <h2>Biểu thức chính quy là đủ hay cần mô hình ngôn ngữ lớn (LLM)?</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Bài toán</th>
-                <th>Công cụ hợp</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Mẫu cứng: giá, mã, ngày, số phòng, email</td>
-                <td><strong>biểu thức chính quy</strong> — ổn định, chi phí thấp, tái lập được</td>
-              </tr>
-              <tr>
-                <td>Từ khoá rõ: "metro", "wifi", "view"</td>
-                <td><strong>contains</strong> + từ điển</td>
-              </tr>
-              <tr>
-                <td>Ngữ nghĩa: "đánh giá này chê điều gì?"</td>
-                <td>LLM (Bài 11) — <em>vẫn cần đo trên nhãn tay</em></td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Bắt đầu bằng phương pháp đơn giản phù hợp với bài toán; chỉ dùng LLM khi cần xử lý
-            ngữ nghĩa.
-          </div>
-        </section>
+        <section id="exercise-amenity"><h2>Bài tập 3: thống kê tiện nghi</h2>
+<p>Gộp nhãn chỉ khác hoa thường hoặc dấu cách ở hai đầu.</p>
+<table class="compact-table"><thead><tr><th>Chỗ ở</th><th>Danh sách tiện nghi (giả lập)</th></tr></thead><tbody>
+<tr><td>P1</td><td><code>["Wifi", " wifi ", "Kitchen"]</code></td></tr>
+<tr><td>P2</td><td><code>["WIFI", "Kitchen"]</code></td></tr>
+<tr><td>P3</td><td><code>["Kitchen", "Parking", "Parking"]</code></td></tr>
+<tr><td>P4</td><td><code>[]</code></td></tr>
+</tbody></table>
+<p><strong>Lập bảng số chỗ ở liệt kê từng tiện nghi.</strong></p>
+<aside class="notes">Kết quả sau chuẩn hoá: kitchen 3 chỗ ở, wifi 2, parking 1. Số cần đếm là số chỗ ở khác nhau, nên cùng một tiện nghi bị lặp trong một chỗ ở chỉ được tính một lần. Một lời giải: nhan = ds_bt.explode().dropna().str.strip().str.lower(); bang = nhan.to_frame("tien_nghi").reset_index(names="ma"); ket_qua = bang.groupby("tien_nghi")["ma"].nunique(). Cũng chấp nhận chuẩn hoá và dùng set trong từng danh sách trước khi explode rồi value_counts. Nếu dùng value_counts ngay sau chuẩn hoá mà chưa xử lý lặp, wifi thành 3 và parking thành 2: đó là số lần xuất hiện, không phải số chỗ ở. P4 không đóng góp tiện nghi nào; bài này không tính tỷ lệ nên không có mẫu số. Bài yêu cầu kết hợp chuẩn hoá chuỗi, tách danh sách và đếm theo mã chỗ ở, thay cho lặp lại kiểm một từ Wifi.</aside></section>
+
+        <section id="amenities-real"><h2>Thống kê Wifi trong dữ liệu Santiago</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="18"><code class="language-python" data-trim>
+ds_that = df[&quot;amenities&quot;].map(json.loads)
+co_wifi_that = ds_that.map(lambda x: &quot;Wifi&quot; in x)
+print(f&quot;{co_wifi_that.sum():,}/{len(df):,} chỗ ở &quot;
+      f&quot;({co_wifi_that.mean():.1%}) liệt kê Wifi&quot;)
+</code></pre><pre class="jp-output" data-jp-n="18"><code class="language-text" data-trim>
+16,772/18,534 chỗ ở (90.5%) liệt kê Wifi
+</code></pre></div>
+<aside class="notes">Snapshot có 18.534 danh sách JSON hợp lệ, 14 danh sách rỗng, không có mục lặp trong cùng danh sách. 16.772 danh sách chứa đúng Wifi. Các nhãn mô tả mạng khác không nằm trong quy tắc này; cần từ điển nếu muốn gộp. Không tìm một phần chuỗi JSON khi mục tiêu là một tiện nghi cụ thể.</aside></section>
       </section>
 
-      <!-- ====== Kết ====== -->
       <section>
-        <section>
-          <h2>Tổng kết</h2>
-          <ul>
-            <li><code>.str</code>: strip/lower trước khi đếm; contains nhớ <code>na=False</code>;
-              split + explode cho ô đa trị.</li>
-            <li>Biểu thức chính quy mô tả mẫu chuỗi: <code>\d</code>, <code>\w</code>, <code>\s</code>,
-              <code>+</code>, <code>*</code>, <code>?</code>, <code>( )</code> —
-              <code>str.extract</code> là công cụ chính.</li>
-            <li>Viết biểu thức chính quy từ ví dụ thật, nới dần, rồi kiểm tra cả dòng khớp và không khớp.</li>
-            <li>Cột chuỗi → cột tín hiệu → <code>groupby</code>; biểu thức chính quy có thể làm baseline cho LLM.</li>
-          </ul>
-        </section>
+        <section id="summary"><h2>Tổng kết</h2>
+<table class="compact-table"><thead><tr><th>Cần làm</th><th>Cách chọn</th></tr></thead><tbody><tr><td>Gộp các cách viết</td><td><code>strip</code>, <code>lower</code>; quy tắc rõ</td></tr><tr><td>Tìm nguyên chuỗi</td><td><code>contains(..., regex=False)</code></td></tr><tr><td>Trích / kiểm cả chuỗi</td><td><code>extract</code> / <code>fullmatch</code></td></tr><tr><td>Tách nhiều giá trị</td><td><code>split</code> hoặc <code>json.loads</code> → <code>explode</code></td></tr></tbody></table><p>Giữ dữ liệu gốc; kiểm mẫu khớp và không khớp; tính theo đúng đơn vị.</p>
+</section>
 
-        <section>
-          <h2>Làm việc với AI thì sao?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <div class="good-box">
-            <span class="box-title">AI làm tốt</span>
-            Đề xuất biểu thức chính quy từ mô tả và ví dụ ("khớp 2BR, 3 dorm, không khớp năm 2024");
-            giải thích biểu thức khó đọc của người khác.
-          </div>
-          <div class="warn-box">
-            <span class="box-title">AI hay sai</span>
-            Mẫu có thể khớp các ví dụ đã cho nhưng khớp nhầm dữ liệu khác do thiếu neo hoặc
-            chưa escape các ký tự <code>$ . +</code>.
-          </div>
-        </section>
+        <section id="ai"><h2>Làm việc với AI thì sao?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div><div class="good-box"><span class="box-title">AI làm tốt</span>Đề xuất và giải thích mẫu regex từ yêu cầu cùng ví dụ cụ thể.</div><div class="warn-box"><span class="box-title">AI hay sai</span>Khớp một phần rồi coi cả chuỗi hợp lệ; khớp từ khoá rồi suy ra ý nghĩa.</div>
+</section>
 
-        <section>
-          <h2>Kiểm chứng thế nào?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <ul>
-            <li>Chạy mẫu AI viết trên <strong>bộ ví dụ thật</strong>, gồm cả trường hợp phải khớp
-              và không được khớp, trước khi áp dụng cho cả cột.</li>
-            <li>Sau khi áp dụng cho cả cột, xem <code>value_counts</code> của phần trích xuất
-              và kiểm tra mẫu ở cả nhóm khớp lẫn không khớp.</li>
-          </ul>
-        </section>
+        <section id="verify"><h2>Kiểm chứng thế nào?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div><ol><li>Nêu đầu vào và kết quả mong muốn, cả trường hợp không được khớp.</li><li>Chạy lại các ví dụ sau mỗi lần sửa mẫu.</li><li>Xem dữ liệu gốc ở cả hai nhóm; kiểm mẫu số trước khi báo tỷ lệ.</li></ol>
+<aside class="notes">Hai quy tắc khác nhau có thể cùng sai; bộ ví dụ cần kết quả mong muốn xác định từ yêu cầu. Với trích ngữ nghĩa, cần mẫu có nhãn tay; LLM ở Bài 11 vẫn phải đo chất lượng, không tự coi là đáp án. Regex có thể làm baseline khi quy tắc từ khoá phù hợp.</aside></section>
 
-        <section>
-          <h2>Đọc thêm</h2>
-          <ul>
-            <li>McKinney, <em>Python for Data Analysis</em>, 3rd ed. — ch. 7.4 (String Manipulation).</li>
-            <li>📖 Tự học: <a href="https://regex101.com" target="_blank" rel="noopener">regex101.com</a> —
-              công cụ kiểm thử và giải thích từng phần của mẫu.</li>
-            <li>Python docs — <em>Regular Expression HOWTO</em>.</li>
-          </ul>
-        </section>
+        <section id="references"><h2>Đọc thêm</h2>
+<ul><li>McKinney, <em>Python for Data Analysis</em>, 3rd ed.: <a href="https://wesmckinney.com/book/data-cleaning#string-manipulation">§7.4 — String Manipulation</a>.</li><li>pandas: <a href="https://pandas.pydata.org/docs/user_guide/text.html">Working with text data</a>.</li><li>Python: <a href="https://docs.python.org/3/howto/regex.html">Regular Expression HOWTO</a>.</li><li>Apache Arrow: <a href="https://arrow.apache.org/docs/python/index.html">PyArrow</a>; pandas: <a href="https://pandas.pydata.org/docs/user_guide/migration-3-strings.html">kiểu chuỗi từ pandas 3</a>.</li></ul>
+</section>
       </section>
 
       <!-- Footer -->

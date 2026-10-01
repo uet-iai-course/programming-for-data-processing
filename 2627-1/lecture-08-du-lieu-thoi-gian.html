@@ -13,399 +13,340 @@
   <link rel="stylesheet" href="plugin/highlight/zenburn.css">
   <link rel="stylesheet" href="lecture-style.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<style>
+    .reveal table.compact-table { font-size: 0.8em; }
+  </style>
 </head>
 
 <body>
   <div class="reveal">
     <div class="slides">
 
-      <!-- ====== Mở bài ====== -->
       <section>
-        <section>
-          <h1>Lập trình <br /> xử lý dữ liệu</h1>
-          <div>
-            <p>Học kì 1, năm học 2026–2027</p>
-            <p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
-          </div>
-        </section>
+        <section id="course"><h1>Lập trình<br>xử lý dữ liệu</h1>
+<p>Học kì 1, năm học 2026–2027</p><p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
+</section>
 
-        <section>
-          <h1>
-            <span class="text-light">Bài 8</span>
-            <br>
-            Xử lý dữ liệu <br/> thời gian
-          </h1>
-          <p class="text-light">Kiểu ngày giờ, tổng hợp theo kỳ, cửa sổ trượt
-            và so sánh cùng kỳ.</p>
-        </section>
+        <section id="title"><h1><span class="text-light">Bài 8</span><br>Xử lý dữ liệu<br>thời gian</h1>
+<p class="text-light">Đọc đúng ngày giờ, tính theo kỳ và so sánh giữa các kỳ.</p>
+</section>
 
-        <section>
-          <h2>Bài trước</h2>
-          <ul>
-            <li><code>.str</code> và biểu thức chính quy: biến cột chuỗi thành cột tín hiệu.</li>
-            <li>Cột <strong>ngày tháng</strong> cần một kiểu dữ liệu riêng để tính toán theo thời gian.</li>
-          </ul>
-          <p class="text-light">Dữ liệu Santiago có 690.112 bản ghi đánh giá,
-            mỗi dòng kèm một ngày ghi nhận.</p>
-        </section>
+        <section id="previous"><h2>Bài trước</h2>
+<ul><li>Chuẩn hoá chuỗi và trích xuất bằng regex.</li><li>Đọc các giá trị trong một ô rồi tính toán theo đúng đối tượng.</li><li>Ngày giờ cũng thường được lưu dưới dạng chuỗi.</li></ul>
+</section>
 
-        <section>
-          <h2>Tổng quan</h2>
-          <ol>
-            <li>Kiểu ngày giờ trong pandas</li>
-            <li>Trục thời gian: cắt lát, tổng hợp theo kỳ, cửa sổ trượt</li>
-            <li>So sánh theo thời gian: kỳ liền trước và cùng kỳ</li>
-            <li>Ví dụ: mùa vụ tại Santiago</li>
-            <li>Làm việc với AI thì sao?</li>
-          </ol>
-        </section>
+        <section id="agenda"><h2>Tổng quan</h2>
+<ol><li>Đọc và tính toán với ngày giờ</li><li>Tổng hợp theo thời gian</li><li>So sánh giữa các kỳ</li><li>Làm việc với AI thì sao?</li></ol><p class="text-light">Ví dụ thật: ngày ghi nhận đánh giá tại Santiago, mốc chụp 29/06/2026.</p>
+</section>
       </section>
 
-      <!-- ====== Phần 1 ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">1.</span><br>Kiểu ngày giờ trong pandas</h1>
-          <p class="text-light">Chuỗi <code>"2026-06-29"</code> phải được đổi kiểu trước khi tính toán.</p>
-        </section>
+        <section id="dates"><h1><span class="text-light">1.</span><br>Đọc và tính toán<br>với ngày giờ</h1>
+<p class="text-light">Xác định cách ghi ngày trước khi đổi kiểu và tính toán.</p>
+</section>
 
-        <section data-jp-reset>
-          <h2>to_datetime: chuyển chuỗi thành ngày</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-rv_raw = pd.read_csv("reviews.csv", parse_dates=["date"])
-rv = rv_raw.loc[rv_raw["date"] <= "2026-06-29"].copy()
-rv.dtypes
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-listing_id             int64
-date          datetime64[us]
-            </code></pre>
-          </div>
-          <p>Khi cột có kiểu <code>datetime64</code>, pandas có thể tính khoảng cách,
-            gộp theo tháng và trích xuất các thành phần của ngày.</p>
-        </section>
+        <section id="parse-dates"><h2>Đổi chuỗi thành ngày giờ</h2>
+<p>Cần tính khoảng thời gian từ 28/02 đến 03/03/2026.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
+chuoi = pd.Series([&quot;28/02/2026&quot;, &quot;03/03/2026&quot;])
+ngay = pd.to_datetime(chuoi, format=&quot;%d/%m/%Y&quot;)
+print(ngay)
+</code></pre><pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
+0   2026-02-28
+1   2026-03-03
+dtype: datetime64[us]
+</code></pre></div><p><code>to_datetime</code> đổi kiểu. <code>%d</code>: ngày; <code>%m</code>: tháng; <code>%Y</code>: năm bốn chữ số.</p>
+<aside class="notes">Hỏi sinh viên vì sao không trừ trực tiếp hai chuỗi. pandas hiển thị ngày theo năm-tháng-ngày sau chuyển đổi; đây là cách hiển thị, không làm đổi thời điểm. datetime64[us] là kiểu lưu trữ với đơn vị micro giây trong môi trường pandas 3.0.3.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Định dạng ngày không rõ ràng</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-pd.Series({
-    "MM/DD/YYYY": pd.to_datetime("03/07/2026", format="%m/%d/%Y"),
-    "DD/MM/YYYY": pd.to_datetime("03/07/2026", format="%d/%m/%Y"),
+        <section id="ambiguous-dates"><h2>Ngày và tháng có thể bị đảo</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
+print(pd.Series({
+    &quot;ngày/tháng/năm&quot;: pd.to_datetime(
+        &quot;03/07/2026&quot;, format=&quot;%d/%m/%Y&quot;),
+    &quot;tháng/ngày/năm&quot;: pd.to_datetime(
+        &quot;03/07/2026&quot;, format=&quot;%m/%d/%Y&quot;),
+}))
+</code></pre><pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
+ngày/tháng/năm   2026-07-03
+tháng/ngày/năm   2026-03-07
+dtype: datetime64[us]
+</code></pre></div><p>Cả hai cách đọc đều hợp lệ. Cần dựa vào quy ước của nguồn dữ liệu để chọn <code>format</code>.</p>
+<aside class="notes">Đây là lỗi ngữ nghĩa: không có exception nhưng đọc sai ngày. dayfirst=True chỉ ưu tiên ngày trước, không thay cho một format đã biết.</aside></section>
+
+        <section id="date-errors"><h2>Ngày không hợp lệ và ngày bị thiếu</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
+goc = pd.Series([&quot;29/06/2026&quot;, &quot;31/06/2026&quot;, None])
+doc = pd.to_datetime(
+    goc, format=&quot;%d/%m/%Y&quot;, errors=&quot;coerce&quot;)
+print(pd.DataFrame({&quot;goc&quot;: goc, &quot;ngay&quot;: doc}))
+</code></pre><pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
+          goc       ngay
+0  29/06/2026 2026-06-29
+1  31/06/2026        NaT
+2         NaN        NaT
+</code></pre></div><p><code>errors="coerce"</code> đổi giá trị không đọc được thành <code>NaT</code> — giá trị thiếu của ngày giờ.</p>
+<aside class="notes">31/6 không tồn tại. Không coi coerce là sửa được ngày hoặc tự xoá hàng lỗi. Mask kiểm lỗi mới phát sinh: goc.notna() &amp; doc.isna(). Không dùng số 0 thay NaT.</aside></section>
+
+        <section id="date-parts"><h2>Lấy tháng và thứ trong tuần</h2>
+<p><code>.dt</code> cung cấp các thuộc tính của cột ngày giờ.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
+print(pd.DataFrame({
+    &quot;ngay&quot;: ngay,
+    &quot;thang&quot;: ngay.dt.month,
+    &quot;thu&quot;: ngay.dt.dayofweek,
+}))
+</code></pre><pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>
+        ngay  thang  thu
+0 2026-02-28      2    5
+1 2026-03-03      3    1
+</code></pre></div><p><code>dayofweek</code>: thứ Hai = 0, …, Chủ nhật = 6. Có thể lấy thêm <code>year</code>, <code>quarter</code>.</p>
+<aside class="notes">Đối chiếu 28/2/2026 là thứ Bảy (5), 3/3 là thứ Ba (1). Có thể dùng các cột này với mask hoặc groupby như Bài 4–5. Trích tháng không giữ năm; chỉ dùng tháng khi có mục đích gộp nhiều năm.</aside></section>
+
+        <section id="timedelta"><h2>Tính khoảng cách giữa hai ngày</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
+khoang = ngay.iloc[1] - ngay.iloc[0]
+print(khoang.days)
+</code></pre><pre class="jp-output" data-jp-n="5"><code class="language-text" data-trim>
+3
+</code></pre></div><p>Trừ hai ngày giờ tạo <code>Timedelta</code> (khoảng thời gian). <code>days</code> lấy số ngày; với một Series dùng <code>.dt.days</code>.</p>
+<aside class="notes">Tính qua ranh giới tháng, không lấy ngày trong tháng trừ nhau. Phân biệt mốc thời gian Timestamp với khoảng thời gian Timedelta. Nếu có giờ, days là số ngày trọn; không phải tổng số giây hoặc ngày dạng số thực.</aside></section>
+
+        <section id="exercise-dates"><h2>Bài tập 1: Tính số đêm lưu trú</h2>
+<p>Mỗi hàng là một lượt đặt. Ngày được ghi theo <strong>DD/MM/YYYY</strong> (giả lập).</p><pre><code class="language-python" data-trim>
+dat = pd.DataFrame({
+    &quot;vao&quot;: [&quot;03/07/2026&quot;, &quot;10/07/2026&quot;],
+    &quot;ra&quot;: [&quot;06/07/2026&quot;, &quot;12/07/2026&quot;],
 })
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-MM/DD/YYYY   2026-03-07
-DD/MM/YYYY   2026-07-03
-            </code></pre>
-          </div>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            Không nên để pandas tự đoán một định dạng mơ hồ. Khi đọc dữ liệu, hãy khai báo
-            <code>format</code>; khi ghi file, ưu tiên ISO <code>YYYY-MM-DD</code>.
-          </div>
-        </section>
+vao = pd.to_datetime(dat[&quot;vao&quot;])
+ra = pd.to_datetime(dat[&quot;ra&quot;])
+so_dem = (ra - vao).dt.days
+</code></pre><p><strong>Sửa code để tính đúng số đêm của từng lượt đặt.</strong></p>
+<aside class="notes">Đáp án: [3, 2] đêm. Code không khai báo format chạy được nhưng trong môi trường này đọc tháng trước, cho [92, 61]. Sinh viên phải viện dẫn quy ước DD/MM/YYYY, không sửa ngày trong bảng để hợp kết quả. Chấp nhận dùng dayfirst=True trên bộ ví dụ, thảo luận vì sao format đã biết rõ hơn.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Bộ thuộc tính .dt</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-rv["date"].dt.year.value_counts().sort_index().tail(3)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
-2024    131267
-2025    211432
-2026    128459
-            </code></pre>
-          </div>
-          <p>Một cột kiểu ngày giờ (<code>datetime</code>) cung cấp nhiều thuộc tính:
-            <span class="inline-code">.dt.year / .month / .dayofweek / .quarter / .date</span>…
-            Các thuộc tính này có thể dùng để lọc hoặc gom nhóm.</p>
-        </section>
-
-        <section data-jp-reset>
-          <h2>Khoảng thời gian giữa hai mốc</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-snapshot = pd.Timestamp("2026-06-29")
-first = listings["first_review"].where(listings["first_review"] <= snapshot)
-so_nam = (snapshot - first).dt.days / 365.25
-
-so_nam.describe().round(1).loc[["50%", "max"]]
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="4"><code class="language-text" data-trim>
-50%     1.5
-max    15.6
-            </code></pre>
-          </div>
-          <p>Trừ hai giá trị ngày giờ tạo ra một khoảng thời gian (<code>Timedelta</code>). Trung vị số năm
-            kể từ đánh giá đầu tiên là 1,5 năm; đây là một đặc trưng được tạo từ hai mốc thời gian.</p>
-        </section>
-
-        <section>
-          <h2>Múi giờ</h2>
-          <div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
-          <ul>
-            <li>Dữ liệu nhật ký hệ thống hoặc API thường theo UTC; hiển thị theo giờ địa phương bằng
-              <span class="inline-code">tz_localize("UTC")</span> rồi
-              <span class="inline-code">tz_convert("Asia/Ho_Chi_Minh")</span>.</li>
-            <li>Ngày trong Inside Airbnb không có thành phần giờ. Với nhật ký hệ thống, cần kiểm tra
-              múi giờ trước khi gộp theo ngày.</li>
-          </ul>
-        </section>
+        <section id="timezone"><h2>Đổi múi giờ</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div><p>Nhật ký (log) của phần mềm hoặc API có thể ghi thời điểm theo UTC.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>
+utc = pd.Timestamp(&quot;2026-06-29 22:30&quot;, tz=&quot;UTC&quot;)
+print(utc.tz_convert(&quot;Asia/Ho_Chi_Minh&quot;))
+</code></pre><pre class="jp-output" data-jp-n="6"><code class="language-text" data-trim>
+2026-06-30 05:30:00+07:00
+</code></pre></div><p><code>tz_convert</code> đổi cách hiển thị sang múi giờ khác. Cùng một thời điểm có thể thuộc hai ngày khác nhau.</p>
+<aside class="notes">Ví dụ chuyển 22:30 UTC thành 05:30 ngày hôm sau ở Việt Nam. Khác với tz_convert, tz_localize gắn múi giờ cho ngày giờ đang chưa có múi giờ; chỉ gắn khi biết quy ước của nguồn. Tránh tự suy rằng mọi chuỗi từ API đều là UTC.</aside></section>
       </section>
 
-      <!-- ====== Phần 2 ====== -->
       <section>
-        <section>
-          <h1><span class="text-light">2.</span><br>Trục thời gian:<br>cắt lát, tổng hợp, <br/> làm mượt</h1>
-          <p class="text-light">Đặt thời gian làm chỉ mục để cắt lát và tổng hợp theo lịch.</p>
-        </section>
+        <section id="resampling"><h1><span class="text-light">2.</span><br>Tổng hợp<br>theo thời gian</h1>
+<p class="text-light">Đếm theo ngày, tháng và làm mượt các dao động.</p>
+</section>
 
-        <section data-jp-reset>
-          <h2>Chỉ mục thời gian</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-r = rv.set_index("date").sort_index()
+        <section id="reviews-source"><h2>Dữ liệu đánh giá tại Santiago</h2>
+<p>Mỗi hàng là một đánh giá; <code>date</code> là ngày ghi nhận. Mốc chụp: <strong>29/06/2026</strong>.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>
+rv_raw[&quot;date&quot;] = pd.to_datetime(
+    rv_raw[&quot;date&quot;], format=&quot;%Y-%m-%d&quot;)
+print(rv_raw.head(3))
+</code></pre><pre class="jp-output" data-jp-n="7"><code class="language-text" data-trim>
+   listing_id       date
+0       52811 2010-11-13
+1       52811 2011-03-23
+2       52811 2012-01-23
+</code></pre></div><p>Một ngày có thể xuất hiện nhiều lần vì có nhiều đánh giá.</p>
+<aside class="notes">Nguồn: https://data.insideairbnb.com/chile/rm/santiago/2026-06-29/visualisations/reviews.csv. Có 690.112 hàng. Notebook ưu tiên cache cục bộ, Colab tải URL đúng snapshot. Không tải snapshot mới nhất. listing_id là mã chỗ ở, không phải mã riêng của từng đánh giá.</aside></section>
 
-pd.Series({
-    "năm 2026": len(r.loc["2026"]),
-    "tháng 3/2026": len(r.loc["2026-03"]),
-})
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="1"><code class="language-text" data-trim>
+        <section id="date-cutoff"><h2>Kiểm tra ngày vượt mốc chụp</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>
+moc = pd.Timestamp(&quot;2026-06-29&quot;)
+ngoai_moc = rv_raw.loc[rv_raw[&quot;date&quot;] &gt; moc, &quot;date&quot;]
+print(ngoai_moc.value_counts().sort_index())
+</code></pre><pre class="jp-output" data-jp-n="8"><code class="language-text" data-trim>
+date
+2026-06-30    155
+2026-07-01     49
+Name: count, dtype: int64
+</code></pre></div><p>File có <strong>204 hàng</strong> đề ngày sau mốc chụp. Ta sẽ loại chúng khỏi phạm vi phân tích này.</p>
+<aside class="notes">Không đoán nguyên nhân ngày vượt mốc. Công khai số hàng bị loại, không im lặng lọc rồi trình bày như file gốc. Ngày bị loại khác với NaT; dữ liệu date trong snapshot này không có lỗi đọc.</aside></section>
+
+        <section id="time-index"><h2>Chọn dữ liệu theo năm và tháng</h2>
+<p>Đặt ngày làm chỉ mục (<code>DatetimeIndex</code>) rồi sắp theo thời gian.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="9"><code class="language-python" data-trim>
+rv = rv_raw.loc[rv_raw[&quot;date&quot;] &lt;= moc].copy()
+r = rv.set_index(&quot;date&quot;).sort_index()
+print(pd.Series({
+    &quot;năm 2026&quot;: len(r.loc[&quot;2026&quot;]),
+    &quot;tháng 3/2026&quot;: len(r.loc[&quot;2026-03&quot;]),
+}))
+</code></pre><pre class="jp-output" data-jp-n="9"><code class="language-text" data-trim>
 năm 2026        128459
 tháng 3/2026     25108
-            </code></pre>
-          </div>
-          <p>Với chỉ mục thời gian (<code>DatetimeIndex</code>), <code>.loc["2026-03"]</code> chọn mọi dòng
-            trong tháng 3/2026. Đây là cách cắt lát thời gian bằng một phần chuỗi ngày.</p>
-        </section>
+dtype: int64
+</code></pre></div><p><code>.loc["2026-03"]</code> lấy mọi hàng trong tháng 3/2026. Chỉ mục có thể lặp ngày.</p>
+<aside class="notes">Sau khi lọc còn 689.908 đánh giá. Chỉ mục thời gian có thể trùng vì nhiều đánh giá cùng ngày; không deduplicate theo chỉ mục. Tính thử len(r.loc[&quot;2026-03&quot;]) độc lập để đối chiếu kết quả resample sắp học.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Tổng hợp theo kỳ với resample</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-theo_thang = r.resample("ME").size()    # ME = cuối tháng
-theo_thang.tail(3)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
+        <section id="resample-small"><h2>Gộp đánh giá theo tháng</h2>
+<p>Ví dụ giả lập có ba đánh giá: hai trong tháng 1, một trong tháng 3.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="10"><code class="language-python" data-trim>
+vi_du = pd.Series([1, 1, 1], index=pd.to_datetime([
+    &quot;2026-01-03&quot;, &quot;2026-01-10&quot;, &quot;2026-03-02&quot;,
+]))
+print(vi_du.resample(&quot;ME&quot;).size())
+</code></pre><pre class="jp-output" data-jp-n="10"><code class="language-text" data-trim>
+2026-01-31    2
+2026-02-28    0
+2026-03-31    1
+Freq: ME, dtype: int64
+</code></pre></div><p><code>resample("ME")</code> gộp theo tháng, gắn nhãn cuối tháng; <code>size()</code> đếm hàng. Tháng 2 có 0 đánh giá.</p>
+<aside class="notes">Liên hệ groupby của Bài 5: resample cũng chia nhóm rồi tổng hợp, nhưng nhóm được xác định bằng lịch. Mỗi giá trị 1 tượng trưng một đánh giá. 0 là không có hàng đánh giá trong ví dụ; không được suy rằng một tháng thiếu thu thập là 0 hoạt động.</aside></section>
+
+        <section id="resample-real"><h2>Đếm số đánh giá từng tháng</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="11"><code class="language-python" data-trim>
+theo_thang = r.resample(&quot;ME&quot;).size()
+print(theo_thang.tail(3))
+</code></pre><pre class="jp-output" data-jp-n="11"><code class="language-text" data-trim>
 date
 2026-04-30    21656
 2026-05-31    22296
 2026-06-30    16112
-            </code></pre>
-          </div>
-          <p><span class="inline-code">"ME"</span> tháng, <span class="inline-code">"W"</span> tuần,
-            <span class="inline-code">"QE"</span> quý, <span class="inline-code">"YE"</span> năm —
-            đây là phép gộp nhóm theo các khoảng thời gian trên lịch.</p>
-        </section>
+Freq: ME, dtype: int64
+</code></pre></div><p>Có thể đổi <code>ME</code> thành <code>D</code> (ngày), <code>W-SUN</code> (tuần kết thúc Chủ nhật), <code>QE</code> (quý).</p>
+<aside class="notes">Nhấn mạnh 16.112 là đến 29/6, dù chỉ mục resample là 30/6. Nhãn bin không đồng nghĩa phạm vi quan sát đã hoàn chỉnh. Không dùng count trên cột có giá trị thiếu nếu mục tiêu là đếm tất cả hàng.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Kiểm tra mốc cuối trước khi tổng hợp</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-rv_raw.loc[rv_raw["date"] > "2026-06-29", "date"].value_counts()
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="3"><code class="language-text" data-trim>
+        <section id="complete-months"><h2>Tháng cuối chưa đủ dữ liệu</h2>
+<p>Mốc chụp là 29/06: chưa có trọn tháng 6 để so với tháng 5.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="12"><code class="language-python" data-trim>
+dau_thang = moc.replace(day=1)
+thang_day_du = theo_thang.loc[
+    theo_thang.index &lt; dau_thang]
+print(thang_day_du.tail(2))
+</code></pre><pre class="jp-output" data-jp-n="12"><code class="language-text" data-trim>
 date
-2026-06-30    155
-2026-07-01     49
-            </code></pre>
-          </div>
-          <p>Mốc chụp dữ liệu là 29/06, nhưng file gốc vẫn có 204 dòng đề ngày sau đó —
-            slide đầu bài đã lọc chúng khi tạo <code>rv</code>.</p>
-          <p>Sau khi loại các ngày này, tháng 6 vẫn chưa trọn.
-            Tháng 5/2026 là tháng đầy đủ cuối cùng. Cần loại <strong>kỳ chưa trọn</strong>
-            trước khi so sánh hoặc vẽ biểu đồ.</p>
-        </section>
+2026-04-30    21656
+2026-05-31    22296
+Freq: ME, dtype: int64
+</code></pre></div><p><code>replace(day=1)</code> lấy đầu tháng chứa mốc chụp. Chỉ giữ các tháng kết thúc trước mốc này.</p>
+<aside class="notes">Nếu nghiên cứu cần tháng đang diễn ra, vẫn có thể giữ nhưng phải so cùng khoảng quan sát và ghi rõ kỳ chưa trọn. Không mặc định mọi kỳ cuối đều thiếu; cần đối chiếu mốc chụp. Cách lọc ở đây chủ động chỉ dùng các tháng trước tháng chụp.</aside></section>
 
-        <section data-jp-reset>
-          <h2>Làm mượt bằng cửa sổ trượt (rolling)</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-thang_day_du = theo_thang.loc[:"2026-05-31"]
+        <section id="exercise-calendar"><h2>Bài tập 2: Trung bình mỗi ngày</h2>
+<p>Hệ thống đã thu đủ dữ liệu từ 01–07/06/2026. Bảng chỉ liệt kê ngày có đánh giá (giả lập).</p><table class="compact-table"><thead><tr><th>Ngày</th><th>Số đánh giá</th></tr></thead><tbody><tr><td>01/06</td><td>2</td></tr><tr><td>03/06</td><td>1</td></tr><tr><td>07/06</td><td>4</td></tr></tbody></table><p><strong>Tính trung bình số đánh giá mỗi ngày trong tuần này.</strong></p>
+<aside class="notes">Đáp án: 7 đánh giá / 7 ngày = 1 đánh giá/ngày. dem_ngay.mean() cho 7/3, chỉ là trung bình trên ngày có đánh giá. Bảng đã tổng hợp số đếm: resample(&quot;D&quot;).sum() tạo [2, 0, 1, 0, 0, 0, 4], không dùng size() vì nó đếm dòng. Chấp nhận tính tổng/7 trực tiếp, không ép một API. Nếu chưa thu dữ liệu ngày vắng, không có căn cứ điền 0.</aside></section>
 
-muot = thang_day_du.rolling(6, center=True).mean()
-            </code></pre>
-          </div>
-          <p>Mỗi điểm là trung bình của một cửa sổ 6 tháng. Dao động ngắn hạn giảm bớt,
-            giúp quan sát xu hướng dài hơn.</p>
-        </section>
+        <section id="rolling-example"><h2>Tính trung bình theo cửa sổ trượt</h2>
+<p>Để bớt dao động, mỗi tháng lấy trung bình của tháng đó và hai tháng trước.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="13"><code class="language-python" data-trim>
+s = pd.Series([10, 50, 30, 10], index=[&quot;T1&quot;, &quot;T2&quot;, &quot;T3&quot;, &quot;T4&quot;])
+tb = s.rolling(3, min_periods=3).mean()
+print(pd.DataFrame({&quot;so_danh_gia&quot;: s, &quot;tb_3_thang&quot;: tb}))
+</code></pre><pre class="jp-output" data-jp-n="13"><code class="language-text" data-trim>
+    so_danh_gia  tb_3_thang
+T1           10         NaN
+T2           50         NaN
+T3           30        30.0
+T4           10        30.0
+</code></pre></div><p>Cửa sổ chuyển từ T1–T3 sang T2–T4. <code>3</code> là số hàng; <code>min_periods=3</code> yêu cầu đủ 3 giá trị không thiếu.</p>
+<aside class="notes">Không dùng center=True trong ví dụ chính: kết quả ở mỗi tháng chỉ dùng tháng đó và các tháng trước. Tính tay hai cửa sổ đều được 30 dù số đếm thay đổi. rolling(3).mean() mặc định min_periods=3; viết tường minh để sinh viên hiểu NaN đầu chuỗi.</aside></section>
 
-        <section data-jp-reset>
-          <h2>shift: dời dữ liệu để đối chiếu các kỳ</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
-s = pd.Series([10, 12, 15], index=["T1", "T2", "T3"])
-s.shift(1)          # mỗi ô lấy giá trị của kỳ liền trước
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="5"><code class="language-text" data-trim>
+        <section id="rolling-real"><h2>Trung bình của sáu tháng gần nhất</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="14"><code class="language-python" data-trim>
+muot = thang_day_du.rolling(6, min_periods=6).mean()
+</code></pre></div><figure class="fig"><img src="img/lecture-08/reviews-theo-thang.svg" alt="Số đánh giá mỗi tháng và trung bình của tháng hiện tại cùng năm tháng trước tại Santiago, 2016 đến tháng 5/2026" style="width:94%"><figcaption class="caption">Mỗi điểm trên đường xanh là trung bình của tháng đó và năm tháng trước.</figcaption></figure>
+<aside class="notes">Đường xám là số đánh giá mỗi tháng; đường xanh là rolling 6 hàng ở cuối cửa sổ. Không gọi đường xanh là dự báo hoặc nguyên nhân. Số đánh giá giảm trong 2020–2021 là quan sát từ biểu đồ; bài này không quy kết nguyên nhân bằng riêng phép rolling.</aside></section>
+      </section>
+
+      <section>
+        <section id="comparison"><h1><span class="text-light">3.</span><br>So sánh<br>giữa các kỳ</h1>
+<p class="text-light">Chọn kỳ gốc và dùng những khoảng thời gian tương ứng.</p>
+</section>
+
+        <section id="shift-example"><h2>Đặt giá trị kỳ trước cạnh kỳ này</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="15"><code class="language-python" data-trim>
+mau = pd.Series([10, 12, 15], index=[&quot;T1&quot;, &quot;T2&quot;, &quot;T3&quot;])
+print(pd.DataFrame({
+    &quot;ky_nay&quot;: mau, &quot;ky_truoc&quot;: mau.shift(1),
+}))
+</code></pre><pre class="jp-output" data-jp-n="15"><code class="language-text" data-trim>
+    ky_nay  ky_truoc
+T1      10       NaN
+T2      12      10.0
+T3      15      12.0
+</code></pre></div><p><code>shift(1)</code> dịch giá trị xuống một hàng; chỉ mục giữ nguyên. T1 chưa có kỳ trước nên nhận <code>NaN</code>.</p>
+<aside class="notes">Đây là dịch giá trị theo hàng, không mặc định dịch ngày trên lịch. Không dùng to_numpy để đặt giá trị kỳ trước cạnh kỳ này vì có thể mất nhãn và sai độ dài. T2 dùng T1=10, T3 dùng T2=12.</aside></section>
+
+        <section id="missing-months"><h2>shift dịch theo hàng</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="16"><code class="language-python" data-trim>
+thieu = pd.Series([10, 15, 18], index=pd.to_datetime([
+    &quot;2026-01-31&quot;, &quot;2026-03-31&quot;, &quot;2026-04-30&quot;,
+]))
+print(pd.DataFrame({&quot;gia_tri&quot;: thieu, &quot;shift_1&quot;: thieu.shift(1)}))
+</code></pre><pre class="jp-output" data-jp-n="16"><code class="language-text" data-trim>
+            gia_tri  shift_1
+2026-01-31       10      NaN
+2026-03-31       15     10.0
+2026-04-30       18     15.0
+</code></pre></div><p>Tháng 3 nhận giá trị tháng 1 vì tháng 2 không có hàng. Với chuỗi do <code>resample</code> tạo, mỗi tháng đã có một hàng.</p>
+<aside class="notes">Không ép tháng 2 thành 0 vì chưa biết vì sao nó vắng. Thieu.asfreq(&quot;ME&quot;) tạo hàng tháng 2 NaN; sau đó shift(1) tại tháng 3 là NaN. Phân biệt với resample.size trên dữ liệu đánh giá đầy đủ: 0 là số hàng ghi nhận trong khoảng đó.</aside></section>
+
+        <section id="pct-example"><h2>Tính tỷ lệ thay đổi</h2>
+<p>Tỷ lệ thay đổi = (giá trị kỳ này − kỳ trước) / kỳ trước.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="17"><code class="language-python" data-trim>
+print((mau.pct_change() * 100).round(1))
+</code></pre><pre class="jp-output" data-jp-n="17"><code class="language-text" data-trim>
 T1     NaN
-T2    10.0
-T3    12.0
-            </code></pre>
-          </div>
-          <p><code>shift(1)</code> đẩy mỗi giá trị xuống một dòng, sinh <code>NaN</code> ở đầu.
-            Nhờ đó <code>s / s.shift(1)</code> so mỗi tháng với <strong>tháng trước</strong>,
-            còn <code>shift(12)</code> so với <strong>cùng tháng năm trước</strong>.</p>
-        </section>
+T2    20.0
+T3    25.0
+dtype: float64
+</code></pre></div><p><code>pct_change()</code> tính tỷ lệ, chưa phải số phần trăm. T2: (12 − 10) / 10 = 0,2 = 20%.</p>
+<aside class="notes">T3 tăng 25%, không phải tăng 3%. Hỏi sinh viên kỳ gốc của T3 là 12 hay 10. Kết quả đầu tiên NaN vì không có kỳ gốc; NaN khác với không tăng.</aside></section>
 
-        <section data-jp-reset>
-          <h2>So với kỳ liền trước</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>
-(thang_day_du.pct_change() * 100).loc["2026-05-31"].round(1)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="6"><code class="language-text" data-trim>
-3.0
-            </code></pre>
-          </div>
-          <p>Phương thức tính tỷ lệ thay đổi <code>pct_change()</code> tương đương
-            <code>x / x.shift(1) - 1</code>.
-            Tháng 5/2026 tăng 3% so với tháng 4/2026.</p>
-        </section>
+        <section id="month-change"><h2>So với tháng liền trước</h2>
+<table class="compact-table"><thead><tr><th>Tháng</th><th>Số đánh giá</th></tr></thead><tbody><tr><td>04/2026</td><td>21.656</td></tr><tr><td>05/2026</td><td>22.296</td></tr></tbody></table><div class="jp-cell"><pre class="jp-input" data-jp-n="18"><code class="language-python" data-trim>
+doi_thang = thang_day_du.pct_change()
+print(f&quot;Tháng 5/2026: {doi_thang.loc[&#x27;2026-05-31&#x27;]:.1%}&quot;)
+</code></pre><pre class="jp-output" data-jp-n="18"><code class="language-text" data-trim>
+Tháng 5/2026: 3.0%
+</code></pre></div><p>Tháng 5 có số đánh giá cao hơn tháng 4 khoảng 3,0%.</p>
+<aside class="notes">Đối chiếu tay 22296 / 21656 - 1 = 0,029553… Bằng 3,0% sau làm tròn. Dấu .loc chọn chính xác nhãn cuối tháng, không chọn cả năm bằng vị trí.</aside></section>
 
-        <section data-jp-reset>
-          <h2>So cùng kỳ bằng cách dịch chuỗi 12 tháng</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>
-yoy = (thang_day_du / thang_day_du.shift(12) - 1) * 100
+        <section id="same-month"><h2>So với cùng tháng năm trước</h2>
+<table class="compact-table"><thead><tr><th>Tháng</th><th>Số đánh giá</th></tr></thead><tbody><tr><td>05/2025</td><td>14.509</td></tr><tr><td>05/2026</td><td>22.296</td></tr></tbody></table><div class="jp-cell"><pre class="jp-input" data-jp-n="19"><code class="language-python" data-trim>
+doi_nam = thang_day_du / thang_day_du.shift(12) - 1
+print(f&quot;Tháng 5/2026: {doi_nam.loc[&#x27;2026-05-31&#x27;]:.1%}&quot;)
+</code></pre><pre class="jp-output" data-jp-n="19"><code class="language-text" data-trim>
+Tháng 5/2026: 53.7%
+</code></pre></div><p><code>shift(12)</code> lấy giá trị 12 hàng trước. Với chuỗi tháng liên tiếp, đó là cùng tháng năm trước.</p>
+<aside class="notes">Đối chiếu 22296 / 14509 - 1 = 0,536701… Chỉ dùng kỳ đầy đủ. Cùng kỳ và kỳ liền trước trả lời hai câu hỏi khác nhau; không nói một cách luôn tốt hơn cách kia.</aside></section>
 
-yoy.loc["2026-05-31"].round(1)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="7"><code class="language-text" data-trim>
-53.7
-            </code></pre>
-          </div>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Tháng 5/2026 tăng 3% so với tháng trước và tăng 53,7% so với tháng 5/2025.
-            Với dữ liệu có mùa vụ, so với cùng kỳ năm trước (thường viết tắt là YoY)
-            thường là phép so phù hợp hơn.
-          </div>
-        </section>
-      </section>
+        <section id="compare-bases"><h2>Chọn mốc so sánh</h2>
+<p>Tháng 5/2026 có 22.296 đánh giá.</p><table class="compact-table"><thead><tr><th>Mốc so sánh</th><th>Thay đổi</th><th>Ý nghĩa</th></tr></thead><tbody><tr><td>Tháng 4/2026</td><td>+3,0%</td><td>Biến động tháng gần nhất</td></tr><tr><td>Tháng 5/2025</td><td>+53,7%</td><td>Biến động qua một năm</td></tr></tbody></table><p>Hai kết quả dùng hai mốc gốc khác nhau. So cùng tháng giúp giảm ảnh hưởng của những khác biệt theo mùa.</p>
+<aside class="notes">Không hỏi tăng 3% hay 53,7% như hai đáp án loại trừ nhau. Hai tỷ lệ đều đúng với kỳ gốc đã nêu. So cùng tháng vẫn chưa loại ảnh hưởng xu hướng, thay đổi số chỗ ở hoặc tỷ lệ viết đánh giá.</aside></section>
 
-      <!-- ====== Phần 3 (ví dụ) ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">3.</span><br>Mùa vụ<br>tại Santiago</h1>
-          <p class="text-light">Áp dụng các kỹ thuật vừa học trên dữ liệu đánh giá thực tế.</p>
-        </section>
-
-        <section>
-          <h2>Mười năm trong một hình</h2>
-          <figure class="fig">
-            <img src="img/lecture-08/reviews-theo-thang.svg" alt="Số đánh giá theo tháng tại Santiago giai đoạn 2016-2026"
-              style="width:92%">
-            <figcaption class="caption">Đường trung bình trượt cho thấy xu hướng tăng dài hạn,
-              dao động theo mùa và mức giảm rõ trong giai đoạn 2020–2021.</figcaption>
-          </figure>
-        </section>
-
-        <section data-jp-reset>
-          <h2>Chỉ số mùa vụ: cách tính</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-tron = r.loc["2022":"2025"]                  # chỉ các năm trọn
-thang = tron.groupby(tron.index.month).size()
-
-chi_so = thang / thang.mean() * 100          # 100 = tháng trung bình
-chi_so.round().astype(int).tolist()
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="1"><code class="language-text" data-trim>
+        <section id="seasonal-years"><h2>Tổng hợp theo tháng qua nhiều năm</h2>
+<p>Dùng các năm đủ 12 tháng: <strong>2022–2025</strong>. Mỗi tháng góp mặt bốn lần.</p><div class="jp-cell"><pre class="jp-input" data-jp-n="20"><code class="language-python" data-trim>
+tron = r.loc[&quot;2022&quot;:&quot;2025&quot;]
+dem_thang = tron.groupby(tron.index.month).size()
+chi_so = dem_thang / dem_thang.mean() * 100
+print(chi_so.round().astype(int).tolist())
+</code></pre><pre class="jp-output" data-jp-n="20"><code class="language-text" data-trim>
 [81, 67, 90, 84, 81, 85, 119, 125, 104, 118, 133, 112]
-            </code></pre>
-          </div>
-          <p>Đếm số đánh giá theo tháng-lịch rồi chia cho mức trung bình 12 tháng.
-            Chỉ số <strong>100 = tháng trung bình</strong>; T11 = 133 tức cao hơn 33%.</p>
-        </section>
+</code></pre></div><p>Gộp mọi tháng 1, mọi tháng 2, … rồi đếm. Chia cho trung bình của 12 tổng; chỉ số 100 là mức trung bình.</p>
+<aside class="notes">Nhắc lại .index.month lấy tháng từ DatetimeIndex; khác .dt.month dùng cho Series. Tổng 12 tháng bằng số hàng của tron. Chỉ số này mô tả lượng đánh giá theo tháng, chưa điều chỉnh số ngày từng tháng hoặc mức tăng qua các năm; không phải phân rã mùa vụ thống kê.</aside></section>
 
-        <section>
-          <h2>Chỉ số mùa vụ theo tháng</h2>
-          <figure class="fig">
-            <img src="img/lecture-08/mua-vu.svg" alt="Chỉ số mùa vụ theo tháng" style="width:88%">
-            <figcaption class="caption">Chỉ số mùa vụ (100 = trung bình, tính trên các năm trọn
-              2022–2025): đỉnh T7–T8 và T10–T11, đáy T2.</figcaption>
-          </figure>
-        </section>
+        <section id="seasonal-chart"><h2>Phân bố đánh giá theo tháng</h2>
+<figure class="fig"><img src="img/lecture-08/mua-vu.svg" alt="Chỉ số số đánh giá từng tháng trên cùng tập năm 2022–2025, 100 là mức trung bình; tháng 11 cao nhất và tháng 2 thấp nhất" style="width:94%"><figcaption class="caption">Tháng 11 cao hơn mức trung bình khoảng 33%; tháng 2 thấp hơn khoảng 33%. Chưa điều chỉnh theo số ngày từng tháng.</figcaption></figure>
+<aside class="notes">Số chỉ số làm tròn: [81, 67, 90, 84, 81, 85, 119, 125, 104, 118, 133, 112]. Không suy ra kỳ nghỉ hoặc lễ hội bằng riêng hình này. Nếu câu hỏi là số đánh giá trung bình mỗi ngày, phải đổi phép tính và mẫu số.</aside></section>
 
-        <section>
-          <h2>Đo mùa vụ trên các năm đầy đủ</h2>
-          <ul>
-            <li><strong>Chỉ dùng các năm đầy đủ.</strong> Nếu gộp nửa đầu 2026, các tháng T1–T6
-              nhận thêm một năm dữ liệu và bị đẩy lên cao không đồng đều.</li>
-            <li><strong>Mô tả trước, giải thích sau.</strong> Dữ liệu cho thấy T7–T8 và T10–T11
-              cao hơn, nhưng chưa cho biết nguyên nhân của mẫu hình này.</li>
-          </ul>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Mỗi tháng phải được tính từ cùng một tập hợp các năm đầy đủ.
-          </div>
-        </section>
-
-        <section>
-          <h2>Số đánh giá là biến đại diện, không phải nhu cầu</h2>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            Ta đang đo số đánh giá được ghi nhận, không phải số đêm được đặt. Tỷ lệ khách viết
-            đánh giá có thể thay đổi theo thời gian, nên cần ghi rõ đây là một biến đại diện.
-          </div>
-          <p>Khi so sánh các thành phố, cần dùng cùng phạm vi thời gian và loại các kỳ chưa trọn.</p>
-        </section>
+        <section id="exercise-comparison"><h2>Bài tập 3: So tổng số đánh giá</h2>
+<p>Muốn so tổng số đánh giá trong năm tháng đầu 2026 với cùng kỳ 2025. Một bạn lấy trung bình năm tỷ lệ:</p><pre><code class="language-python" data-trim>
+thay_doi = doi_nam.loc[&quot;2026-01&quot;:&quot;2026-05&quot;].mean()
+</code></pre><p><strong>Viết lại phép tính để đo mức thay đổi của tổng số đánh giá trong hai giai đoạn.</strong></p>
+<aside class="notes">Đáp án: 71.403 → 112.347, tăng 57,3%. Lấy trung bình năm tỷ lệ cho 57,9%: mỗi tháng nhận trọng số bằng nhau dù số đánh giá kỳ gốc khác nhau. Tỷ lệ của tổng tương đương trung bình có trọng số bằng số đánh giá của tháng kỳ gốc. Nối tư duy trung bình theo nhóm ở Bài 5; không yêu cầu thuộc công thức trọng số.</aside></section>
       </section>
 
-      <!-- ====== Kết ====== -->
       <section>
-        <section>
-          <h2>Tổng kết</h2>
-          <ul>
-            <li><code>to_datetime</code>/<code>parse_dates</code> trước tiên; cẩn thận dd/mm;
-              ISO khi ghi file.</li>
-            <li>Trục thời gian: cắt lát chuỗi <code>"2026-03"</code>, tổng hợp theo kỳ bằng
-              <code>resample</code>, làm mượt bằng cửa sổ trượt <code>rolling</code>.</li>
-            <li>So sánh: dùng <code>pct_change</code> cho kỳ liền trước và <code>shift(12)</code>
-              cho cùng kỳ năm trước.</li>
-            <li>Ba điểm cần kiểm tra: kỳ chưa trọn, năm chưa đủ tháng và số đánh giá chỉ là biến đại diện.</li>
-          </ul>
-        </section>
+        <section id="summary"><h2>Tổng kết</h2>
+<ul><li>Đọc đúng định dạng trước khi tính với ngày giờ.</li><li><code>resample</code> gộp theo lịch; <code>rolling</code> tính trên các cửa sổ liên tiếp.</li><li><code>shift</code> dịch theo hàng; muốn so theo tháng phải giữ lịch tháng.</li><li>Chọn kỳ gốc và kiểm phạm vi thời gian trước khi so sánh.</li></ul>
+</section>
 
-        <section>
-          <h2>Làm việc với AI thì sao?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <div class="good-box">
-            <span class="box-title">AI làm tốt</span>
-            AI có thể gợi ý cú pháp tổng hợp theo kỳ (<code>resample</code>) hoặc cửa sổ trượt
-            (<code>rolling</code>) từ một yêu cầu rõ ràng,
-            chẳng hạn gộp theo tuần rồi tính trung bình trượt.
-          </div>
-          <div class="warn-box">
-            <span class="box-title">AI hay sai</span>
-            AI có thể giữ lại kỳ chưa trọn, đoán sai định dạng ngày hoặc chọn phép so kỳ trước
-            cho dữ liệu có mùa vụ mà không giải thích giới hạn.
-          </div>
-        </section>
+        <section id="ai"><h2>Làm việc với AI thì sao?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div><div class="good-box"><span class="box-title">AI làm tốt</span>Gợi ý cách đọc ngày, tổng hợp theo kỳ và tính cửa sổ trượt.</div><div class="warn-box"><span class="box-title">AI hay sai</span>Đoán định dạng ngày, coi hàng trước là tháng trước, so một kỳ chưa trọn với kỳ đầy đủ.</div>
+</section>
 
-        <section>
-          <h2>Kiểm chứng thế nào?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <ul>
-            <li>In 2–3 kỳ <strong>đầu và cuối</strong> của kết quả tổng hợp và đối chiếu
-              với ngày chụp dữ liệu.</li>
-            <li>Chọn một tháng, tự đếm bằng <code>len(r.loc["2026-03"])</code> đối chiếu với
-              con số AI đưa.</li>
-          </ul>
-        </section>
+        <section id="verification"><h2>Kiểm chứng kết quả</h2>
+<ul><li>Dùng ngày dễ nhầm và ngày không tồn tại để kiểm cách đọc.</li><li>Đối chiếu một tháng bằng lọc ngày trực tiếp với kết quả <code>resample</code>.</li><li>In kỳ gốc, kỳ hiện tại và mốc chụp; tự tính lại một tỷ lệ.</li></ul>
+<aside class="notes">Không chỉ đối chiếu một con số với đáp án. Kiểm các bất biến: số đếm tổng hợp cộng lại bằng số hàng sau lọc, chỉ mục có đúng lịch, không dùng dữ liệu sau mốc hoặc kỳ chưa đủ, NaN không tự biến thành 0.</aside></section>
 
-        <section>
-          <h2>Đọc thêm</h2>
-          <ul>
-            <li>McKinney, <em>Python for Data Analysis</em>, 3rd ed. — ch. 11 (Time Series).</li>
-            <li>📖 Tự học: pandas User Guide — <em>Time series / date functionality</em>
-              (bảng mã tần suất đầy đủ).</li>
-          </ul>
-        </section>
+        <section id="references"><h2>Đọc thêm</h2>
+<ul><li>McKinney, <a href="https://wesmckinney.com/book/time-series"><em>Python for Data Analysis</em>, chương 11</a>: ngày giờ, chỉ mục thời gian, tổng hợp và cửa sổ trượt.</li><li><a href="https://pandas.pydata.org/docs/user_guide/timeseries.html">pandas: dữ liệu thời gian</a> — mã tần suất và múi giờ.</li><li><a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.rolling.html">rolling</a>, <a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.shift.html">shift</a>, <a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.pct_change.html">pct_change</a>: tham số và cách tính.</li></ul>
+</section>
       </section>
 
       <!-- Footer -->

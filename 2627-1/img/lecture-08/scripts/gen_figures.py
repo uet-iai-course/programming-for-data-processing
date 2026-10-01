@@ -21,7 +21,7 @@ for font_file in FONT_DIR.glob("*.ttf"):
 INK, MUTED = "#333333", "#666666"
 plt.rcParams.update({
     "font.family": "Source Sans Pro",
-    "font.size": 13,
+    "font.size": 16,
     "svg.fonttype": "path",
     "figure.facecolor": "none",
     "savefig.facecolor": "none",
@@ -33,29 +33,33 @@ plt.rcParams.update({
 })
 BLUE, ORANGE, GRAY = "#1E93AB", "#E8890C", "#9aa3a8"
 
+
+def save_svg(fig, name):
+    path = OUT / name
+    fig.savefig(path)
+    path.write_text("\n".join(line.rstrip() for line in path.read_text().splitlines()) + "\n")
+
 URL = ("https://data.insideairbnb.com/chile/rm/santiago/"
        "2026-06-29/visualisations/reviews.csv")
 PATH = sys.argv[1] if len(sys.argv) > 1 else URL
 SNAPSHOT = pd.Timestamp("2026-06-29")
 rv = pd.read_csv(PATH, parse_dates=["date"])
 rv = rv.loc[rv["date"] <= SNAPSHOT].copy()  # bỏ 204 ngày sau mốc chụp
-theo_thang = rv.set_index("date").resample("ME").size()
-theo_thang = theo_thang.loc["2016":"2026-05-31"]  # tháng đầy đủ cuối cùng
+theo_thang = rv.set_index("date").sort_index().resample("ME").size()
+thang_day_du = theo_thang.loc[theo_thang.index < SNAPSHOT.replace(day=1)]
+muot = thang_day_du.rolling(6, min_periods=6).mean()
+pham_vi = thang_day_du.loc["2016":]
 
 # ------------------------------------------------ theo tháng + cửa sổ trượt
-fig, ax = plt.subplots(figsize=(9.6, 4.2))
-ax.plot(theo_thang.index, theo_thang.values, color=GRAY, lw=1.1, label="Số đánh giá mỗi tháng")
-ax.plot(theo_thang.index, theo_thang.rolling(6, center=True).mean(),
-        color=BLUE, lw=2.6, label="Trung bình trượt 6 tháng")
-ax.axvspan(pd.Timestamp("2020-03-01"), pd.Timestamp("2021-10-31"), color="#fbeaea", zorder=0)
-ax.text(pd.Timestamp("2020-12-01"), theo_thang.max() * 0.92, "COVID-19", color="#c0392b",
-        ha="center", fontweight="bold")
-ax.set_title("Số đánh giá theo tháng tại Santiago", fontweight="bold")
-ax.set_ylabel("số đánh giá")
+fig, ax = plt.subplots(figsize=(11, 3.8))
+ax.plot(pham_vi.index, pham_vi.values, color=GRAY, lw=1.4, label="Mỗi tháng")
+ax.plot(pham_vi.index, muot.loc["2016":],
+        color=BLUE, lw=2.6, label="Trung bình 6 tháng gần nhất")
+ax.set_ylabel("Số đánh giá")
 ax.legend(frameon=False, loc="upper left")
 ax.spines[["top", "right"]].set_visible(False)
 fig.tight_layout()
-fig.savefig(OUT / "reviews-theo-thang.svg")
+save_svg(fig, "reviews-theo-thang.svg")
 plt.close(fig)
 print("reviews-theo-thang.svg done")
 
@@ -65,16 +69,17 @@ tron_nam = rv.loc[(rv["date"] >= "2022-01-01") & (rv["date"] <= "2025-12-31")]
 thang_tb = tron_nam.groupby(tron_nam["date"].dt.month).size()
 thang_tb = thang_tb / thang_tb.mean() * 100
 
-fig, ax = plt.subplots(figsize=(8.6, 3.8))
-colors = [ORANGE if m in (7, 8, 10, 11) else BLUE for m in thang_tb.index]
+fig, ax = plt.subplots(figsize=(10, 4.2))
+colors = [ORANGE if m == 11 else BLUE for m in thang_tb.index]
 ax.bar(thang_tb.index, thang_tb.values, color=colors)
 ax.axhline(100, color="#555", lw=1, ls="--")
 ax.set_xticks(range(1, 13), [f"T{m}" for m in range(1, 13)])
-ax.set_ylabel("chỉ số mùa vụ (100 = trung bình)")
-ax.set_ylim(0, 140)
-ax.set_title("Chỉ số mùa vụ theo tháng (2022–2025)", fontweight="bold")
+ax.set_ylabel("Chỉ số (100 = trung bình)")
+ax.set_ylim(0, 155)
+ax.set_title("Cùng tập năm 2022–2025", fontweight="bold")
+ax.bar_label(ax.containers[0], labels=thang_tb.round().astype(int), padding=3)
 ax.spines[["top", "right"]].set_visible(False)
 fig.tight_layout()
-fig.savefig(OUT / "mua-vu.svg")
+save_svg(fig, "mua-vu.svg")
 plt.close(fig)
 print("mua-vu.svg done")
