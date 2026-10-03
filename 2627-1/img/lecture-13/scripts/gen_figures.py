@@ -138,7 +138,8 @@ plt.rcParams.update({"font.size": 12})
 plt.rcParams.update(SVG_RC)
 
 # (a) dual axis — tương quan giả
-thang = rv[rv["date"] < "2026-07-01"].set_index("date").resample("ME").size().loc["2024":]
+# bỏ tháng 6/2026 chưa trọn (mốc chụp 29/06/2026), như bài 8
+thang = rv[rv["date"] < "2026-06-01"].set_index("date").resample("ME").size().loc["2024":]
 gia_thang = pd.Series(  # giá trung vị GIẢ LẬP trượt nhẹ để minh hoạ trục kép đánh lừa
     np.linspace(55, 62, len(thang)) + np.random.default_rng(3).normal(0, 1.2, len(thang)),
     index=thang.index)

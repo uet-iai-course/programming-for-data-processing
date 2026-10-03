@@ -154,15 +154,16 @@ plt.show()
             <div>
               <div class="jp-cell jp-plain">
                 <pre class="jp-input"><code class="language-python" data-trim>
-# bỏ hai kỳ cuối chưa đủ dữ liệu
+# bỏ tháng 06/2026 chưa trọn
 thang = (rv.set_index("date")
     .resample("ME").size()
-    .loc["2023":].iloc[:-2])
+    .loc["2023":"2026-05"])
 
 fig, ax = plt.subplots()
 ax.plot(thang.index,
         thang.values,
-        color="#1E93AB", lw=2)
+        color="#1E93AB",
+        lw=2)
                 </code></pre>
               </div>
             </div>
@@ -182,8 +183,8 @@ ax.plot(thang.index,
               <div class="jp-cell jp-plain">
                 <pre class="jp-input"><code class="language-python" data-trim>
 top = (tk[tk["n"] >= 500]
-       .nlargest(8, "median")
-       .sort_values("median"))
+    .nlargest(8, "median")
+    .sort_values("median"))
 
 bars = ax.barh(top.index,
                top["median"])

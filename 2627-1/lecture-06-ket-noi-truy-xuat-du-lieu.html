@@ -295,7 +295,7 @@ print(du_bao.to_string(index=False))
 2026-09-29                18.8
 2026-09-30                16.0
 </code></pre></div><p>Đọc lại file này lúc nào cũng ra đúng bảng trên.</p>
-          <aside class="notes">r.content là nguyên văn phản hồi, gồm cả dữ liệu và đơn vị. Tên file ghi thời điểm tải theo giờ UTC nên mỗi lần tải có một file riêng; cách định dạng thời gian học ở Bài 8. Out [8] và Out [9] là lần chạy lúc soạn slide (04:16 UTC ngày 28/09/2026); chạy trên lớp sẽ ra tên file và số liệu khác. Mở ngăn Files (biểu tượng thư mục) bên trái Colab để thấy file vừa ghi trong data/raw. json.loads chuyển văn bản trong file thành dict, như r.json(). Notebook lưu thêm URL và thời điểm tải vào file .meta.json. Muốn phân tích lại cùng đầu vào thì đọc file cũ, không gọi lại get. Trong chương trình thực tế, lưu ngay sau khi nhận và kiểm phản hồi.</aside>
+          <aside class="notes">r.content là nguyên văn phản hồi, gồm cả dữ liệu và đơn vị. Tên file ghi thời điểm tải theo giờ UTC (giờ phối hợp quốc tế) nên mỗi lần tải có một file riêng. strftime đổi thời điểm thành chuỗi theo mã: %Y năm, %m tháng, %d ngày, %H giờ, %M phút, %S giây; Bài 8 dùng ba mã đầu trong format của pd.to_datetime để đọc chuỗi thành ngày. Out [8] và Out [9] là lần chạy lúc soạn slide (04:16 UTC ngày 28/09/2026); chạy trên lớp sẽ ra tên file và số liệu khác. Mở ngăn Files (biểu tượng thư mục) bên trái Colab để thấy file vừa ghi trong data/raw. json.loads chuyển văn bản trong file thành dict, như r.json(). Muốn phân tích lại cùng đầu vào thì đọc file cũ, không gọi lại get. Trong chương trình thực tế, lưu ngay sau khi nhận và kiểm phản hồi.</aside>
         </section>
         <section id="exercise-api">
           <h2>Bài tập 2: Lọc ngày nóng</h2>

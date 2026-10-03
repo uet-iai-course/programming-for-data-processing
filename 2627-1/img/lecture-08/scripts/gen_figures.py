@@ -31,7 +31,7 @@ plt.rcParams.update({
     "xtick.color": MUTED,
     "ytick.color": MUTED,
 })
-BLUE, ORANGE, GRAY = "#1E93AB", "#E8890C", "#9aa3a8"
+BLUE, GRAY = "#1E93AB", "#9aa3a8"
 
 
 def save_svg(fig, name):
@@ -63,20 +63,21 @@ save_svg(fig, "reviews-theo-thang.svg")
 plt.close(fig)
 print("reviews-theo-thang.svg done")
 
-# ------------------------------------------------ seasonality profile
-# Chỉ dùng các năm đầy đủ 2022–2025 để mỗi tháng góp mặt cùng số lần.
+# ------------------------------------------------ chỉ số theo tháng
+# Chỉ dùng bốn năm trọn 2022–2025 để tháng nào cũng gộp từ bốn năm.
+# Không tô riêng tháng nào: chỉ số còn lẫn xu hướng tăng qua các năm.
 tron_nam = rv.loc[(rv["date"] >= "2022-01-01") & (rv["date"] <= "2025-12-31")]
 thang_tb = tron_nam.groupby(tron_nam["date"].dt.month).size()
 thang_tb = thang_tb / thang_tb.mean() * 100
 
 fig, ax = plt.subplots(figsize=(10, 4.2))
-colors = [ORANGE if m == 11 else BLUE for m in thang_tb.index]
-ax.bar(thang_tb.index, thang_tb.values, color=colors)
+ax.bar(thang_tb.index, thang_tb.values, color=BLUE)
 ax.axhline(100, color="#555", lw=1, ls="--")
 ax.set_xticks(range(1, 13), [f"T{m}" for m in range(1, 13)])
 ax.set_ylabel("Chỉ số (100 = trung bình)")
 ax.set_ylim(0, 155)
-ax.set_title("Cùng tập năm 2022–2025", fontweight="bold")
+ax.set_yticks(range(0, 151, 25))
+ax.set_title("Tổng hợp 4 năm 2022–2025", fontweight="bold")
 ax.bar_label(ax.containers[0], labels=thang_tb.round().astype(int), padding=3)
 ax.spines[["top", "right"]].set_visible(False)
 fig.tight_layout()
