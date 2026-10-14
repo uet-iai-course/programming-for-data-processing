@@ -329,11 +329,12 @@ print(chi_so.round().astype(int).tolist())
 <figure class="fig"><img src="img/lecture-08/mua-vu.svg" alt="Biểu đồ cột chỉ số đánh giá theo tháng, tổng hợp 4 năm 2022–2025, 100 là mức trung bình; từ tháng 1 đến tháng 12: 81, 67, 90, 84, 81, 85, 119, 125, 104, 118, 133, 112" style="width:94%"><figcaption class="caption">Số đánh giá tăng khoảng 1,6 lần mỗi năm nên các tháng cuối năm cao hơn một phần chỉ vì xu hướng. Chỉ số này chưa tách xu hướng và chưa điều chỉnh số ngày từng tháng.</figcaption></figure>
 <aside class="notes">Tổng đánh giá cả năm: 48.387 (2022), 75.190 (2023), 131.267 (2024), 211.432 (2025), trung bình tăng khoảng 1,6 lần mỗi năm. Nếu chia mỗi tháng cho trung bình trượt 12 tháng có tâm để tách xu hướng, chỉ số thành [105, 84, 103, 95, 88, 86, 115, 115, 99, 104, 112, 93]: tháng 11 chỉ còn khoảng +12%, tháng 7–8 khoảng +15%, tháng 2 khoảng −16%. Hình này không đủ để kết luận về kỳ nghỉ hay lễ hội. Nếu câu hỏi là số đánh giá trung bình mỗi ngày, phải đổi phép tính và mẫu số.</aside></section>
 
-        <section id="exercise-comparison"><h2>Bài tập 3: So tổng số đánh giá</h2>
-<p>Muốn so tổng số đánh giá 5 tháng đầu 2026 với cùng kỳ 2025, một bạn lấy trung bình của 5 tỷ lệ:</p><pre><code class="language-python" data-trim>
-thay_doi = doi_nam.loc[&quot;2026-01&quot;:&quot;2026-05&quot;].mean()
-</code></pre><p><strong>Viết lại phép tính để đo mức thay đổi của tổng số đánh giá trong hai giai đoạn.</strong></p>
-<aside class="notes">Đáp án: 71.403 → 112.347, tăng 57,3%. Lấy trung bình của 5 tỷ lệ cho 57,9%: mỗi tháng nhận trọng số bằng nhau dù số đánh giá kỳ gốc khác nhau. Tỷ lệ của tổng tương đương trung bình có trọng số bằng số đánh giá của tháng kỳ gốc. Nối tư duy trung bình theo nhóm ở Bài 5. Ví dụ dễ thấy khi chữa: hai tháng 100 → 200 và 1.000 → 1.100 cho trung bình tỷ lệ 55% nhưng tổng chỉ tăng 18,2%.</aside></section>
+        <section id="exercise-comparison"><h2>Bài tập 3: Tìm tháng tăng mạnh</h2>
+<p>Số đánh giá từng tháng năm 2025 (giả lập, các tháng đã trọn):</p>
+<table class="compact-table"><thead><tr><th>Tháng</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th></tr></thead><tbody><tr><th>Số đánh giá</th><td>90</td><td>120</td><td>90</td><td>150</td><td>120</td><td>240</td></tr></tbody></table>
+<p><strong>Viết code tìm các tháng có số đánh giá cao hơn ít nhất 50% so với trung bình của 3 tháng liền trước.</strong></p>
+<p>Chỉ xét tháng có đủ 3 tháng trước để so sánh.</p>
+<aside class="notes">Đáp án: tháng 4 và tháng 6. Tháng 4 so với trung bình tháng 1, 2, 3: (90 + 120 + 90) / 3 = 100; 150 cao hơn đúng 50% nên được chọn. Tháng 5 so với trung bình 120 nên không tăng. Tháng 6 so với trung bình tháng 3, 4, 5: (90 + 150 + 120) / 3 = 120; 240 cao hơn 100%. Với Series dem có chỉ mục là ngày cuối tháng liên tiếp, tính <code>tb_truoc = dem.rolling(3, min_periods=3).mean().shift(1)</code>, rồi chọn <code>dem[dem &gt;= 1.5 * tb_truoc]</code>. rolling(3) mặc định tính cả tháng hiện tại; shift(1) đưa trung bình của ba tháng trước sang hàng đang xét. Ba tháng đầu chưa có đủ kỳ gốc nên tb_truoc là NaN. Nếu quên shift, không tháng nào được chọn trên dữ liệu này. Chấp nhận dịch dem trước rồi mới rolling, hoặc cách khác chọn đúng cửa sổ.</aside></section>
       </section>
 
       <section>
