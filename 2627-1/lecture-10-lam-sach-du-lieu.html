@@ -19,668 +19,1214 @@
   <div class="reveal">
     <div class="slides">
 
-      <!-- ====== Mở bài ====== -->
-      <section>
-        <section>
-          <h1>Lập trình <br /> xử lý dữ liệu</h1>
-          <div>
-            <p>Học kì 1, năm học 2026–2027</p>
-            <p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
-          </div>
-        </section>
+<section>
+<section id="course">
+<h1>Lập trình<br>xử lý dữ liệu</h1>
+<p>Học kì 1, năm học 2026–2027</p>
+<p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
 
-        <section>
-          <h1>
-            <span class="text-light">Bài 10</span>
-            <br>
-            Làm sạch dữ liệu có cấu trúc
-          </h1>
-          <p class="text-light">Giá trị thiếu, ngoại lai, trùng lặp và bộ quy tắc kiểm tra chạy lại được.</p>
-        </section>
+</section>
 
-        <section>
-          <h2>Tuần trước: thi giữa kỳ</h2>
-          <ul>
-            <li>Nửa đầu học phần đã đi qua Python, NumPy, pandas, tệp dữ liệu, API, SQL,
-              chuỗi và thời gian.</li>
-            <li>Nửa sau sử dụng nền tảng đó để tạo ra <strong>dữ liệu đáng tin cậy</strong>,
-              bắt đầu từ việc phát hiện và xử lý vấn đề chất lượng dữ liệu.</li>
-          </ul>
-        </section>
+<section id="title">
+<h1><span class="text-light">Bài 10</span><br>Làm sạch dữ liệu<br>có cấu trúc</h1>
+<p>Phát hiện vấn đề, chọn cách xử lý và kiểm tra kết quả.</p>
 
-        <section>
-          <h2>Tổng quan</h2>
-          <ol>
-            <li>Đảm bảo chất lượng dữ liệu: gắn cờ trước khi xoá</li>
-            <li>Giá trị thiếu</li>
-            <li>Ngoại lai và giá trị ngoài miền</li>
-            <li>Trùng lặp</li>
-            <li>Đóng gói thành bộ quy tắc kiểm tra</li>
-            <li>Làm việc với AI thì sao?</li>
-          </ol>
-        </section>
-      </section>
+</section>
 
-      <!-- ====== Phần 1 ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">1.</span><br>Đảm bảo chất lượng dữ liệu</h1>
-          <p class="text-light">Đảm bảo chất lượng (quality assurance, QA) bắt đầu bằng các phép kiểm có thể chạy lại.</p>
-        </section>
+<section id="previous">
+<h2>Bài trước</h2>
+<p>Trước bài thi giữa kỳ, bạn đã học cách đọc dữ liệu, tính toán với bảng,
+xử lý chuỗi và ngày giờ.</p>
+<p>Code chạy được vẫn có thể cho kết quả sai nếu dữ liệu thiếu, giá trị bất thường
+hoặc bản ghi trùng chưa được xử lý phù hợp.</p>
 
-        <section>
-          <h2>Ba nhóm vấn đề trong bài học</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Họ lỗi</th>
-                <th>Ở dữ liệu Santiago</th>
-                <th>Công cụ</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><strong>Thiếu</strong> — ô trống</td>
-                <td>17,8% chỗ ở không có điểm đánh giá</td>
-                <td><code>isna</code>, <code>dropna</code>, <code>fillna</code></td>
-              </tr>
-              <tr>
-                <td><strong>Ngoài miền, ngoại lai</strong></td>
-                <td>tối thiểu 999 đêm; giá 97 triệu CLP</td>
-                <td>ràng buộc miền, IQR, phân vị</td>
-              </tr>
-              <tr>
-                <td><strong>Thừa</strong> — trùng lặp</td>
-                <td><code>id</code> lặp giữa các mốc chụp</td>
-                <td><code>duplicated</code>, khoá chính</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
+</section>
 
-        <section>
-          <h2>Nguyên tắc 1: gắn cờ, đừng xoá</h2>
-          <div class="two-col">
-            <div>
-              <h4 class="text-red">Xoá ngay</h4>
-              <ul>
-                <li>Mất dấu vết — không ai biết đã bỏ gì, vì sao.</li>
-                <li>Không đảo ngược được khi đổi ý.</li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="text-green">Gắn cờ</h4>
-              <ul>
-                <li>Thêm cột logic <span class="inline-code">flag_*</span>; dữ liệu gốc được giữ nguyên.</li>
-                <li>Mỗi phân tích quyết định có sử dụng các dòng bị gắn cờ hay không.</li>
-              </ul>
-            </div>
-          </div>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Xoá là quyết định áp dụng cho mọi phân tích về sau; gắn cờ giữ lại dấu vết
-            và cho phép từng phân tích lựa chọn cách xử lý phù hợp.
-          </div>
-        </section>
+<section id="overview">
+<h2>Tổng quan</h2>
+<ol>
+<li>Giá trị thiếu</li>
+<li>Giá trị bất thường</li>
+<li>Trùng lặp</li>
+<li>Bộ quy tắc kiểm tra dữ liệu</li>
+</ol>
 
-        <section>
-          <h2>Nguyên tắc 2: QA phải được biểu diễn thành quy tắc</h2>
-          <p>Một quy tắc QA hoàn chỉnh có đủ bốn phần:</p>
-          <div class="pipeline">
-            <div class="stage">
-              <div class="stage-title">Tên</div>
-              <div class="stage-desc"><code>gia_phi_ly</code></div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">Điều kiện</div>
-              <div class="stage-desc"><code>price ≤ 0</code> hoặc <code>NaN</code></div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">Lý do</div>
-              <div class="stage-desc">giá không dương thì KPI giá vô nghĩa</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage stage-highlight">
-              <div class="stage-title">Hành động</div>
-              <div class="stage-desc">gắn cờ, loại khỏi KPI giá</div>
-            </div>
-          </div>
-          <p style="margin-top:0.8em">Bảng bốn phần giúp chuyển một nhận định nghiệp vụ thành
-            mã có thể chạy lại và giải thích được.</p>
-        </section>
-      </section>
+</section>
+</section>
 
-      <!-- ====== Phần 2: Missing ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">2.</span><br>Giá trị thiếu</h1>
-          <p class="text-light">Cần xác định mẫu hình sinh ra ô trống trước khi chọn cách xử lý.</p>
-        </section>
+<section>
+<section id="missing">
+<h1><span class="text-light">1.</span><br>Giá trị thiếu</h1>
+<p>Chọn cách xử lý theo ý nghĩa của cột và câu hỏi phân tích.</p>
 
-        <section data-jp-reset>
-          <h2>Dữ liệu dùng trong bài</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-COT = ["id", "name", "neighbourhood_cleansed", "room_type", "price",
-       "minimum_nights", "latitude", "longitude", "accommodates",
-       "bedrooms", "review_scores_rating", "number_of_reviews"]
+</section>
 
-df = pd.read_csv("listings.csv.gz", usecols=COT)
-df["price_num"] = (df["price"].str.replace("$", "", regex=False)
-                              .str.replace(",", "", regex=False).astype(float))
-df.shape
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="1"><code class="language-text" data-trim>
-(18534, 13)
-            </code></pre>
-          </div>
-          <p>Mốc chụp Santiago ngày 29/06/2026: file gốc có 90 cột, ta chỉ đọc 12 cột cần dùng
-            — cộng <code>price_num</code> vừa tạo là 13.</p>
-        </section>
+<section id="data">
+<h2>Dữ liệu dùng trong bài</h2>
+<p>Santiago, mốc chụp <strong>29/06/2026</strong>: 18.534 chỗ ở.<br>Giá tính bằng <strong>CLP/đêm</strong>.</p>
 
-        <section data-jp-reset>
-          <h2>Đo trước khi xử lý</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-(df.isna().mean() * 100).round(1).sort_values(ascending=False).head(3)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-review_scores_rating    17.8
+<div class="jp-cell"><pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>COT = [&quot;id&quot;, &quot;room_type&quot;, &quot;price&quot;, &quot;bedrooms&quot;, &quot;accommodates&quot;,
+       &quot;minimum_nights&quot;, &quot;review_scores_rating&quot;,
+       &quot;number_of_reviews&quot;]
+df = pd.read_csv(&quot;listings.csv.gz&quot;, usecols=COT)
+gia_chu = df[&quot;price&quot;].str.replace(&quot;$&quot;, &quot;&quot;, regex=False)
+gia_chu = gia_chu.str.replace(&quot;,&quot;, &quot;&quot;, regex=False)
+df[&quot;price_num&quot;] = pd.to_numeric(gia_chu, errors=&quot;coerce&quot;)
+loi_chuyen = df[&quot;price&quot;].notna() & df[&quot;price_num&quot;].isna()
+assert not loi_chuyen.any(), &quot;Cần xem các giá không chuyển được.&quot;
+print(&quot;Kích thước bảng:&quot;, df.shape)</code></pre>
+<pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>Kích thước bảng: (18534, 9)</code></pre>
+</div>
+<p>Giữ cột <code>price</code> gốc để đối chiếu. Cách đổi giá dạng chuỗi đã học ở Bài 7.</p>
+
+<aside class="notes"><p>Nguồn: data/listings.csv.gz, Santiago 2026-06-29, bản đầy đủ 90 cột.
+Notebook chọn 8 cột và thêm price_num thành 9 cột. Kiểm trên pandas 3.0.3:
+846 giá thiếu từ nguồn, không có giá mới thành thiếu do lỗi chuyển đổi.
+errors=&quot;coerce&quot; đổi chuỗi không đọc được thành NaN; loi_chuyen tách lỗi này khỏi giá thiếu từ nguồn.</p>
+</aside>
+</section>
+
+<section id="missing-rate">
+<h2>Đếm giá trị thiếu theo cột</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>cot = [&quot;price_num&quot;, &quot;bedrooms&quot;, &quot;review_scores_rating&quot;]
+thieu = df[cot].isna()
+print((thieu.mean() * 100).round(1).to_string())</code></pre>
+<pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>price_num                4.6
 bedrooms                12.6
-price                    4.6
-            </code></pre>
-          </div>
-          <p>Ba cột, ba kiểu thiếu dữ liệu khác nhau — ba cách xử lý khác nhau.</p>
-        </section>
+review_scores_rating    17.8</code></pre>
+</div>
+<p><code>isna()</code> nhận diện giá trị thiếu (<code>NaN</code>, <code>pd.NA</code>, <code>None</code>).
+Trung bình của cột boolean là tỷ lệ <code>True</code>.</p>
+<p>Trước khi quyết định bỏ hay điền, cần xem <strong>những hàng nào thiếu</strong>.</p>
 
-        <section>
-          <h2>Cơ chế sinh ra giá trị thiếu</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-pd.crosstab(
-    df["review_scores_rating"].isna(),
-    df["number_of_reviews"].eq(0),
+</section>
+
+<section id="missing-rating">
+<h2>Chỗ ở nào thiếu điểm đánh giá?</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>print(pd.crosstab(
+    df[&quot;number_of_reviews&quot;].eq(0),
+    df[&quot;review_scores_rating&quot;].isna(),
+    rownames=[&quot;chua_co_danh_gia&quot;], colnames=[&quot;thieu_diem&quot;],
+))</code></pre>
+<pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>thieu_diem        False  True 
+chua_co_danh_gia              
+False             15243      0
+True                  0   3291</code></pre>
+</div>
+<p><code>crosstab</code> đếm số hàng theo từng cặp giá trị của hai cột.
+Cả 3.291 chỗ ở thiếu điểm đều chưa có đánh giá nào.</p>
+<p><strong>Điền 0 sẽ biến “chưa được đánh giá” thành một điểm số.</strong></p>
+
+<aside class="notes"><p>Bảng chéo chỉ xác nhận quan hệ ở mốc chụp này, không phải cách suy ra
+nguyên nhân thiếu cho mọi cột. Với giá hoặc số phòng ngủ, cần thêm bằng chứng.
+Tỷ lệ thiếu theo nhóm chưa đủ để xác định cơ chế thiếu (MCAR/MAR/MNAR).</p>
+</aside>
+</section>
+
+<section id="dropna">
+<h2>Chỉ bỏ hàng thiếu cột cần dùng</h2>
+<p>Ví dụ: tính giá trung bình của các chỗ ở <strong>đã có giá</strong>.</p>
+
+<div class="jp-cell"><pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>co_gia = df.dropna(subset=[&quot;price_num&quot;])
+print(&quot;Số chỗ ở:&quot;, len(co_gia))
+print(&quot;Giá trung bình:&quot;, round(co_gia[&quot;price_num&quot;].mean()))</code></pre>
+<pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>Số chỗ ở: 17688
+Giá trung bình: 118200</code></pre>
+</div>
+<p><code>subset</code> chỉ định cột cần kiểm tra. Bỏ <code>subset</code> thì <code>dropna()</code> mặc định
+bỏ hàng có ô thiếu ở <strong>bất kỳ cột nào</strong>.</p>
+
+<aside class="notes"><p>df gốc không đổi. Kết quả mô tả 17.688 chỗ ở có giá, không tự đại diện cho
+846 chỗ ở thiếu giá. Chưa xử lý giá cực đoan; sẽ quay lại số trung bình này ở mục 2.
+Mean tự bỏ qua NA, nên df[&quot;price_num&quot;].mean() cho cùng kết quả;
+dropna(subset=...) hữu ích khi cần tạo bảng cho nhiều bước phân tích.</p>
+</aside>
+</section>
+
+<section id="exercise-missing">
+<h2>Bài tập 1: So sánh giá giữa hai kỳ</h2>
+<p>Bảng <code>bang</code> ghi giá của cùng ba chỗ ở qua hai kỳ (giả lập, USD/đêm); P3 thiếu giá kỳ T6.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>bang = pd.DataFrame({
+    &quot;T5&quot;: [100, 200, 300],
+    &quot;T6&quot;: [110, 220, np.nan],
+}, index=[&quot;P1&quot;, &quot;P2&quot;, &quot;P3&quot;])
+print(bang.mean())</code></pre>
+<pre class="jp-output" data-jp-n="5"><code class="language-text" data-trim>T5    200.0
+T6    165.0
+dtype: float64</code></pre>
+</div>
+<p>Trung bình giảm từ <strong>200 xuống 165</strong>.</p>
+
+<p><strong>So sánh lại giá trung bình, chỉ dùng những chỗ ở có giá ở cả hai kỳ.</strong></p>
+
+<aside class="notes"><p>Đáp án: bang.dropna(subset=[&quot;T5&quot;, &quot;T6&quot;]).mean().
+Cùng nhóm P1 và P2: T5=150, T6=165, tăng 10%. Mean từng cột ban đầu dùng
+ba chỗ ở cho T5 nhưng chỉ hai chỗ ở cho T6, nên mức giảm lẫn tác động đổi nhóm.
+Không tự điền giá của P3. Kết quả chỉ mô tả P1 và P2; chưa biết giá P3 kỳ sau.
+Vì bảng này chỉ có hai cột giá cần dùng, dropna() cũng là lời giải đúng.</p>
+</aside>
+</section>
+
+<section id="fill-constant">
+<h2>Điền một giá trị quy ước</h2>
+<p>Ví dụ giả lập: ghi rõ <strong>“Chưa rõ”</strong> ở chỗ ở chưa biết loại phòng.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>loai_phong = pd.Series(
+    [&quot;Phòng riêng&quot;, None, &quot;Nguyên căn&quot;, &quot;Phòng riêng&quot;],
+    index=[&quot;P1&quot;, &quot;P2&quot;, &quot;P3&quot;, &quot;P4&quot;],
 )
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="3"><code class="language-text" data-trim>
-number_of_reviews       False  True
-review_scores_rating
-False                   15243     0
-True                        0  3291
-            </code></pre>
-          </div>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Ở mốc chụp này, điểm đánh giá thiếu đúng khi chỗ ở chưa có đánh giá.
-            Điền 0 hoặc trung bình sẽ làm sai ý nghĩa. Với <code>bedrooms</code> và
-            <code>price</code>, cần kiểm tra thêm thay vì đoán nguyên nhân.
-          </div>
-        </section>
+print(loai_phong.fillna(&quot;Chưa rõ&quot;))</code></pre>
+<pre class="jp-output" data-jp-n="6"><code class="language-text" data-trim>P1    Phòng riêng
+P2        Chưa rõ
+P3     Nguyên căn
+P4    Phòng riêng
+dtype: str</code></pre>
+</div>
+<p><code>fillna</code> chỉ thay ô thiếu. “Chưa rõ” là nhãn quy ước, chưa phải loại phòng được xác định.</p>
+<p>Với cột số, chỉ điền <code>0</code> khi có căn cứ rằng ô thiếu có nghĩa là không phát sinh.</p>
+<aside class="notes"><p>Có thể dùng nhãn riêng khi báo cáo muốn giữ nhóm chưa biết. Giữ cột gốc để còn nhận diện thiếu bằng isna; chuỗi “Chưa rõ” không còn là NA. Với dtype category, cần thêm nhãn vào danh sách category trước khi điền. Không suy giá thiếu, điểm đánh giá thiếu thành 0. Theo McKinney §7.1, fillna cũng nhận dictionary để chọn giá trị riêng cho từng cột.</p></aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Điều tra nhóm thiếu giá</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-# Trong mỗi loại phòng, bao nhiêu % bị thiếu giá?
-(df["price_num"].isna()
-   .groupby(df["room_type"]).mean()
-   .mul(100).round(1).sort_values(ascending=False))
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="4"><code class="language-text" data-trim>
-room_type
-Private room       7.8
-Entire home/apt    3.9
-Shared room        3.3
-Hotel room         0.0
-            </code></pre>
-          </div>
-          <div class="warn-box">
-            <span class="box-title">Thiếu không ngẫu nhiên</span>
-            Phòng riêng thiếu giá 7,8% — gần gấp đôi nhà nguyên căn (3,9%). Chuyện thiếu giá
-            gắn với loại phòng. Bỏ đi vẫn được, nhưng phải báo rõ: chỉ số giá sẽ hụt đại diện của phòng riêng.
-          </div>
-        </section>
+<section id="fill-mode">
+<h2>Điền bằng giá trị phổ biến nhất</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<p>Giá trị xuất hiện nhiều nhất gọi là <strong>mốt (mode)</strong>.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>pho_bien = loai_phong.mode()
+print(pho_bien)</code></pre>
+<pre class="jp-output" data-jp-n="7"><code class="language-text" data-trim>0    Phòng riêng
+dtype: str</code></pre>
+</div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>loai_uoc_luong = loai_phong.fillna(pho_bien.iloc[0])
+print("P2:", loai_uoc_luong.loc["P2"])</code></pre>
+<pre class="jp-output" data-jp-n="8"><code class="language-text" data-trim>P2: Phòng riêng</code></pre>
+</div>
+<p><code>mode()</code> bỏ qua NA và trả về một Series. Ở đây có một mốt, lấy bằng <code>iloc[0]</code>.</p>
+<p>P2 được <strong>ước lượng</strong> là phòng riêng. Cách này làm tăng tỷ lệ của loại phòng vốn phổ biến nhất.</p>
+<aside class="notes"><p>Chỉ dùng iloc[0] sau khi biết có đúng một mốt như ví dụ này. Có thể có nhiều giá trị đồng hạng; cả cột NA thì mode trả Series rỗng. Khi đó cần nêu quy tắc lựa chọn hoặc giữ NA, không lấy phần tử đầu một cách máy móc. Khác slide trước: “Chưa rõ” ghi nhận thiếu, còn điền mốt là suy đoán một loại phòng thật. Tài liệu: pandas.Series.mode.</p></aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>dropna — được phép, khi nói rõ</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
-kpi_gia = df.dropna(subset=["price_num"])
+<section id="fill-mean-median">
+<h2>Chọn trung bình hay trung vị?</h2>
+<p>Giá giả lập của sáu chỗ ở (USD/đêm):</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="9"><code class="language-python" data-trim>mau_gia = pd.Series([80, 90, 100, 110, 620, np.nan])
+dien_gia = pd.DataFrame({
+    &quot;goc&quot;: mau_gia,
+    &quot;dien_tb&quot;: mau_gia.fillna(mau_gia.mean()),
+    &quot;dien_tv&quot;: mau_gia.fillna(mau_gia.median()),
+})
+print(dien_gia.loc[mau_gia.isna()])</code></pre>
+<pre class="jp-output" data-jp-n="9"><code class="language-text" data-trim>   goc  dien_tb  dien_tv
+5  NaN    200.0    100.0</code></pre>
+</div>
+<p>Giá 620 kéo trung bình lên 200; trung vị là 100. Trung vị ít bị ảnh hưởng bởi giá trị cực đoan.</p>
+<p>Cả hai cách đều giả định các giá đã biết có thể dùng để ước lượng giá còn thiếu.</p>
+<aside class="notes"><p>Trung bình và trung vị tính trên các giá trị đã biết. Nếu dữ liệu gồm nhiều phân khúc, một giá trị chung có thể không phù hợp. Trung vị không tự khắc phục thiên lệch nếu những chỗ ở thiếu giá thuộc một phân khúc riêng. Khi dữ liệu khá cân đối và không có giá trị cực đoan, trung bình cũng là lựa chọn đơn giản. Ví dụ giả lập đã chạy trên pandas 3.0.3.</p></aside>
+</section>
 
-len(df) - len(kpi_gia)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="5"><code class="language-text" data-trim>
-846
-            </code></pre>
-          </div>
-          <p>Bỏ 846 dòng (4,6%) <em>khỏi các chỉ số (KPI) về giá</em> — chấp nhận được vì đã điều tra ở
-            slide trước và <em>nói rõ</em> chỗ lệch (phòng riêng), chứ không xoá lặng lẽ.</p>
-        </section>
+<section id="fillna">
+<h2>Điền giá trị thiếu bằng trung vị</h2>
+<p>Một lựa chọn là dùng trung vị số phòng ngủ đã biết để điền ô thiếu.</p>
 
-        <section data-jp-reset>
-          <h2>Điều tra vì sao thiếu số phòng ngủ</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>
-# Trong mỗi loại phòng, bao nhiêu % thiếu số phòng ngủ?
-(df["bedrooms"].isna()
-   .groupby(df["room_type"]).mean()
-   .mul(100).round(1).sort_values(ascending=False))
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="6"><code class="language-text" data-trim>
-room_type
-Private room       56.2
-Shared room        34.4
-Entire home/apt     2.7
-Hotel room          1.8
-            </code></pre>
-          </div>
-          <div class="warn-box">
-            <span class="box-title">Thiếu có cấu trúc</span>
-            56% phòng riêng thiếu số phòng ngủ — phòng riêng là một phòng nên chủ hay bỏ trống ô này,
-            chứ không phải hỏng ngẫu nhiên. Không xoá; điền được vì số phòng ngủ đi theo sức chứa (slide sau).
-          </div>
-        </section>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="10"><code class="language-python" data-trim>trung_vi = df[&quot;bedrooms&quot;].median()
+df[&quot;bedrooms_fill&quot;] = df[&quot;bedrooms&quot;].fillna(trung_vi)
+print(&quot;Giá trị dùng để điền:&quot;, trung_vi)
+print(df[[&quot;bedrooms&quot;, &quot;bedrooms_fill&quot;]].mean().round(2))</code></pre>
+<pre class="jp-output" data-jp-n="10"><code class="language-text" data-trim>Giá trị dùng để điền: 1.0
+bedrooms         1.49
+bedrooms_fill    1.43
+dtype: float64</code></pre>
+</div>
+<p><code>fillna</code> chỉ thay ô thiếu. Giá trị điền là <strong>ước lượng</strong>, nên giữ cột gốc để đối chiếu.</p>
 
-        <section data-jp-reset>
-          <h2>Điền một hằng số làm thay đổi phân phối</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>
-pd.Series({
-    "số ô thiếu": df["bedrooms"].isna().sum(),
-    "trung bình trước": df["bedrooms"].mean(),
-    "trung bình sau khi điền 1": df["bedrooms"].fillna(1).mean(),
-}).round(2)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="7"><code class="language-text" data-trim>
-số ô thiếu                 2337.00
-trung bình trước              1.49
-trung bình sau khi điền 1     1.43
-            </code></pre>
-          </div>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            Điền 1 cho 2.337 ô thiếu kéo phân phối về giữa. Nếu cần điền để mô hình hoặc
-            quy trình xử lý chạy được, phải giữ cột cờ để phân biệt giá trị quan sát và giá trị suy diễn.
-          </div>
-        </section>
+<aside class="notes"><p>Có 2.337 ô thiếu số phòng ngủ. Trung bình gốc 1,49 chỉ tính các ô đã biết;
+sau khi điền 1, trung bình trên toàn bảng là 1,43. Điền dữ liệu làm đổi thống kê.
+Trung vị cũng là một giả định ước lượng, không phải đáp án mặc định cho mọi cột.</p>
+</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Điền theo nhóm — vẫn phải giữ cột cờ</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>
-df["bedrooms_isna"] = df["bedrooms"].isna()  # cắm cờ trước
-df["bedrooms"] = df["bedrooms"].fillna(
-    df.groupby("accommodates")["bedrooms"].transform("median"))
+<section id="group-fill-example">
+<h2>Điền theo nhóm tương tự</h2>
+<p>Số phòng ngủ và sức chứa của các chỗ ở (giả lập):</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="11"><code class="language-python" data-trim>mau_phong = pd.DataFrame({
+    &quot;suc_chua&quot;: [2, 2, 4, 4, 6, 6],
+    &quot;phong_ngu&quot;: [1, np.nan, 2, np.nan, np.nan, np.nan],
+})
+tv_nhom = (mau_phong.groupby(&quot;suc_chua&quot;)[&quot;phong_ngu&quot;]
+           .transform(&quot;median&quot;))
+mau_phong[&quot;dien&quot;] = mau_phong[&quot;phong_ngu&quot;].fillna(tv_nhom)
+print(mau_phong)</code></pre>
+<pre class="jp-output" data-jp-n="11"><code class="language-text" data-trim>   suc_chua  phong_ngu  dien
+0         2        1.0   1.0
+1         2        NaN   1.0
+2         4        2.0   2.0
+3         4        NaN   2.0
+4         6        NaN   NaN
+5         6        NaN   NaN</code></pre>
+</div>
+<p><code>transform</code> trả trung vị của nhóm về từng hàng. Nhóm sức chứa 6 toàn NA nên vẫn chưa điền được.</p>
+<aside class="notes"><p>Cùng sức chứa là một giả định về sự tương tự, không bảo đảm các chỗ ở có cùng số phòng ngủ. Hai nhóm có số đã biết lần lượt điền 1 và 2, thay vì trung vị chung 1,5. Nhóm có quá ít số đã biết cho ước lượng kém ổn định. Với nhóm toàn NA, chỉ dùng trung vị chung làm phương án thay thế nếu chấp nhận thêm giả định đó; nếu chưa có căn cứ thì giữ NA.</p></aside>
+</section>
 
-df.groupby("accommodates")["bedrooms"].median().head(4)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="8"><code class="language-text" data-trim>
-accommodates
-1    1.0
-2    1.0
-3    1.0
-4    2.0
-            </code></pre>
-          </div>
-          <ul>
-            <li><code>transform("median")</code> điền theo <strong>trung vị nhóm cùng <code>accommodates</code></strong>
-              — hợp lý hơn hằng số vì số phòng ngủ đi theo số người ở.</li>
-            <li>Nhưng ô thiếu chủ yếu là phòng nhỏ nên vẫn ra 1 (mean 1,49 → 1,44): <strong>cột cờ</strong>,
-              không phải cách điền, mới cho loại giá trị suy diễn khỏi KPI.</li>
-          </ul>
-        </section>
-      </section>
+<section id="group-fill">
+<h2>Điền số phòng ngủ theo sức chứa</h2>
+<p>Áp dụng cách điền theo nhóm với dữ liệu Santiago:</p>
 
-      <!-- ====== Phần 3: Outlier ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">3.</span><br>Ngoại lai &amp; giá trị ngoài miền</h1>
-          <p class="text-light">Giá 97 triệu CLP mỗi đêm là một ngoại lai (outlier), chưa phải bằng chứng về lỗi.</p>
-        </section>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="12"><code class="language-python" data-trim>uoc_luong = (df.groupby(&quot;accommodates&quot;)[&quot;bedrooms&quot;]
+              .transform(&quot;median&quot;))
+df[&quot;bedrooms_group&quot;] = df[&quot;bedrooms&quot;].fillna(uoc_luong)
+print(&quot;Còn thiếu:&quot;, df[&quot;bedrooms_group&quot;].isna().sum())
+cot_so = [&quot;bedrooms&quot;, &quot;bedrooms_fill&quot;, &quot;bedrooms_group&quot;]
+print(df[cot_so].mean().round(2))</code></pre>
+<pre class="jp-output" data-jp-n="12"><code class="language-text" data-trim>Còn thiếu: 0
+bedrooms          1.49
+bedrooms_fill     1.43
+bedrooms_group    1.44
+dtype: float64</code></pre>
+</div>
+<p>Mọi nhóm sức chứa đều có số phòng ngủ đã biết nên không còn ô thiếu. Cách này giả định chỗ ở cùng sức chứa có số phòng ngủ gần nhau.</p>
 
-        <section data-jp-reset>
-          <h2>Sai miền: quy tắc cứng, xử lý trước</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-rules = {
-    "gia_thieu": df["price_num"].isna(),
-    "gia_khong_duong": df["price_num"] <= 0,
-    "dem_tren_365": df["minimum_nights"] > 365,
-    "toa_do_ngoai_bien": ~(df["latitude"].between(-34, -33)
-                            & df["longitude"].between(-71, -70)),
-}
-{k: int(v.sum()) for k, v in rules.items()}
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-{'gia_thieu': 846,
- 'gia_khong_duong': 0,
- 'dem_tren_365': 1,
- 'toa_do_ngoai_bien': 0}
-            </code></pre>
-          </div>
-          <p>Sai miền = vi phạm điều <em>không thể đúng</em> (giá âm, toạ độ ngoài thành phố).
-            Không cần thống kê — cần hiểu biết về dữ liệu.</p>
-        </section>
+<aside class="notes"><p>2.337 ô thiếu đều điền được. Trung bình 1,44 so với 1,43 khi điền trung vị chung và 1,49 trên các ô đã biết.
+Không khẳng định cách này luôn tốt hơn điền một trung vị chung; notebook có phép thử che 1.000 ô đã biết.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Nhìn phân phối trước khi đặt ngưỡng</h2>
-          <figure class="fig">
-            <img src="img/lecture-10/phan-phoi-gia.svg" alt="Phân phối giá trên thang gốc và thang log"
-              style="width:96%">
-            <figcaption class="caption">Một chỗ ở giá 97 triệu CLP kéo trục thang gốc tới 1e8, nén cả
-              phân phối vào một cột. Đổi sang thang log10 mới thấy đuôi phải dài và hai phân vị P1, P99.</figcaption>
-          </figure>
-        </section>
+<section id="fill-neighbors">
+<h2>Lấy giá trị đã biết trước hoặc sau</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<p>Giá theo tháng của <strong>một chỗ ở</strong> (giả lập, USD/đêm):</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="13"><code class="language-python" data-trim>gia_theo_thang = pd.Series([np.nan, 100, np.nan, 160, np.nan],
+                          index=[&quot;T1&quot;, &quot;T2&quot;, &quot;T3&quot;, &quot;T4&quot;, &quot;T5&quot;])
+print(pd.DataFrame({&quot;goc&quot;: gia_theo_thang,
+                    &quot;ffill&quot;: gia_theo_thang.ffill(),
+                    &quot;bfill&quot;: gia_theo_thang.bfill()}))</code></pre>
+<pre class="jp-output" data-jp-n="13"><code class="language-text" data-trim>      goc  ffill  bfill
+T1    NaN    NaN  100.0
+T2  100.0  100.0  100.0
+T3    NaN  100.0  160.0
+T4  160.0  160.0  160.0
+T5    NaN  160.0    NaN</code></pre>
+</div>
+<p><code>ffill()</code> lấy giá trị đã biết gần nhất phía trước; <code>bfill()</code> lấy phía sau.</p>
+<p>Cách điền này giả định giá chưa thay đổi trong đoạn bị thiếu.</p>
+<aside class="notes"><p>ffill và bfill đi theo thứ tự hàng hiện tại, không tự sắp xếp thời gian. T3 nhận 100 theo ffill hoặc 160 theo bfill; dữ liệu không cho biết khi nào giá thực sự đổi. bfill dùng thông tin tương lai: không dùng giá tương lai để chuẩn bị đầu vào cho dự báo tại thời điểm trước đó. Trong pandas 3 dùng .ffill() và .bfill(), không dùng fillna(method=...) như cú pháp cũ trong giáo trình.</p></aside>
+</section>
 
-        <section>
-          <h2>IQR là gì?</h2>
-          <ul>
-            <li><code>Q1</code> = phân vị 25%, <code>Q3</code> = phân vị 75% — cùng ý tưởng phân vị như P1/P99 slide trước.</li>
-            <li><strong>IQR</strong> = <code>Q3 − Q1</code> = độ rộng của <strong>50% dữ liệu ở giữa</strong> (khoảng tứ phân vị).</li>
-            <li><strong>Quy tắc 1,5×IQR</strong>: cờ giá ngoài <code>[Q1 − 1,5·IQR, Q3 + 1,5·IQR]</code>. Lệch phải mạnh nên ngưỡng dưới ở đây ra âm → chỉ ngưỡng trên gắn cờ.</li>
-          </ul>
-          <div class="key-box">
-            <span class="box-title">Vì sao dùng IQR</span>
-            <code>Q1</code>, <code>Q3</code> tính từ thứ hạng nên <strong>bền với giá cực đoan</strong> — không bị một giá 97 triệu kéo lệch như trung bình.
-          </div>
-        </section>
+<section id="fill-neighbors-group">
+<h2>Điền riêng từng chỗ ở</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<p>Bảng giả lập có hai chỗ ở qua ba kỳ; giá tính bằng USD/đêm.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="14"><code class="language-python" data-trim>lich_gia = pd.DataFrame({
+    &quot;id&quot;: [&quot;P1&quot;, &quot;P1&quot;, &quot;P1&quot;, &quot;P2&quot;, &quot;P2&quot;, &quot;P2&quot;],
+    &quot;ky&quot;: [1, 2, 3, 1, 2, 3],
+    &quot;gia&quot;: [100, np.nan, np.nan, np.nan, 200, np.nan],
+}).sort_values([&quot;id&quot;, &quot;ky&quot;])
+lich_gia[&quot;dien&quot;] = lich_gia.groupby(&quot;id&quot;)[&quot;gia&quot;].ffill(limit=1)
+print(lich_gia.to_string(index=False))</code></pre>
+<pre class="jp-output" data-jp-n="14"><code class="language-text" data-trim>id  ky   gia  dien
+P1   1 100.0 100.0
+P1   2   NaN 100.0
+P1   3   NaN   NaN
+P2   1   NaN   NaN
+P2   2 200.0 200.0
+P2   3   NaN 200.0</code></pre>
+</div>
+<p><code>groupby("id")</code> tránh lấy giá của chỗ ở khác. <code>limit=1</code> chỉ điền tối đa <strong>một ô</strong> trong mỗi đoạn thiếu liên tiếp.</p>
+<aside class="notes"><p>P1 kỳ 2 nhận 100, kỳ 3 vẫn thiếu vì giới hạn một ô; P2 kỳ 1 không lấy 100 từ P1; P2 kỳ 3 nhận 200. limit đếm ô chứ không đo khoảng cách ngày tháng. Trong bài tập lớn, chỉ dùng cách này sau khi ghép các mốc chụp và xếp theo id, thời gian. Không ffill trực tiếp danh sách các chỗ ở trong một mốc chụp. bfill trong từng nhóm dùng cú pháp tương tự.</p></aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>IQR trên phân phối lệch phải</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-gia = df.loc[df["price_num"] > 0, "price_num"]
+<section id="interpolate-idea">
+<h2>Nội suy giữa hai giá trị đã biết</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<p>Nhiệt độ đo cùng giờ tại một trạm (giả lập, °C):</p>
+<table class="compact-table" style="font-size:0.76em"><thead><tr><th>Ngày</th><th>Nhiệt độ</th></tr></thead><tbody>
+<tr><td>01/06</td><td>20</td></tr>
+<tr><td>02/06</td><td>Thiếu</td></tr>
+<tr><td>04/06</td><td>26</td></tr>
+</tbody></table>
+<p><strong>Nội suy tuyến tính</strong> giả định nhiệt độ thay đổi đều giữa hai ngày đã biết.</p>
+<p>Từ 01/06 đến 04/06: tăng 6°C trong 3 ngày. Ước lượng ngày 02/06: <strong>20 + 6 × 1/3 = 22°C</strong>.</p>
+<aside class="notes"><p>Đây là giá trị ước lượng theo đường thẳng nối hai phép đo, không khẳng định nhiệt độ thực đã biến đổi đều. Giữ ví dụ thời gian không cách đều để thấy khác nhau giữa khoảng cách hàng và khoảng cách ngày. Nội suy này dùng cả giá trị phía sau, nên cũng cần tránh dùng thông tin tương lai khi chuẩn bị dữ liệu dự báo. Không tự nội suy qua một khoảng trống dài hoặc qua thời điểm có thay đổi đột ngột.</p></aside>
+</section>
+
+<section id="interpolate">
+<h2>Nội suy theo khoảng thời gian</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="15"><code class="language-python" data-trim>nhiet_do = pd.Series(
+    [20, np.nan, 26, np.nan],
+    index=pd.to_datetime([&quot;2026-06-01&quot;, &quot;2026-06-02&quot;,
+                          &quot;2026-06-04&quot;, &quot;2026-06-05&quot;]),
+)
+noi_suy = nhiet_do.interpolate(method=&quot;time&quot;, limit_area=&quot;inside&quot;)
+print(pd.DataFrame({&quot;goc&quot;: nhiet_do, &quot;noi_suy&quot;: noi_suy}))</code></pre>
+<pre class="jp-output" data-jp-n="15"><code class="language-text" data-trim>             goc  noi_suy
+2026-06-01  20.0     20.0
+2026-06-02   NaN     22.0
+2026-06-04  26.0     26.0
+2026-06-05   NaN      NaN</code></pre>
+</div>
+<p><code>method="time"</code> tính theo khoảng cách thời gian; cần chỉ mục ngày giờ đã sắp xếp.</p>
+<p><code>limit_area="inside"</code> chỉ điền giữa hai giá trị đã biết. Ngày 05/06 không có giá trị phía sau nên giữ NA.</p>
+<aside class="notes"><p>Mặc định interpolate dùng method="linear": coi các hàng cách đều, không dùng khoảng cách ngày. Với ví dụ này, linear điền 23 cho ngày 02/06, trong khi time điền 22. Đã kiểm limit_area="inside" trên pandas 3.0.3. Ngày giờ không nhất thiết cách đều, nhưng cần kiểm ngày trùng và sắp xếp trước. Khi có nhiều đối tượng phải nội suy riêng từng đối tượng. Tài liệu: pandas.Series.interpolate.</p></aside>
+</section>
+
+<section id="fill-choice">
+<h2>Chọn cách điền theo dữ liệu</h2>
+<table class="compact-table" style="font-size:0.76em"><thead><tr><th>Cách điền</th><th>Căn cứ cần có</th></tr></thead><tbody>
+<tr><td>Giá trị quy ước</td><td>Ghi rõ chưa biết, hoặc nguồn quy định giá trị thay thế.</td></tr>
+<tr><td>Trung bình / trung vị</td><td>Các giá trị đã biết có thể đại diện cho ô thiếu.</td></tr>
+<tr><td>Giá trị phổ biến nhất</td><td>Có cơ sở ước lượng bằng nhãn phổ biến.</td></tr>
+<tr><td>Theo nhóm</td><td>Nhóm liên quan đến cột cần điền và có đủ dữ liệu.</td></tr>
+<tr><td>Giá trị trước / sau</td><td>Giá trị ít thay đổi trong đoạn thiếu.</td></tr>
+<tr><td>Nội suy</td><td>Đại lượng có thể biến đổi đều trong đoạn thiếu.</td></tr>
+</tbody></table>
+<p>Nếu chưa có căn cứ để điền, có thể giữ NA và xử lý riêng khi phân tích.</p>
+<aside class="notes"><p>Không chọn một cách điền cho cả bảng chỉ để loại hết NA. Nhóm và thống kê là hai lựa chọn có thể kết hợp: dùng trung vị, trung bình hoặc mốt trong từng nhóm. Nếu kết quả dùng để dự báo, chỉ tính giá trị điền từ dữ liệu có trước thời điểm dự báo. Ngoài phạm vi bài này còn có dự đoán bằng mô hình và nhiều bộ dữ liệu điền khác nhau; chúng cần thiết kế và đánh giá riêng, không tự bảo đảm tốt hơn.</p></aside>
+</section>
+
+<section id="fill-check">
+<h2>Kiểm tra thống kê sau khi điền</h2>
+<p>Vẫn dùng giá giả lập <code>[80, 90, 100, 110, 620, NA]</code>:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="16"><code class="language-python" data-trim>so_sanh_dien = pd.DataFrame({
+    &quot;truoc&quot;: mau_gia,
+    &quot;dien_tb&quot;: mau_gia.fillna(mau_gia.mean()),
+})
+print(so_sanh_dien.agg([&quot;count&quot;, &quot;mean&quot;, &quot;std&quot;]).round(1))</code></pre>
+<pre class="jp-output" data-jp-n="16"><code class="language-text" data-trim>       truoc  dien_tb
+count    5.0      6.0
+mean   200.0    200.0
+std    235.1    210.2</code></pre>
+</div>
+<p>Điền trung bình giữ nguyên trung bình nhưng làm giảm độ lệch chuẩn. Có thêm giá trị chưa có nghĩa là có thêm quan sát thật.</p>
+<p>Giữ cột gốc và đánh dấu ô đã điền. Có thể che thử một số giá trị đã biết, rồi so giá trị điền với giá trị thật.</p>
+<aside class="notes"><p>count là số giá đã có sau mỗi cách xử lý; mean là trung bình; std là độ lệch chuẩn mẫu, mặc định ddof=1 trong pandas. Giảm độ lệch chuẩn sau điền trung bình là hệ quả toán học, không chứng minh dữ liệu thật ít biến động hơn. Notebook có thử che 1.000 số phòng ngủ đã biết rồi so trung vị chung với trung vị theo sức chứa. Chỉ tính trung vị sau khi che để không dùng đáp án; kiểm cả số ô điền được. Kết quả trên ô che ngẫu nhiên chưa đại diện cho ô thiếu thật nếu chúng có cơ chế thiếu khác.</p></aside>
+</section>
+
+</section>
+
+<section>
+<section id="unusual">
+<h1><span class="text-light">2.</span><br>Giá trị bất thường</h1>
+<p>Phát hiện giá trị bất thường, chọn cách xử lý và so tác động.</p>
+
+</section>
+
+<section id="domain">
+<h2>Giá trị sai hay chỉ khác thường?</h2>
+<table class="compact-table" style="font-size:0.76em">
+<thead>
+<tr>
+  <th>Trường hợp</th>
+  <th>Căn cứ để đánh giá</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Điểm 6 trên thang từ 0 đến 5</td>
+  <td>Ngoài miền giá trị cho phép</td>
+</tr>
+<tr>
+  <td>Yêu cầu ở ít nhất 730 đêm</td>
+  <td>Rất dài, cần kiểm tra quy định của nguồn</td>
+</tr>
+<tr>
+  <td>Giá cao hơn hầu hết chỗ ở</td>
+  <td>Có thể là phân khúc khác hoặc lỗi dữ liệu</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Ngoại lai (outlier)</strong> là giá trị khác xa phần lớn dữ liệu.
+Ngoại lai chưa chắc là lỗi.</p>
+
+<aside class="notes"><p>Điểm 6 là ví dụ giả lập trên thang đã quy định [0,5]. Trong dữ liệu Santiago:
+không có điểm đã biết ngoài [0,5], nhưng có một minimum_nights=730.
+Ngưỡng 365 chỉ dùng để sàng lọc, không phải giới hạn không thể vượt.</p>
+</aside>
+</section>
+
+<section id="domain-code">
+<h2>Kiểm tra miền giá trị</h2>
+<p>Với điểm đánh giá, quy tắc đang dùng là <strong>0 ≤ điểm ≤ 5</strong>.</p>
+
+<div class="jp-cell"><pre class="jp-input" data-jp-n="17"><code class="language-python" data-trim>diem = pd.Series([4.8, 6.0, np.nan, -1.0])
+sai_mien = diem.notna() &amp; ~diem.between(0, 5)
+print(pd.DataFrame({&quot;diem&quot;: diem, &quot;sai_mien&quot;: sai_mien}))</code></pre>
+<pre class="jp-output" data-jp-n="17"><code class="language-text" data-trim>   diem  sai_mien
+0   4.8     False
+1   6.0      True
+2   NaN     False
+3  -1.0      True</code></pre>
+</div>
+<p><code>between(0, 5)</code> lấy cả hai biên. <code>notna()</code> tách giá trị thiếu khỏi giá trị nằm ngoài miền.</p>
+
+<aside class="notes"><p>Bảng này là giả lập. Nếu cần kiểm cả thiếu điểm, dùng một cờ riêng bằng isna().</p>
+</aside>
+</section>
+
+<section id="mask-invalid">
+<h2>Đánh dấu giá trị sai trước khi thay</h2>
+<p>Điểm 6 và −1 nằm ngoài thang 0–5. Nếu chưa biết điểm đúng, có thể chuyển thành giá trị thiếu.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="18"><code class="language-python" data-trim>diem_hop_le = diem.mask(sai_mien)
+print(pd.DataFrame({&quot;goc&quot;: diem, &quot;sau&quot;: diem_hop_le}))</code></pre>
+<pre class="jp-output" data-jp-n="18"><code class="language-text" data-trim>   goc  sau
+0  4.8  4.8
+1  6.0  NaN
+2  NaN  NaN
+3 -1.0  NaN</code></pre>
+</div>
+<p><code>mask(điều_kiện)</code> thay các ô có điều kiện <code>True</code> bằng NA; các ô còn lại giữ nguyên.</p>
+<p>Giữ <code>diem</code> và cờ <code>sai_mien</code> để biết ô nào vốn thiếu, ô nào bị loại vì sai miền.</p>
+<aside class="notes"><p>Nối với mục 1: sửa dữ liệu sai có thể tạo thêm ô thiếu. Điểm 6 trên thang 0–5 là vi phạm miền; giá cao chưa chắc là lỗi, không áp dụng mask chỉ vì vượt IQR. Có thể truyền giá trị thay thế ở tham số thứ hai, nhưng chỉ thay bằng điểm cụ thể khi đã xác minh nguồn. mask và where ngược điều kiện: mask thay khi True; where giữ khi True.</p></aside>
+</section>
+
+<section id="z-score">
+<h2>Độ lệch so với trung bình</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<p><strong>z-score = (giá trị − trung bình) / độ lệch chuẩn</strong>. Giá trị có |z| lớn nằm xa trung bình.</p>
+<p>Khối lượng các gói hàng (giả lập, gam):</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="19"><code class="language-python" data-trim>khoi_luong = pd.Series([98, 99, 100, 101, 102] * 4 + [130])
+z = (khoi_luong - khoi_luong.mean()) / khoi_luong.std()
+print(pd.DataFrame({&quot;gam&quot;: khoi_luong, &quot;z&quot;: z.round(2)})
+      .loc[z.abs() &gt; 3])</code></pre>
+<pre class="jp-output" data-jp-n="19"><code class="language-text" data-trim>    gam     z
+20  130  4.27</code></pre>
+</div>
+<p>Ngưỡng |z| &gt; 3 thường dùng để sàng lọc dữ liệu gần đối xứng. Với giá có phân phối lệch mạnh, trung bình và độ lệch chuẩn đều bị giá cực đoan kéo lên.</p>
+<aside class="notes"><p>Bổ sung cách sàng lọc phổ biến, không biến thành kiểm định phân phối. pandas std mặc định ddof=1. Nếu độ lệch chuẩn bằng 0 thì z không xác định; nếu có quá ít quan sát thì z-score không đáng tin để phát hiện ngoại lai. Giá trị cực đoan có thể làm tăng độ lệch chuẩn và che các điểm bất thường khác. IQR cũng cần xem theo phân phối và nhóm, không phải quy tắc xoá hàng tự động. Tham khảo McKinney §7.2 Detecting and Filtering Outliers và NIST Detection of Outliers.</p></aside>
+</section>
+
+<section id="price-distribution">
+<h2>Quan sát phân phối giá</h2>
+<img src="img/lecture-10/phan-phoi-gia.svg" alt="Phân phối giá Santiago trên thang gốc và thang log10" style="width:100%;max-height:340px;object-fit:contain">
+<p>Trên thang log₁₀, 4 ứng với 10.000 CLP; 5 ứng với 100.000 CLP. Thang log giúp nhìn rõ phân phối khi các giá chênh nhau rất nhiều lần.</p>
+
+<aside class="notes"><p>17.688 giá dương; không có giá đã biết bằng 0 hoặc âm ở mốc chụp này.
+Đổi thang giúp nhìn phân phối, không thay hay xoá giá gốc.</p>
+</aside>
+</section>
+
+<section id="iqr">
+<h2>Ngưỡng theo khoảng tứ phân vị</h2>
+<p>Q1 và Q3 là <strong>phân vị (percentile)</strong> 25% và 75%:
+khoảng 25% giá ≤ Q1, 75% giá ≤ Q3. <strong>IQR = Q3 − Q1</strong>.</p>
+<p>Thường gắn cờ giá dưới <strong>Q1 − 1,5 × IQR</strong>
+hoặc trên <strong style="white-space:nowrap">Q3 + 1,5 × IQR</strong>.</p>
+
+<div class="jp-cell"><pre class="jp-input" data-jp-n="20"><code class="language-python" data-trim>gia = df.loc[df[&quot;price_num&quot;] &gt; 0, &quot;price_num&quot;]
 q1, q3 = gia.quantile([0.25, 0.75])
-fence = q3 + 1.5 * (q3 - q1)
+iqr = q3 - q1
+nguong_iqr = q3 + 1.5 * iqr
+print(&quot;Ngưỡng trên:&quot;, round(nguong_iqr, 2))
+print(&quot;Số giá vượt ngưỡng:&quot;, (gia &gt; nguong_iqr).sum())</code></pre>
+<pre class="jp-output" data-jp-n="20"><code class="language-text" data-trim>Ngưỡng trên: 164784.38
+Số giá vượt ngưỡng: 1499</code></pre>
+</div>
+<aside class="notes"><p>quantile dùng tỷ lệ 0–1: .25 ứng với 25%. Q1=41500, Q3=90813.75,
+IQR=49313.75, ngưỡng dưới=-32470.625, trên=164784.375.
+Có 1499/17688 giá, khoảng 8,5%, vượt ngưỡng trên. Đây là sàng lọc để xem tiếp.</p>
+</aside>
+</section>
 
-pd.Series({
-    "ngưỡng trên IQR": fence,
-    "tỷ lệ vượt ngưỡng": (gia > fence).mean(),
-}).round(3)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-ngưỡng trên IQR       164784.375
-tỷ lệ vượt ngưỡng         0.085
-            </code></pre>
-          </div>
-          <p>Quy tắc 1,5×IQR gắn cờ <strong>8,5%</strong> số chỗ ở. Với đuôi phải dài,
-            tập này có thể gồm cả phân khúc giá cao hợp lệ. Phân vị (percentile) P99
-            có thể dùng làm ngưỡng sàng lọc, nhưng không tự chứng minh một giá trị là lỗi.</p>
-        </section>
+<section id="outlier-groups">
+<h2>Tính ngưỡng riêng theo loại chỗ ở</h2>
+<p>Phòng riêng và nguyên căn có mặt bằng giá khác nhau. Tính IQR trên các <strong>giá dương đã biết</strong> của từng loại:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="21"><code class="language-python" data-trim>theo_loai = df.loc[df[&quot;price_num&quot;] &gt; 0].groupby(&quot;room_type&quot;)
+q = theo_loai[&quot;price_num&quot;].quantile([0.25, 0.75]).unstack()
+nguong_loai = q[0.75] + 1.5 * (q[0.75] - q[0.25])
+print(pd.DataFrame({&quot;so_gia&quot;: theo_loai[&quot;price_num&quot;].count(),
+                    &quot;nguong_clp&quot;: nguong_loai.round(0)}))</code></pre>
+<pre class="jp-output" data-jp-n="21"><code class="language-text" data-trim>                 so_gia  nguong_clp
+room_type
+Entire home/apt   14425    173568.0
+Hotel room           56    251214.0
+Private room       3148     90382.0
+Shared room          59     73334.0</code></pre>
+</div>
+<p><code>unstack()</code> đưa hai phân vị thành hai cột 0.25 và 0.75. Nhóm ít quan sát cho ngưỡng kém ổn định hơn.</p>
+<aside class="notes"><p>Dữ liệu Santiago 29/06/2026, file listings.csv.gz. Ngưỡng chưa làm tròn được dùng để gắn cờ. Entire home/apt: 14425 giá, ngưỡng 173568; Hotel room: 56, ngưỡng 251214.00375; Private room: 3148, ngưỡng 90381.875; Shared room: 59, ngưỡng 73333.75. Đây là nhóm theo một đặc điểm; sức chứa và vị trí cũng có thể liên quan. Nếu nhóm không có giá, không có ngưỡng để so; IQR bằng 0 cũng cần xem lại trước khi áp dụng.</p></aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Điều tra một ca nghi vấn</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-df.nlargest(1, "price_num").iloc[0][
-    ["name", "minimum_nights", "review_scores_rating", "price_num"]
-]
-            </code></pre>
-            <pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
-name                    Apartasuites EL CALEÑO 2 con estacionamiento priva
-minimum_nights                                                       1.0
-review_scores_rating                                                4.71
-price_num                                                     97000045.0
-            </code></pre>
-          </div>
-          <p>Giá 97 triệu CLP mỗi đêm cao hơn rõ rệt phần còn lại, nhưng các cột trên chưa đủ
-            để kết luận đây là lỗi nhập. Cách xử lý phù hợp là gắn cờ, kiểm tra nguồn và đo
-            độ nhạy của chỉ số giá khi tạm loại dòng này.</p>
-        </section>
+<section id="outlier-group-flags">
+<h2>Dùng ngưỡng nào cho mỗi hàng?</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="22"><code class="language-python" data-trim>nguong_tung_hang = df[&quot;room_type&quot;].map(nguong_loai)
+co_theo_loai = df[&quot;price_num&quot;] &gt; nguong_tung_hang
+so_co = pd.DataFrame({
+    &quot;nguong_chung&quot;: df[&quot;price_num&quot;] &gt; nguong_iqr,
+    &quot;nguong_theo_loai&quot;: co_theo_loai,
+}).groupby(df[&quot;room_type&quot;]).sum()
+print(so_co)</code></pre>
+<pre class="jp-output" data-jp-n="22"><code class="language-text" data-trim>                 nguong_chung  nguong_theo_loai
+room_type
+Entire home/apt          1385              1275
+Hotel room                 12                 5
+Private room              101               238
+Shared room                 1                 5</code></pre>
+</div>
+<p><code>map</code> tra ngưỡng theo loại chỗ ở của từng hàng. Bảng trên đếm số giá vượt ngưỡng.</p>
+<p>Với phòng riêng, ngưỡng chung bỏ sót nhiều giá cao <strong>so với cùng loại</strong>. Các hàng bị cờ vẫn cần được kiểm tra.</p>
+<aside class="notes"><p>Không gọi các hàng mới bị cờ là lỗi được tìm thấy: chúng chỉ vượt một ngưỡng so sánh khác. Trong dữ liệu này mọi hàng có room_type và mọi nhóm đều có giá đã biết; notebook kiểm điều kiện này. Nếu room_type thiếu hoặc nhóm chưa có ngưỡng, không coi so sánh False là đã kiểm đạt. Các con số lần lượt: 1385/1275, 12/5, 101/238, 1/5 (chung/theo loại).</p></aside>
+</section>
 
-        <section>
-          <h2>Bảng quyết định xử lý ngoại lai</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Tình huống</th>
-                <th>Hành động hợp lý</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Vi phạm miền (giá ≤ 0, toạ độ lạc)</td>
-                <td>gắn cờ; loại khỏi chỉ số liên quan nếu quy tắc miền đã được xác nhận</td>
-              </tr>
-              <tr>
-                <td>Cực trị cần kiểm tra (P99, lệch 20× trung vị quận)</td>
-                <td>gắn cờ + kiểm tra thủ công + phân tích độ nhạy</td>
-              </tr>
-              <tr>
-                <td>Cực trị <em>có thật</em> (phân khúc cao cấp)</td>
-                <td>giữ; báo cáo trung vị hoặc phân vị bên cạnh trung bình</td>
-              </tr>
-            </tbody>
-          </table>
-          <p class="caption">Trung vị ít nhạy với giá trị cực đoan hơn trung bình.</p>
-        </section>
-      </section>
+<section id="inspect-outlier">
+<h2>Xem lại một mức giá cao</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="23"><code class="language-python" data-trim>xem = [&quot;id&quot;, &quot;room_type&quot;, &quot;price_num&quot;, &quot;minimum_nights&quot;,
+       &quot;review_scores_rating&quot;]
+print(df.loc[df[&quot;price_num&quot;].idxmax(), xem].to_string())</code></pre>
+<pre class="jp-output" data-jp-n="23"><code class="language-text" data-trim>id                      651018255986860283
+room_type                  Entire home/apt
+price_num                       97000045.0
+minimum_nights                         1.0
+review_scores_rating                  4.71</code></pre>
+</div>
+<p>Cần đối chiếu nguồn, đơn vị và loại chỗ ở trước khi sửa giá.
+Nếu chưa xác minh được, giữ cờ và xem kết quả nhạy thế nào với giá này.</p>
 
-      <!-- ====== Phần 4: Trùng lặp ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">4.</span><br>Trùng lặp</h1>
-          <p class="text-light">Chỉ có thể kết luận trùng lặp sau khi xác định khoá của bảng.</p>
-        </section>
+<aside class="notes"><p>97.000.045 CLP/đêm. minimum_nights in ra 1.0 vì cột có ô thiếu nên có kiểu float. Các trường này chưa đủ để
+kết luận giá là lỗi nhập. Chưa có căn cứ để sửa dấu thập phân hoặc đổi sang đồng tiền khác.</p>
+</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>duplicated: toàn dòng và theo khoá</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-pd.Series({
-    "trùng toàn dòng": df.duplicated().sum(),
-    "id trùng": df["id"].duplicated().sum(),
+<section id="outlier-actions">
+<h2>Chọn cách xử lý giá trị bất thường</h2>
+<table class="compact-table" style="font-size:0.76em"><thead><tr><th>Đã biết gì?</th><th>Có thể xử lý thế nào?</th></tr></thead><tbody>
+<tr><td>Xác minh được giá trị đúng</td><td>Sửa theo nguồn và lưu giá trị cũ.</td></tr>
+<tr><td>Biết là sai, chưa biết giá trị đúng</td><td>Chuyển thành NA, giữ cờ lý do.</td></tr>
+<tr><td>Hiếm gặp nhưng có thể đúng</td><td>Giữ lại; so kết quả có và không có nó.</td></tr>
+<tr><td>Ngoài phạm vi phân tích</td><td>Loại khỏi phép tính đó, ghi rõ điều kiện.</td></tr>
+<tr><td>Cần hạn chế ảnh hưởng của giá cao</td><td>Thử chặn ở một ngưỡng, rồi đo tác động.</td></tr>
+</tbody></table>
+<p>Quyết định dựa vào ý nghĩa dữ liệu và mục đích phân tích; ngưỡng thống kê chỉ cung cấp thêm căn cứ.</p>
+<aside class="notes"><p>Đây là các lựa chọn khác nhau, không phải các bước phải làm lần lượt. Ví dụ tính giá chỗ ở thông thường có thể quy định phạm vi khác phân tích toàn thị trường; phải nêu phạm vi trước khi loại. Chặn giá trị làm thay đổi quan sát; giữ bản biến đổi riêng, không gọi nó là giá đã được xác minh.</p></aside>
+</section>
+
+<section id="clip">
+<h2>Chặn giá trị ở một ngưỡng</h2>
+<p>Giá giả lập (USD/đêm). Thử chặn trên ở 200 để thấy cách <code>clip</code> hoạt động:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="24"><code class="language-python" data-trim>gia_vi_du = pd.Series([80, 100, 120, 1000])
+gia_chan = gia_vi_du.clip(upper=200)
+print(pd.DataFrame({&quot;goc&quot;: gia_vi_du, &quot;chan_tren&quot;: gia_chan}))</code></pre>
+<pre class="jp-output" data-jp-n="24"><code class="language-text" data-trim>    goc  chan_tren
+0    80         80
+1   100        100
+2   120        120
+3  1000        200</code></pre>
+</div>
+<p><code>upper=200</code> thay giá lớn hơn 200 bằng 200; <code>lower</code> đặt ngưỡng dưới. Số hàng giữ nguyên.</p>
+<p>Chặn theo phân vị thường gọi là <strong>winsorization</strong>. Ngưỡng 200 ở đây chỉ để minh hoạ, không phải quy tắc giá hợp lý.</p>
+<aside class="notes"><p>Đã kiểm clip giữ NA và không đổi các giá nằm trong ngưỡng. Phân biệt chặn giá với loại hàng (trimming): một cách sửa giá trị, một cách thay tập quan sát. Cả hai đều có thể làm thay đổi phân phối và kết luận. Có thể dùng ngưỡng theo hiểu biết miền hoặc phân vị; ghi lại ngưỡng và nguồn tính ngưỡng.</p></aside>
+</section>
+
+<section id="sensitivity">
+<h2>So sánh bỏ hàng và chặn giá</h2>
+<p>Ngưỡng IQR chung gắn cờ 8,5% giá, quá nhiều để xem lại từng hàng. Thử với P99 (phân vị 99%):</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="25"><code class="language-python" data-trim>nguong_p99 = gia.quantile(0.99)
+gia_duoi = gia[gia &lt;= nguong_p99]
+so_sanh = pd.DataFrame({
+    &quot;goc&quot;: gia,
+    &quot;bo_tren_p99&quot;: gia_duoi,
+    &quot;chan_p99&quot;: gia.clip(upper=nguong_p99),
+}).agg([&quot;count&quot;, &quot;mean&quot;, &quot;median&quot;])
+print(so_sanh.round(0))</code></pre>
+<pre class="jp-output" data-jp-n="25"><code class="language-text" data-trim>             goc  bo_tren_p99  chan_p99
+count    17688.0      17511.0   17688.0
+mean    118200.0      82298.0   88340.0
+median   59000.0      58400.0   59000.0</code></pre>
+</div>
+<p>Bỏ hàng làm giảm số giá; chặn giữ đủ số giá nhưng thay các giá cao. Cả hai đều làm giảm trung bình, chưa chứng minh giá gốc là sai.</p>
+<aside class="notes"><p>Ngưỡng P99=686143.7071000019 CLP; 177 giá vượt. Trên 17688 giá dương: mean 118199.572537, median 59000. Bỏ trên P99: 17511 giá, mean 82297.600208, median 58400. Chặn P99: 17688 giá, mean 88340.157926, median 59000. DataFrame căn theo nhãn hàng nên cột bo_tren_p99 có NA ở hàng bị loại; count/mean/median bỏ qua NA. Chưa chọn đây là phương án làm sạch chính thức; đây là phép so độ nhạy.</p></aside>
+</section>
+
+<section id="exercise-threshold">
+<h2>Bài tập 2: Giá tăng đồng loạt</h2>
+<p>Một bộ kiểm tra tính lại P99 ở <strong>mỗi kỳ</strong>, rồi gắn cờ giá lớn hơn P99 của kỳ đó.</p>
+<p>Kỳ sau giữ nguyên các chỗ ở, nhưng <strong>mọi giá đều tăng gấp đôi</strong>.</p>
+<p><strong>Dựa vào tỷ lệ bị gắn cờ, bộ kiểm tra này có phát hiện được đợt tăng giá không?</strong></p>
+
+<aside class="notes"><p>Không. Nhân mọi giá với 2 cũng nhân P99 với 2, giữ nguyên mặt nạ vượt ngưỡng.
+Không cần giả sử tỷ lệ đúng 1%: mẫu nhỏ hoặc giá bằng nhau có thể cho tỷ lệ khác.
+Muốn theo dõi mức giá, so các thống kê hoặc dùng một ngưỡng tham chiếu cố định.
+Slide «Chọn ngưỡng theo mục đích kiểm tra» ở mục 4 quay lại ý này: tính lại P99
+không sai nếu chỉ cần tìm giá cao tương đối trong từng kỳ.</p>
+</aside>
+</section>
+</section>
+
+<section>
+<section id="duplicates">
+<h1><span class="text-light">3.</span><br>Trùng lặp</h1>
+<p>Chọn khoá, tìm mâu thuẫn và giữ bản ghi có căn cứ.</p>
+
+</section>
+
+<section id="duplicate-key">
+<h2>Chọn khoá của bảng</h2>
+<p>Bảng giả lập <code>lich_su</code> lưu <strong>một giá cho mỗi chỗ ở, mỗi kỳ</strong>.</p>
+
+<div class="two-col" style="align-items:center"><div><table class="compact-table" style="font-size:0.76em">
+<thead>
+<tr>
+<th>id</th>
+<th>ky</th>
+<th style="text-align:right">gia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>P1</td>
+<td>T5</td>
+<td style="text-align:right">100</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>T6</td>
+<td style="text-align:right">120</td>
+</tr>
+<tr>
+<td>P1</td>
+<td>T6</td>
+<td style="text-align:right">120</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>T5</td>
+<td style="text-align:right">80</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>T6</td>
+<td style="text-align:right">90</td>
+</tr>
+<tr>
+<td>P2</td>
+<td>T6</td>
+<td style="text-align:right">95</td>
+</tr>
+</tbody>
+</table></div><div><p><strong>Khoá</strong> dùng để phân biệt từng bản ghi; ở đây là cặp <strong style="white-space:nowrap"><code>(id, ky)</code>.</strong></p></div></div>
+<aside class="notes"><p>Giá giả lập bằng USD/đêm. P1 xuất hiện ở T5 và T6 là đúng mô hình dữ liệu.
+Tại T6 có hai hàng P1 giống nhau; P2 có hai giá khác nhau. Khác cách xử lý.
+Trong bảng chỗ ở của một mốc chụp, id được dùng làm khoá và phải không thiếu.</p>
+</aside>
+</section>
+
+<section id="normalize-key">
+<h2>Chuẩn hoá mã trước khi tìm trùng</h2>
+<p>Ví dụ giả lập: nguồn quy định mã chỗ ở <strong>không phân biệt hoa thường</strong>, bỏ khoảng trắng hai đầu.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="26"><code class="language-python" data-trim>ma = pd.Series([&quot;P1&quot;, &quot; p1 &quot;, &quot;P2&quot;, &quot;p2&quot;])
+ma_chuan = ma.str.strip().str.upper()
+print(pd.DataFrame({&quot;goc&quot;: ma, &quot;chuan&quot;: ma_chuan,
+                    &quot;trung&quot;: ma_chuan.duplicated(keep=False)}))</code></pre>
+<pre class="jp-output" data-jp-n="26"><code class="language-text" data-trim>    goc chuan  trung
+0    P1    P1   True
+1   p1     P1   True
+2    P2    P2   True
+3    p2    P2   True</code></pre>
+</div>
+<p>Giữ mã gốc để đối chiếu. Chỉ chuẩn hoá theo quy ước của nguồn; không tự bỏ số 0 đầu mã hay đổi hoa thường cho mọi loại mã.</p>
+<aside class="notes"><p>Liên hệ Bài 7: một khác biệt biểu diễn có thể che bản ghi trùng. Chuẩn hoá mã chưa phải xoá bản ghi; sau đó vẫn cần chọn đủ khoá và xem giá trị của các cột. NA hoặc chuỗi rỗng không phải mã hợp lệ; kiểm chúng riêng trước khi nhóm theo khoá. Trong ví dụ, nguồn đã xác nhận P1 và p1 là cùng mã.</p></aside>
+</section>
+
+<section id="duplicated">
+<h2>Tìm tất cả hàng trùng khoá</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="27"><code class="language-python" data-trim>khoa = [&quot;id&quot;, &quot;ky&quot;]
+trung = lich_su.duplicated(subset=khoa, keep=False)
+print(lich_su.loc[trung].to_string(index=False))</code></pre>
+<pre class="jp-output" data-jp-n="27"><code class="language-text" data-trim>id ky  gia
+P1 T6  120
+P1 T6  120
+P2 T6   90
+P2 T6   95</code></pre>
+</div>
+<p><code>subset</code> chọn các cột đem so. <code>keep=False</code> đánh dấu <strong>mọi hàng</strong> thuộc nhóm trùng.</p>
+<p>Mặc định <code>keep=&quot;first&quot;</code> không đánh dấu hàng xuất hiện đầu tiên.</p>
+
+<aside class="notes"><p>keep=False đánh dấu 4 hàng; mặc định chỉ đánh dấu 2 hàng xuất hiện sau lần đầu.
+Phân biệt số hàng liên quan tới trùng khoá với số hàng thừa khi muốn giữ một bản.</p>
+</aside>
+</section>
+
+<section id="drop-duplicates">
+<h2>Bỏ bản ghi nhập lặp</h2>
+<p>Các hàng giống nhau ở <strong>mọi cột</strong> có thể là cùng một bản ghi được nhập lại.</p>
+
+<div class="jp-cell"><pre class="jp-input" data-jp-n="28"><code class="language-python" data-trim>khong_lap = lich_su.drop_duplicates()
+con_trung = khong_lap.duplicated(subset=khoa, keep=False)
+print(khong_lap.loc[con_trung].to_string(index=False))</code></pre>
+<pre class="jp-output" data-jp-n="28"><code class="language-text" data-trim>id ky  gia
+P2 T6   90
+P2 T6   95</code></pre>
+</div>
+<p><code>drop_duplicates()</code> mặc định giữ bản đầu của mỗi nhóm hàng giống nhau.
+Hai giá của P2 vẫn khác nhau: cần căn cứ để chọn bản đúng.</p>
+
+<aside class="notes"><p>Với bảng lịch sử này, một khoá chỉ được có một giá; hàng giống hệt là bản nhập lặp.
+Không áp dụng máy móc cho bảng đánh giá rút gọn: hai đánh giá khác nhau có thể cùng
+listing_id và date. Không có đủ cột để phân biệt không có nghĩa là nên xoá một hàng.</p>
+</aside>
+</section>
+
+<section id="duplicate-conflicts">
+<h2>Tìm giá mâu thuẫn trong cùng khoá</h2>
+<p>Trong bảng <code>lich_su</code>, hai hàng P1/T6 cùng giá; hai hàng P2/T6 ghi giá khác nhau.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="29"><code class="language-python" data-trim>so_gia_khac = lich_su.groupby(khoa)[&quot;gia&quot;].transform(&quot;nunique&quot;)
+mau_thuan = so_gia_khac &gt; 1
+print(lich_su.loc[mau_thuan].to_string(index=False))</code></pre>
+<pre class="jp-output" data-jp-n="29"><code class="language-text" data-trim>id ky  gia
+P2 T6   90
+P2 T6   95</code></pre>
+</div>
+<p><code>nunique</code> đếm số giá trị khác nhau, mặc định bỏ NA. <code>transform</code> đưa số đếm về từng hàng của nhóm.</p>
+<p>Cần xác minh hoặc có quy tắc chọn nguồn. Lấy trung bình hai giá chưa chắc khôi phục được giá đúng.</p>
+<aside class="notes"><p>Cờ mâu thuẫn khác cờ trùng: P1/T6 lặp nhưng không mâu thuẫn ở giá. Nếu một hàng có giá, một hàng NA thì chỉ có một giá đã biết; đó là thiếu thông tin, chưa phải hai giá mâu thuẫn. Khoá thiếu cần được xử lý riêng, vì groupby mặc định bỏ nhóm NA. Có thể kiểm từng cột cần nhất quán, không chỉ gia.</p></aside>
+</section>
+
+<section id="duplicate-complement">
+<h2>Gộp các thông tin bổ sung</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<p>Hai bản ghi của <strong>cùng chỗ ở, cùng kỳ</strong> (giả lập). Các giá trị đã biết không mâu thuẫn:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="30"><code class="language-python" data-trim>bo_sung = pd.DataFrame({
+    &quot;id&quot;: [&quot;P1&quot;, &quot;P1&quot;], &quot;ky&quot;: [&quot;T6&quot;, &quot;T6&quot;],
+    &quot;gia&quot;: [120, np.nan], &quot;so_phong&quot;: [np.nan, 2],
 })
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="1"><code class="language-text" data-trim>
-trùng toàn dòng    0
-id trùng           0
-            </code></pre>
-          </div>
-          <p>Mốc chụp Santiago 06/2026 không có dòng trùng hoặc <code>id</code> trùng.
-            Phép kiểm khoá vẫn cần chạy với mọi bảng mới, nhất là sau <code>merge</code>
-            hoặc <code>concat</code>.</p>
-        </section>
+print(bo_sung.groupby(khoa)[[&quot;gia&quot;, &quot;so_phong&quot;]].first())</code></pre>
+<pre class="jp-output" data-jp-n="30"><code class="language-text" data-trim>         gia  so_phong
+id ky
+P1 T6  120.0       2.0</code></pre>
+</div>
+<p><code>first()</code> lấy giá trị đầu tiên <strong>không thiếu ở từng cột</strong>. Kết quả có thể ghép từ nhiều hàng.</p>
+<aside class="notes"><p>Để giữ nguyên một bản cập nhật, phải chọn cả hàng thay vì lấy từng cột. Trước khi gộp, kiểm mỗi cột trong nhóm có tối đa một giá trị đã biết, hoặc có quy tắc giải quyết mâu thuẫn riêng. Notebook minh hoạ kiểm nunique trước khi gọi first. first không đồng nghĩa với lấy hàng đầu tiên: ở đây ghép gia từ hàng 0 và so_phong từ hàng 1. Không gộp dữ liệu thuộc hai kỳ hay hai trạng thái thực tế khác nhau chỉ vì cùng id. Tài liệu pandas DataFrameGroupBy.first (skipna=True).</p></aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Ghép dữ liệu từ hai mốc chụp</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-URL_2025 = ("https://data.insideairbnb.com/chile/rm/santiago/"
-            "2025-09-27/visualisations/listings.csv")
-t9 = pd.read_csv(URL_2025, usecols=["id"]).assign(snapshot="2025-09")
-t6 = df[["id"]].assign(snapshot="2026-06")
-ca_hai = pd.concat([t9, t6], ignore_index=True)
+<section id="exercise-duplicates">
+<h2>Bài tập 3: Giữ giá cập nhật sau cùng</h2>
+<p>Mỗi hàng của bảng <code>lich_cap_nhat</code> là một lần cập nhật giá (giả lập).
+Cột <code>cap_nhat</code> có kiểu ngày giờ, năm 2026.</p>
+<table class="compact-table" style="font-size:0.76em">
+<thead>
+<tr>
+  <th>id</th>
+  <th>ky</th>
+  <th>cap_nhat</th>
+  <th style="text-align:right">gia</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>P1</td>
+  <td>T6</td>
+  <td>29/06 10:00</td>
+  <td style="text-align:right">120</td>
+</tr>
+<tr>
+  <td>P2</td>
+  <td>T6</td>
+  <td>29/06 08:00</td>
+  <td style="text-align:right">90</td>
+</tr>
+<tr>
+  <td>P1</td>
+  <td>T5</td>
+  <td>31/05 07:00</td>
+  <td style="text-align:right">100</td>
+</tr>
+<tr>
+  <td>P1</td>
+  <td>T6</td>
+  <td>29/06 09:00</td>
+  <td style="text-align:right">110</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Với mỗi cặp <code>(id, ky)</code>, chọn giá cập nhật sau cùng, bất kể thứ tự hàng trong bảng.</strong></p>
 
-ca_hai.shape
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="2"><code class="language-text" data-trim>
-(35306, 2)
-            </code></pre>
-          </div>
-          <p>Cột <code>snapshot</code> ghi lại thời điểm quan sát của mỗi dòng trước khi ghép.</p>
-        </section>
+<aside class="notes"><p>Đáp án: lich_cap_nhat.sort_values(&quot;cap_nhat&quot;).drop_duplicates([&quot;id&quot;, &quot;ky&quot;], keep=&quot;last&quot;).
+Kết quả P1/T5=100, P1/T6=120, P2/T6=90. Chấp nhận idxmax hoặc cách tương đương.
+Chỉ keep=&quot;last&quot; trên bảng chưa sắp xếp sẽ giữ 110 cho P1/T6.
+Chỉ dùng id làm khoá sẽ làm mất một kỳ của P1.</p>
+</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2><code>id</code> lặp giữa hai mốc chụp không phải lỗi</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-
-pd.Series({
-    "id lặp": ca_hai["id"].duplicated().sum(),
-    "(id, snapshot) lặp": ca_hai.duplicated().sum(),
+<section id="duplicate-tie">
+<h2>Khi thời điểm cập nhật cũng trùng</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<p>Giả sử P1/T6 có hai giá khác nhau nhưng cùng thời điểm cập nhật (giả lập):</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="31"><code class="language-python" data-trim>cung_gio = pd.DataFrame({
+    &quot;id&quot;: [&quot;P1&quot;, &quot;P1&quot;], &quot;ky&quot;: [&quot;T6&quot;, &quot;T6&quot;],
+    &quot;cap_nhat&quot;: pd.to_datetime([&quot;2026-06-29 10:00&quot;] * 2),
+    &quot;gia&quot;: [120, 125],
 })
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="3"><code class="language-text" data-trim>
-id lặp                12429
-(id, snapshot) lặp        0
-            </code></pre>
-          </div>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            12.429 <code>id</code> có mặt ở cả hai mốc chụp: cùng một chỗ ở được ghi nhận
-            tại hai thời điểm. Với dữ liệu bảng theo thời gian (panel data), khoá của bảng gộp là
-            <code>(id, snapshot)</code>, không phải chỉ <code>id</code>.
-          </div>
-        </section>
+print(cung_gio.duplicated(khoa + [&quot;cap_nhat&quot;], keep=False))</code></pre>
+<pre class="jp-output" data-jp-n="31"><code class="language-text" data-trim>0    True
+1    True
+dtype: bool</code></pre>
+</div>
+<p>Chọn theo thời điểm cập nhật như Bài tập 3 vẫn chưa có căn cứ chọn giá 120 hay 125. Cần thêm nguồn ưu tiên, phiên bản hoặc xác minh lại.</p>
+<aside class="notes"><p>Đặt sau bài tập giữ giá cập nhật cuối để thảo luận giới hạn của lời giải. Thứ tự hàng có thể phụ thuộc cách tải hay ghép file; không dùng nó làm căn cứ nghiệp vụ khi timestamp bằng nhau. Nếu không đủ thông tin, giữ nhóm cần xem và chưa tự quyết giá. Các hàng trùng thời điểm nhưng cùng giá có thể không mâu thuẫn; kết hợp với kiểm giá khác nhau ở slide trước.</p></aside>
+</section>
 
-        <section>
-          <h2>Trùng gần đúng khi khoá chính không đủ</h2>
-          <div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
-          <ul>
-            <li>Cùng một căn hộ có thể được đăng thành hai chỗ ở với <code>id</code> khác nhau —
-              khoá chính không nhận ra.</li>
-            <li>Các tín hiệu có thể dùng gồm toạ độ gần nhau, cùng <code>host_id</code> và tên tương tự.</li>
-            <li>Đây là bài toán liên kết bản ghi (record linkage), nằm ngoài phạm vi chính của học phần.</li>
-          </ul>
-        </section>
-      </section>
+<section id="duplicate-merge">
+<h2>Trùng lặp phát sinh khi ghép bảng</h2>
+<p>Ví dụ giả lập: bảng tra vùng ghi hai hàng cho khu A.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="32"><code class="language-python" data-trim>cho_o = pd.DataFrame({&quot;id&quot;: [&quot;P1&quot;, &quot;P2&quot;], &quot;khu&quot;: [&quot;A&quot;, &quot;B&quot;]})
+vung = pd.DataFrame({&quot;khu&quot;: [&quot;A&quot;, &quot;A&quot;, &quot;B&quot;],
+                     &quot;vung&quot;: [&quot;Bắc&quot;, &quot;Nam&quot;, &quot;Nam&quot;]})
+print(cho_o.merge(vung, on=&quot;khu&quot;, how=&quot;left&quot;))</code></pre>
+<pre class="jp-output" data-jp-n="32"><code class="language-text" data-trim>   id khu vung
+0  P1   A  Bắc
+1  P1   A  Nam
+2  P2   B  Nam</code></pre>
+</div>
+<p>P1 khớp hai hàng nên xuất hiện hai lần. Nếu mỗi khu chỉ được có một vùng, thêm <code>validate="many_to_one"</code> để kiểm khoá bên phải là duy nhất.</p>
+<p>Sửa bảng tra cứu trước khi ghép lại. Xoá một hàng ở kết quả có thể giữ nhầm vùng.</p>
+<aside class="notes"><p>Nối với Bài 5 và chuyển sang mục QA. many_to_one tương đương m:1: cho phép khu lặp ở bảng trái, không cho lặp ở bảng phải. Nếu quan hệ nhiều-nhiều là chủ ý thì việc tăng hàng không nhất thiết là lỗi; phải xuất phát từ ý nghĩa bảng. Notebook chạy phép merge có validate trong try/except để thấy MergeError mà không làm dừng cả notebook.</p></aside>
+</section>
 
-      <!-- ====== Phần 5: Đóng gói ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">5.</span><br>Đóng gói thành bộ quy tắc QA</h1>
-          <p class="text-light">Từ các lệnh rời rạc đến một bộ kiểm tra có thể chạy lại.</p>
-        </section>
+</section>
 
-        <section data-jp-reset>
-          <h2>Mỗi quy tắc một mặt nạ, gom vào một chỗ</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-P99_GIA_THAM_CHIEU = df["price_num"].quantile(0.99)
+<section>
+<section id="qa">
+<h1><span class="text-light">4.</span><br>Bộ quy tắc kiểm tra dữ liệu</h1>
+<p>Đảm bảo chất lượng dữ liệu (<strong>quality assurance, QA</strong>): kiểm cấu trúc, quan hệ giữa dữ liệu và kết quả sau xử lý.</p>
 
-def qa_rules(df, *, p99_gia=P99_GIA_THAM_CHIEU):
-    """Trả về dict: tên quy tắc -> mặt nạ dòng vi phạm."""
-    gia = df["price_num"]
-    return {
-        "gia_thieu": gia.isna(),
-        "gia_tren_p99_ref": gia > p99_gia,
-        "dem_tren_365": df["minimum_nights"] > 365,
-        "id_trung": df["id"].duplicated(keep=False),
-    }
-            </code></pre>
-          </div>
-          <p>Hàm nhận <code>DataFrame</code> và trả về các mặt nạ mà không sửa dữ liệu.
-            Ngưỡng P99 được ước lượng một lần trên mốc tham chiếu rồi truyền vào hàm.</p>
-        </section>
+</section>
 
-        <section data-jp-reset>
-          <h2>Báo cáo tác động: qa_report</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-report = pd.DataFrame([
-    {"quy_tac": ten, "so_dong": int(m.sum()),
-     "ty_le": round(m.mean() * 100, 2)}
-    for ten, m in qa_rules(df).items()
-])
-report
-            </code></pre>
-            <pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>
-               quy_tac  so_dong  ty_le
-0            gia_thieu      846   4.56
-1     gia_tren_p99_ref      177   0.96
-2         dem_tren_365        1   0.01
-3             id_trung        0   0.00
-            </code></pre>
-          </div>
-          <p><code>reports/qa_report.csv</code> ghi lại cả quy tắc có 0 vi phạm.
-            Số 0 cho biết quy tắc đã chạy và không phát hiện vấn đề ở mốc chụp này.</p>
-        </section>
+<section id="qa-schema">
+<h2>Kiểm tra cấu trúc đầu vào</h2>
+<p>Trước khi so giá với ngưỡng, bảng phải đủ cột và các cột dùng để tính phải là số.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="33"><code class="language-python" data-trim>def kiem_cau_truc(d):
+    can = {&quot;id&quot;, &quot;price_num&quot;, &quot;minimum_nights&quot;}
+    thieu = can - set(d.columns)
+    if thieu:
+        raise ValueError(f&quot;Thiếu cột: {sorted(thieu)}&quot;)
+    for cot in [&quot;price_num&quot;, &quot;minimum_nights&quot;]:
+        if not pd.api.types.is_numeric_dtype(d[cot]):
+            raise TypeError(f&quot;Cột {cot} phải có kiểu số&quot;)
 
-        <section>
-          <h2>Chỉ số giá nhạy thế nào với cờ ngoại lai?</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Chỉ số giá (CLP/đêm)</th>
-                <th>Mọi dòng có giá</th>
-                <th>Tạm loại giá trên P99</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Trung bình</td>
-                <td>118.200</td>
-                <td><strong>82.298</strong></td>
-              </tr>
-              <tr>
-                <td>Trung vị</td>
-                <td>59.000</td>
-                <td>58.400</td>
-              </tr>
-            </tbody>
-          </table>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Gắn cờ không đồng nghĩa với xoá. Bảng này là một phân tích độ nhạy:
-            trung bình thay đổi rõ, còn trung vị chỉ thay đổi nhẹ khi tạm loại 177 dòng trên P99.
-          </div>
-        </section>
+kiem_cau_truc(df)</code></pre>
+</div>
+<p><code>is_numeric_dtype</code> kiểm kiểu số. Thiếu cột hoặc sai kiểu thì dừng với thông báo; không bỏ qua phép kiểm rồi báo 0 lỗi.</p>
+<aside class="notes"><p>Đây là kiểm cấu trúc (schema) tối thiểu. Chưa kiểm khoá không thiếu, khoá duy nhất, miền giá trị, vô cực hay giá trị âm. TypeError/ValueError giúp báo đúng lỗi nhập liệu thay vì thất bại khó hiểu ở bước sau. pd.to_numeric(errors="coerce") có thể dùng khi chuyển đổi có chủ đích nhưng phải đếm các lỗi chuyển đổi như phần mở bài; không ép kiểu để che vấn đề. Notebook có ví dụ thiếu cột và giá dạng chuỗi, cả hai phải bị phát hiện.</p></aside>
+</section>
 
-        <section>
-          <h2>Bộ quy tắc phải chạy được trên mốc chụp khác</h2>
-          <ul>
-            <li>Khi chấm, bộ test chung có thể chạy quy trình của nhóm trên <strong>một mốc chụp khác</strong>;
-              danh sách cột và kiểu dữ liệu có thể thay đổi.</li>
-            <li>Kiểm tra cột tồn tại trước khi dùng và đặt ngưỡng trong cấu hình theo thành phố,
-              đơn vị tiền tệ và mốc tham chiếu.</li>
-            <li>Không tính lại P99 trên chính dữ liệu cần kiểm: cách đó luôn gắn cờ khoảng 1%
-              và có thể che khuất sự thay đổi phân phối.</li>
-          </ul>
-        </section>
-      </section>
+<section id="qa-relations">
+<h2>Kiểm tra quan hệ giữa các cột</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<p>Quy định đặt phòng giả lập: <strong>số đêm tối thiểu ≤ số đêm tối đa</strong>.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="34"><code class="language-python" data-trim>quy_dinh = pd.DataFrame({&quot;toi_thieu&quot;: [1, 3, 7, np.nan],
+                         &quot;toi_da&quot;: [7, 2, 7, 30]})
+du = quy_dinh.notna().all(axis=1)
+sai_thu_tu = du &amp; (quy_dinh[&quot;toi_thieu&quot;] &gt; quy_dinh[&quot;toi_da&quot;])
+print(quy_dinh.assign(thieu=~du, sai_thu_tu=sai_thu_tu))</code></pre>
+<pre class="jp-output" data-jp-n="34"><code class="language-text" data-trim>   toi_thieu  toi_da  thieu  sai_thu_tu
+0        1.0       7  False       False
+1        3.0       2  False        True
+2        7.0       7  False       False
+3        NaN      30   True       False</code></pre>
+</div>
+<p>Mỗi cột đều có thể chứa số hợp lệ, nhưng cặp 3 và 2 mâu thuẫn. Hàng thiếu số đêm được gắn cờ riêng vì chưa đủ dữ liệu để so.</p>
+<aside class="notes"><p>all(axis=1) ở đây kiểm cả hai cột đều có giá trị; any ở các slide sau kiểm ít nhất một lỗi. Hai giá bằng nhau (7,7) hợp lệ theo quy tắc ≤. Cùng cách tư duy cho ngày trả phòng ≥ ngày nhận phòng hoặc tổng các khoản phải bằng tổng tiền. Với số thực, so tổng thường dùng dung sai thay vì đòi bằng tuyệt đối.</p></aside>
+</section>
 
-      <!-- ====== Kết ====== -->
-      <section>
-        <section>
-          <h2>Tổng kết</h2>
-          <ul>
-            <li>Ưu tiên gắn cờ; mỗi quy tắc đủ bốn phần: tên – điều kiện – lý do – hành động.</li>
-            <li>Với giá trị thiếu, cần kiểm tra cơ chế trước khi bỏ hoặc điền; giá trị suy diễn phải có cờ.</li>
-            <li>Với ngoại lai, kiểm tra miền trước, sau đó quan sát phân phối và điều tra các trường hợp bị cờ.</li>
-            <li>Trùng lặp phụ thuộc vào khoá; <code>(id, snapshot)</code> là khoá của dữ liệu bảng theo thời gian.</li>
-            <li>Đóng gói các mặt nạ thành hàm, báo cáo số vi phạm và phân tích độ nhạy của chỉ số.</li>
-          </ul>
-        </section>
+<section id="qa-foreign-keys">
+<h2>Kiểm tra mã có ở bảng liên quan</h2>
+<p>Mã chỗ ở của mỗi đánh giá phải có trong bảng chỗ ở. Ví dụ giả lập, hai bảng cùng phạm vi:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="35"><code class="language-python" data-trim>ma_cho_o = pd.Series([&quot;P1&quot;, &quot;P2&quot;])
+ma_danh_gia = pd.Series([&quot;P1&quot;, &quot;P9&quot;, None],
+                       index=[&quot;R1&quot;, &quot;R2&quot;, &quot;R3&quot;])
+co_ma = pd.DataFrame({
+    &quot;thieu_ma&quot;: ma_danh_gia.isna(),
+    &quot;khong_khop&quot;: ma_danh_gia.notna() &amp;
+                  ~ma_danh_gia.isin(ma_cho_o),
+})
+print(co_ma)</code></pre>
+<pre class="jp-output" data-jp-n="35"><code class="language-text" data-trim>    thieu_ma  khong_khop
+R1     False       False
+R2     False        True
+R3      True       False</code></pre>
+</div>
+<p><code>isin</code> kiểm mã thuộc danh sách cho phép. R2 có mã P9 không tìm thấy; R3 thiếu mã nên được tách riêng.</p>
+<aside class="notes"><p>Quan hệ khoá ngoại: đánh giá tham chiếu đến mã chỗ ở. Không so hai mốc chụp hoặc hai phạm vi thành phố khác nhau rồi kết luận mã lỗi. Mã có cùng định dạng trước khi so; tránh ép sang số nếu số 0 đầu là một phần của mã. Lab gộp mã thiếu và mã không tìm thấy vào cùng cờ id_khong_khop; ở đây tách hai lý do để minh hoạ báo cáo chi tiết. Cả hai cách hợp lệ nếu định nghĩa rõ.</p></aside>
+</section>
 
-        <section>
-          <h2>Làm việc với AI thì sao?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <div class="good-box">
-            <span class="box-title">AI làm tốt</span>
-            AI có thể gợi ý danh sách quy tắc từ cấu trúc cột và chuyển một mô tả rõ ràng
-            thành mã kiểm tra ban đầu.
-          </div>
-          <div class="warn-box">
-            <span class="box-title">AI hay sai</span>
-            AI có thể áp dụng <code>dropna()</code> cho toàn bảng, dùng IQR máy móc trên phân phối lệch
-            hoặc đề xuất ngưỡng không phù hợp với thành phố và đơn vị tiền tệ đang phân tích.
-          </div>
-        </section>
+<section id="qa-reconcile">
+<h2>Đối chiếu số liệu giữa hai bảng</h2>
+<p>Tại cùng mốc chụp, bảng chỗ ở ghi số đánh giá; bảng đánh giá cho phép đếm lại (giả lập):</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="36"><code class="language-python" data-trim>so_nguon = pd.Series([2, 1, 0], index=[&quot;P1&quot;, &quot;P2&quot;, &quot;P3&quot;])
+ma_rv = pd.Series([&quot;P1&quot;, &quot;P1&quot;, &quot;P2&quot;, &quot;P2&quot;])
+dem_lai = ma_rv.value_counts().reindex(so_nguon.index,
+                                     fill_value=0)
+print(pd.DataFrame({&quot;nguon&quot;: so_nguon, &quot;dem_lai&quot;: dem_lai,
+                    &quot;lech&quot;: dem_lai - so_nguon}))</code></pre>
+<pre class="jp-output" data-jp-n="36"><code class="language-text" data-trim>    nguon  dem_lai  lech
+P1      2        2     0
+P2      1        2     1
+P3      0        0     0</code></pre>
+</div>
+<p><code>reindex(..., fill_value=0)</code> giữ cả P3 không có đánh giá. P2 lệch 1: cần kiểm thời điểm chụp, phạm vi và cách đếm ở nguồn.</p>
+<aside class="notes"><p>Không lấy số đếm trong file làm chân lý rồi ghi đè cột nguồn. Cần biết file có đủ bản ghi không, đã lọc theo kỳ nào, đã loại bản nhập lặp hay đánh giá bị xoá chưa. Trong lab dùng dữ liệu thật Santiago và đối chiếu cả file với phần đến ngày 29/06. Hai bảng không khớp có thể do phạm vi dữ liệu chứ chưa chắc do lỗi tính toán.</p></aside>
+</section>
 
-        <section>
-          <h2>Kiểm chứng thế nào?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <ul>
-            <li>Đưa mọi quy tắc AI đề xuất qua bảng bốn phần; chỉ giữ quy tắc có lý do nghiệp vụ
-              và hành động xử lý rõ ràng.</li>
-            <li>So tỷ lệ vi phạm với mốc tham chiếu và kiểm tra thủ công một số dòng bị cờ.
-              Quy tắc có 0 vi phạm vẫn phải được ghi trong báo cáo.</li>
-          </ul>
-        </section>
+<section id="qa-purpose">
+<h2>Mô tả quy tắc trước khi viết code</h2>
+<p>Gom các quy tắc cho bảng chỗ ở Santiago. Mỗi quy tắc ghi rõ căn cứ và cách xử lý.</p>
+<table class="compact-table" style="font-size:0.7em">
+<thead>
+<tr>
+  <th>Quy tắc</th>
+  <th>Căn cứ</th>
+  <th>Cách xử lý</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Thiếu giá</td>
+  <td>Không tính được giá</td>
+  <td>Bỏ khỏi phép tính giá</td>
+</tr>
+<tr>
+  <td>Giá trên P99 tham chiếu</td>
+  <td>Giá cao bất thường</td>
+  <td>Xem hàng bị cờ, so tác động</td>
+</tr>
+<tr>
+  <td>Thiếu số đêm tối thiểu</td>
+  <td>Không kiểm được quy định</td>
+  <td>Đếm riêng, xem nguồn</td>
+</tr>
+<tr>
+  <td>Số đêm tối thiểu &gt; 365</td>
+  <td>Ít khi thuê hơn một năm</td>
+  <td>Xem quy định của nguồn</td>
+</tr>
+<tr>
+  <td>Trùng id (một mốc chụp)</td>
+  <td>Mỗi chỗ ở một bản ghi</td>
+  <td>Xem cả nhóm trùng</td>
+</tr>
+</tbody>
+</table>
 
-        <section>
-          <h2>Đọc thêm</h2>
-          <ul>
-            <li>McKinney, <em>Python for Data Analysis</em>, 3rd ed. — ch. 7 (Data Cleaning
-              and Preparation).</li>
-            <li>Đề bài tập lớn — mục "Làm sạch &amp; QA": yêu cầu và tiêu chuẩn của bộ quy tắc nhóm
-              tự đề xuất.</li>
-          </ul>
-        </section>
-      </section>
+<aside class="notes"><p>Tên quy tắc, điều kiện, lý do và hành động cần được ghi rõ. Một quy tắc sàng lọc
+giá cao khác với quy tắc cứng kiểm tra khoá duy nhất. Đề BTL yêu cầu nhóm tự
+đề xuất bộ quy tắc phù hợp, không sao chép mọi ngưỡng trong ví dụ Santiago.</p>
+</aside>
+</section>
+
+<section id="reference-threshold">
+<h2>Chọn ngưỡng theo mục đích kiểm tra</h2>
+<table class="compact-table" style="font-size:0.76em">
+<thead>
+<tr>
+  <th>Muốn kiểm tra</th>
+  <th>Cách dùng ngưỡng</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>Giá nào cao trong từng kỳ?</td>
+  <td>Tính P99 riêng trong kỳ đó</td>
+</tr>
+<tr>
+  <td>Giá có vượt mức tham chiếu cũ?</td>
+  <td>Giữ P99 của kỳ tham chiếu</td>
+</tr>
+</tbody>
+</table>
+<p>Khi so qua các kỳ, ghi lại <strong>nguồn ngưỡng, đơn vị và mốc chụp</strong>.
+Thay thành phố hoặc tiền tệ thì phải xem lại ngưỡng.</p>
+
+<aside class="notes"><p>Nối lại bài tập 2 và dòng «P99 tham chiếu» ở bảng trước. Tính lại P99 không sai nếu mục đích là tìm giá cao tương đối
+trong một kỳ; nó không đo được biến động chung của mức giá. Ngưỡng cố định vẫn
+là công cụ sàng lọc, không tự kết luận mọi giá vượt ngưỡng là lỗi.</p>
+</aside>
+</section>
+
+<section id="qa-function">
+<h2>Viết hàm trả về các cờ</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="37"><code class="language-python" data-trim>def kiem_tra(d, nguong_gia):
+    return pd.DataFrame({
+        &quot;gia_thieu&quot;: d[&quot;price_num&quot;].isna(),
+        &quot;gia_cao&quot;: d[&quot;price_num&quot;] &gt; nguong_gia,
+        &quot;dem_thieu&quot;: d[&quot;minimum_nights&quot;].isna(),
+        &quot;dem_tren_365&quot;: d[&quot;minimum_nights&quot;] &gt; 365,
+        &quot;id_trung&quot;: d[&quot;id&quot;].duplicated(keep=False),
+    })</code></pre>
+</div>
+<p>Mỗi cột là một quy tắc, mỗi hàng ứng với một hàng của <code>d</code>.
+Hàm trả bảng boolean, <strong>không sửa dữ liệu đầu vào</strong>.</p>
+<p><code>NaN &gt; 365</code> cho <code>False</code>, nên số đêm thiếu cần cờ riêng <code>dem_thieu</code>.</p>
+
+<aside class="notes"><p>Đây là bộ quy tắc minh hoạ, chưa phải bộ QA đầy đủ của dự án. Đầu vào có các
+cột id, price_num, minimum_nights; hai cột sau có kiểu số, giá cùng đơn vị CLP.
+Ở mốc chụp này có 6 chỗ ở thiếu minimum_nights; không có cờ dem_thieu thì 6 hàng này lọt qua.
+Thiếu cột sẽ báo KeyError; không âm thầm bỏ quy tắc rồi báo 0.</p>
+</aside>
+</section>
+
+<section id="qa-report">
+<h2>Báo cáo số hàng bị gắn cờ</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="38"><code class="language-python" data-trim>co = kiem_tra(df, nguong_gia=nguong_p99)
+bao_cao = pd.DataFrame({
+    &quot;so_hang&quot;: co.sum(),
+    &quot;ty_le_pct&quot;: (co.mean() * 100).round(2),
+})
+print(bao_cao)</code></pre>
+<pre class="jp-output" data-jp-n="38"><code class="language-text" data-trim>              so_hang  ty_le_pct
+gia_thieu         846       4.56
+gia_cao           177       0.96
+dem_thieu           6       0.03
+dem_tren_365        1       0.01
+id_trung            0       0.00</code></pre>
+</div>
+<p>Tỷ lệ ở đây chia cho <strong>toàn bộ 18.534 hàng</strong>. <code>id_trung</code> bằng 0 chưa cho biết quy tắc có bắt được id trùng hay không.</p>
+
+<aside class="notes"><p>Số liệu 846/177/6/1/0. Với giá trên P99, tỷ lệ trong toàn bảng là 0,96%; tỷ lệ
+trong 17.688 hàng có giá là khoảng 1%. Hai mẫu số khác nhau, không phải lỗi tính.
+Có thể xuất bao_cao.to_csv(&quot;qa_report.csv&quot;, index_label=&quot;quy_tac&quot;).</p>
+</aside>
+</section>
+
+<section id="overlapping-flags">
+<h2>Một hàng có thể bị nhiều cờ</h2>
+<p>Bảng cờ <code>co_mau</code> giả lập:</p>
+<table class="compact-table" style="font-size:0.76em">
+<thead>
+<tr>
+  <th>Mã</th>
+  <th>gia_cao</th>
+  <th>dem_tren_365</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>P1</td>
+  <td>True</td>
+  <td>True</td>
+</tr>
+<tr>
+  <td>P2</td>
+  <td>True</td>
+  <td>False</td>
+</tr>
+<tr>
+  <td>P3</td>
+  <td>False</td>
+  <td>False</td>
+</tr>
+</tbody>
+</table>
+<p><strong>3 lượt gắn cờ, 2 hàng cần xem.</strong></p>
+
+<div class="jp-cell"><pre class="jp-input" data-jp-n="39"><code class="language-python" data-trim>print(co_mau.any(axis=1).sum())</code></pre>
+<pre class="jp-output" data-jp-n="39"><code class="language-text" data-trim>2</code></pre>
+</div>
+<p><code>any(axis=1)</code> đánh dấu hàng có <strong>ít nhất một</strong> cờ <code>True</code>.</p>
+
+</section>
+
+<section id="qa-rows">
+<h2>Lưu cả những hàng cần kiểm tra</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="40"><code class="language-python" data-trim>can_xem = co.any(axis=1)
+cot_goc = [&quot;id&quot;, &quot;price_num&quot;, &quot;minimum_nights&quot;]
+chi_tiet = df.loc[can_xem, cot_goc].join(co.add_prefix(&quot;co_&quot;))
+print(chi_tiet.loc[chi_tiet[&quot;co_dem_tren_365&quot;],
+      [&quot;id&quot;, &quot;minimum_nights&quot;, &quot;co_dem_tren_365&quot;]]
+      .to_string(index=False))</code></pre>
+<pre class="jp-output" data-jp-n="40"><code class="language-text" data-trim>                 id  minimum_nights  co_dem_tren_365
+1508228918689174980           730.0             True</code></pre>
+</div>
+<p><code>join</code> ghép cờ theo chỉ mục hàng; <code>add_prefix</code> thêm <code>co_</code> vào tên cột để phân biệt với dữ liệu gốc.</p>
+<p>Báo cáo tổng cho biết có bao nhiêu vấn đề. Bảng chi tiết giữ mã, giá trị gốc và lý do để kiểm tra từng hàng.</p>
+<aside class="notes"><p>Bảng chi_tiet chứa mọi hàng có ít nhất một cờ; chỉ in ví dụ số đêm >365 để output gọn. df dùng RangeIndex duy nhất, giữ nguyên khi lọc; không reset_index một phía trước khi join. Khi xuất báo cáo, ghi kèm mốc chụp và nguồn ngưỡng. Gắn cờ chưa phải quyết định xoá toàn bộ hàng; mỗi quy tắc có cách xử lý đã nêu ở đầu mục.</p></aside>
+</section>
+
+<section id="rule-tests">
+<h2>Thử quy tắc trên dữ liệu nhỏ</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="41"><code class="language-python" data-trim>thu = pd.DataFrame({
+    &quot;id&quot;: [&quot;P1&quot;, &quot;P2&quot;, &quot;P2&quot;, &quot;P3&quot;],
+    &quot;price_num&quot;: [np.nan, 100, 101, 50],
+    &quot;minimum_nights&quot;: [1, 365, 366, np.nan],
+})
+ket_qua = kiem_tra(thu, nguong_gia=100)
+print(ket_qua)</code></pre>
+<pre class="jp-output" data-jp-n="41"><code class="language-text" data-trim>   gia_thieu  gia_cao  dem_thieu  dem_tren_365  id_trung
+0       True    False      False         False     False
+1      False    False      False         False      True
+2      False     True      False          True      True
+3      False    False       True         False     False</code></pre>
+</div>
+<p>Thử cả giá trị thiếu, giá trị <strong>đúng bằng ngưỡng</strong>, vượt ngưỡng và khoá trùng.</p>
+
+<aside class="notes"><p>Kỳ vọng bốn hàng lần lượt:
+[True,False,False,False,False], [False,False,False,False,True],
+[False,True,False,True,True], [False,False,True,False,False].
+Dữ liệu thật có 0 id trùng nên chưa cho biết quy tắc có bắt được lỗi không.
+Notebook có ô assert so kết quả với bảng kỳ vọng.</p>
+</aside>
+</section>
+
+<section id="qa-after">
+<h2>Kiểm tra tác động của bước làm sạch</h2>
+<p>Quay lại ví dụ điểm đánh giá ở slide «Đánh dấu giá trị sai trước khi thay».</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="42"><code class="language-python" data-trim>truoc_sau = pd.DataFrame({&quot;truoc&quot;: diem, &quot;sau&quot;: diem_hop_le})
+ngoai_mien = truoc_sau.notna() &amp; (
+    (truoc_sau &lt; 0) | (truoc_sau &gt; 5))
+print(pd.DataFrame({&quot;ngoai_mien&quot;: ngoai_mien.sum(),
+                    &quot;thieu&quot;: truoc_sau.isna().sum()}))
+assert diem_hop_le[~sai_mien].equals(diem[~sai_mien])</code></pre>
+<pre class="jp-output" data-jp-n="42"><code class="language-text" data-trim>       ngoai_mien  thieu
+truoc           2      1
+sau             0      3</code></pre>
+</div>
+<p>Số điểm sai miền giảm, nhưng số ô thiếu tăng. <code>assert</code> kiểm các ô ngoài phạm vi sửa vẫn giữ nguyên.</p>
+<p>Sau mỗi bước, kiểm lại cả quy tắc cần sửa lẫn phần dữ liệu phải được giữ lại.</p>
+<aside class="notes"><p>Đầu vào [4.8,6,NaN,-1] có 2 sai miền và 1 thiếu; đầu ra [4.8,NaN,NaN,NaN] có 0 sai miền và 3 thiếu. Không thể chỉ nhìn số lỗi của một quy tắc để kết luận dữ liệu đã hoàn chỉnh. Với bỏ trùng, kiểm số khoá và các bản cần giữ; với clip, kiểm số hàng, số NA và các giá trong ngưỡng. Có thể thử chạy một bước làm sạch hai lần: nếu quy tắc được thiết kế ổn định, lần hai không nên tiếp tục sửa dữ liệu.</p></aside>
+</section>
+
+</section>
+
+<section>
+<section id="summary">
+<h2>Tổng kết</h2>
+<ul>
+<li>Giá trị thiếu: chọn cách bỏ hoặc điền theo dữ liệu, rồi kiểm tra tác động đến thống kê.</li>
+<li>Ngoại lai: chọn ngưỡng theo phân phối và nhóm; so tác động khi bỏ hoặc chặn giá trị.</li>
+<li>Trùng lặp: phân biệt bản nhập lặp, thông tin bổ sung và giá trị mâu thuẫn.</li>
+<li>QA: kiểm đầu vào, quan hệ giữa các cột/bảng; lưu cờ và kiểm lại sau mỗi bước.</li>
+</ul>
+
+</section>
+
+<section id="ai">
+<h2>Làm việc với AI thì sao?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
+<div class="good-box"><span class="box-title">AI làm tốt</span>
+Viết mặt nạ, hàm kiểm tra và bảng báo cáo từ yêu cầu rõ ràng.</div>
+<div class="warn-box"><span class="box-title">AI hay sai</span>
+Điền mọi ô thiếu bằng trung bình, xoá hàng theo IQR, ghép bảng mà không kiểm khoá, hoặc giữ bản ghi cuối mà chưa kiểm tra thứ tự.</div>
+
+</section>
+
+<section id="verify">
+<h2>Kiểm chứng thế nào?</h2>
+<ul>
+<li>Thử trên bảng nhỏ có đáp án biết trước, gồm cả giá trị ở biên và giá trị thiếu.</li>
+<li>Xem các hàng bị cờ; đối chiếu nguồn, đơn vị và ý nghĩa của từng cột.</li>
+<li>So số hàng, thống kê trước và sau xử lý; giải thích thay đổi.</li>
+</ul>
+<p>Thiếu cột bắt buộc thì báo lỗi. <strong>Chưa chạy một quy tắc không có nghĩa là quy tắc đó có 0 vi phạm.</strong></p>
+
+</section>
+
+<section id="references">
+<h2>Đọc thêm</h2>
+<ul>
+<li>McKinney, <em>Python for Data Analysis</em>, 3rd ed.: <a href="https://wesmckinney.com/book/data-cleaning">§7.1 Giá trị thiếu; §7.2 Biến đổi dữ liệu</a>.</li>
+<li>pandas: <a href="https://pandas.pydata.org/docs/user_guide/missing_data.html">giá trị thiếu</a>, <a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.mode.html">mode</a>, <a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.interpolate.html">interpolate</a>, <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.duplicated.html">duplicated</a>, <a href="https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.drop_duplicates.html">drop_duplicates</a>.</li>
+<li>pandas: <a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.mask.html">mask</a>, <a href="https://pandas.pydata.org/docs/reference/api/pandas.Series.clip.html">clip</a>, <a href="https://pandas.pydata.org/docs/reference/api/pandas.api.typing.DataFrameGroupBy.first.html">groupby.first</a>; NIST: <a href="https://www.itl.nist.gov/div898/handbook/eda/section3/eda35h.htm">phát hiện ngoại lai</a>.</li>
+<li><a href="projects/project_airbnb.html">Bài tập lớn: yêu cầu QA</a>.</li>
+</ul>
+
+</section>
+</section>
 
       <!-- Footer -->
       <div class="footer">

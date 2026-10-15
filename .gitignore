@@ -15,3 +15,6 @@ package-lock.json
 
 # Đề cương chính thức — KHÔNG public (có thông tin liên hệ cá nhân)
 /UET_*.docx
+
+# File do lab-10 sinh ra khi chạy local
+qa_report.csv

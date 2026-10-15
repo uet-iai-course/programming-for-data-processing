@@ -22,8 +22,9 @@ for font_file in FONT_DIR.glob("*.ttf"):
 INK, MUTED = "#333333", "#666666"
 plt.rcParams.update({
     "font.family": "Source Sans Pro",
-    "font.size": 13,
+    "font.size": 15,
     "svg.fonttype": "path",
+    "svg.hashsalt": "lecture-10-price-distribution",
     "figure.facecolor": "none",
     "savefig.facecolor": "none",
     "text.color": INK,
@@ -38,31 +39,30 @@ URL = ("https://data.insideairbnb.com/chile/rm/santiago/"
        "2026-06-29/data/listings.csv.gz")
 PATH = sys.argv[1] if len(sys.argv) > 1 else URL
 df = pd.read_csv(PATH, usecols=["price"])
-gia = (df["price"].str.replace("$", "", regex=False)
-       .str.replace(",", "", regex=False).astype(float).dropna())
+gia_chu = (df["price"].str.replace("$", "", regex=False)
+           .str.replace(",", "", regex=False))
+gia = pd.to_numeric(gia_chu, errors="coerce")
+assert not (df["price"].notna() & gia.isna()).any(), "Có giá không chuyển được thành số."
+gia = gia.dropna()
 gia = gia[gia > 0]
 
 fig, axes = plt.subplots(1, 2, figsize=(10, 3.8))
 
-axes[0].hist(gia, bins=60, color=BLUE)
-axes[0].set_title("Thang gốc: dồn hết vào một cột", fontsize=12.5)
-axes[0].set_xlabel("giá (CLP/đêm)")
+axes[0].hist(gia / 1_000_000, bins=60, color=BLUE)
+axes[0].set_title("Thang giá gốc", fontsize=14)
+axes[0].set_xlabel("giá (triệu CLP/đêm)")
 axes[0].set_ylabel("số chỗ ở")
 
 axes[1].hist(np.log10(gia), bins=60, color=ORANGE)
-axes[1].set_title("Thang log10: phân phối hiện rõ", fontsize=12.5)
+axes[1].set_title("Thang log₁₀ của giá", fontsize=14)
 axes[1].set_xlabel("log10(giá)")
-p1, p99 = np.percentile(gia, [1, 99])
-axes[1].axvline(np.log10(p1), color="#c0392b", ls="--", lw=1.6)
-axes[1].axvline(np.log10(p99), color="#c0392b", ls="--", lw=1.6)
-axes[1].text(np.log10(p99) + 0.08, axes[1].get_ylim()[1] * 0.82, "P99", color="#c0392b",
-             fontweight="bold")
-axes[1].text(np.log10(p1) - 0.32, axes[1].get_ylim()[1] * 0.82, "P1", color="#c0392b",
-             fontweight="bold")
+axes[1].set_ylabel("số chỗ ở")
 
 for ax in axes:
     ax.spines[["top", "right"]].set_visible(False)
-fig.suptitle("Phân phối giá chỗ ở tại Santiago", fontweight="bold")
+fig.suptitle("Phân phối giá chỗ ở tại Santiago", fontweight=600)
 fig.tight_layout()
-fig.savefig(OUT / "phan-phoi-gia.svg")
+target = OUT / "phan-phoi-gia.svg"
+fig.savefig(target, metadata={"Date": None})
+target.write_text("\n".join(line.rstrip() for line in target.read_text().splitlines()) + "\n")
 print("phan-phoi-gia.svg done")
