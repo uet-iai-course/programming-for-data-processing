@@ -1165,20 +1165,22 @@ Notebook có ô assert so kết quả với bảng kỳ vọng.</p>
 
 <section id="qa-after">
 <h2>Kiểm tra tác động của bước làm sạch</h2>
-<p>Quay lại ví dụ điểm đánh giá ở slide «Đánh dấu giá trị sai trước khi thay».</p>
-<div class="jp-cell"><pre class="jp-input" data-jp-n="42"><code class="language-python" data-trim>truoc_sau = pd.DataFrame({&quot;truoc&quot;: diem, &quot;sau&quot;: diem_hop_le})
-ngoai_mien = truoc_sau.notna() &amp; (
-    (truoc_sau &lt; 0) | (truoc_sau &gt; 5))
-print(pd.DataFrame({&quot;ngoai_mien&quot;: ngoai_mien.sum(),
-                    &quot;thieu&quot;: truoc_sau.isna().sum()}))
-assert diem_hop_le[~sai_mien].equals(diem[~sai_mien])</code></pre>
-<pre class="jp-output" data-jp-n="42"><code class="language-text" data-trim>       ngoai_mien  thieu
-truoc           2      1
-sau             0      3</code></pre>
+<p>Chặn giá ở P99, rồi chạy lại bộ quy tắc <code>kiem_tra</code> trên bảng trước và sau:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="42"><code class="language-python" data-trim>sau = df.assign(price_num=df[&quot;price_num&quot;].clip(upper=nguong_p99))
+print(pd.DataFrame({&quot;truoc&quot;: kiem_tra(df, nguong_p99).sum(),
+                    &quot;sau&quot;: kiem_tra(sau, nguong_p99).sum()}))
+cot_khac = df.columns.drop(&quot;price_num&quot;)
+assert sau[cot_khac].equals(df[cot_khac])</code></pre>
+<pre class="jp-output" data-jp-n="42"><code class="language-text" data-trim>              truoc  sau
+gia_thieu       846  846
+gia_cao         177    0
+dem_thieu         6    6
+dem_tren_365      1    1
+id_trung          0    0</code></pre>
 </div>
-<p>Số điểm sai miền giảm, nhưng số ô thiếu tăng. <code>assert</code> kiểm các ô ngoài phạm vi sửa vẫn giữ nguyên.</p>
-<p>Sau mỗi bước, kiểm lại cả quy tắc cần sửa lẫn phần dữ liệu phải được giữ lại.</p>
-<aside class="notes"><p>Đầu vào [4.8,6,NaN,-1] có 2 sai miền và 1 thiếu; đầu ra [4.8,NaN,NaN,NaN] có 0 sai miền và 3 thiếu. Không thể chỉ nhìn số lỗi của một quy tắc để kết luận dữ liệu đã hoàn chỉnh. Với bỏ trùng, kiểm số khoá và các bản cần giữ; với clip, kiểm số hàng, số NA và các giá trong ngưỡng. Có thể thử chạy một bước làm sạch hai lần: nếu quy tắc được thiết kế ổn định, lần hai không nên tiếp tục sửa dữ liệu.</p></aside>
+<p>Chỉ cờ <code>gia_cao</code> về 0; các cờ khác giữ nguyên. <code>assert</code> kiểm các cột không xử lý vẫn như cũ.</p>
+<p>Cờ về 0 vì giá đã bị thay, không phải vì giá gốc đúng.</p>
+<aside class="notes"><p>Dùng lại nguong_p99 ở slide «So sánh bỏ hàng và chặn giá» và hàm kiem_tra. assign trả bảng mới, df không đổi. gia_cao 177 → 0 là hệ quả của clip, không chứng minh 177 giá gốc là đúng hay sai. Các cờ 846/6/1/0 giữ nguyên. Với bước khác, tác dụng phụ có thể xuất hiện ở cờ khác: ví dụ mask điểm sai miền (slide «Đánh dấu giá trị sai trước khi thay») làm số ô thiếu tăng. Có thể thử chạy một bước làm sạch hai lần: lần hai không nên tiếp tục sửa dữ liệu.</p></aside>
 </section>
 
 </section>
