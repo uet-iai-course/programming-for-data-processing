@@ -10,10 +10,7 @@
   <link rel="stylesheet" href="revealjs/dist/reset.css">
   <link rel="stylesheet" href="revealjs/dist/reveal.css" />
   <link rel="stylesheet" href="revealjs/dist/theme/white.css" />
-
-  <!-- Theme cho code highlight -->
   <link rel="stylesheet" href="plugin/highlight/zenburn.css">
-
   <link rel="stylesheet" href="lecture-style.css">
   <link rel="icon" type="image/svg+xml" href="../favicon.svg">
 </head>
@@ -22,740 +19,834 @@
   <div class="reveal">
     <div class="slides">
 
-      <!-- ====== Mở bài ====== -->
-      <section>
-        <!-- Title slide -->
-        <section>
-          <h1>Lập trình <br /> xử lý dữ liệu</h1>
-          <div>
-            <p>Học kì 1, năm học 2026–2027</p>
-            <p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
-          </div>
-        </section>
+<section>
+<section id="course">
+<h1>Lập trình<br>xử lý dữ liệu</h1>
+<p>Học kì 1, năm học 2026–2027</p>
+<p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
+</section>
 
-        <!-- Lecture title -->
-        <section>
-          <h1>
-            <span class="text-light">Bài 11</span>
-            <br>
-            Xử lý dữ liệu phi cấu trúc bằng LLM
-          </h1>
-        </section>
+<section id="title">
+<h1><span class="text-light">Bài 11</span><br>Xử lý dữ liệu<br>phi cấu trúc<br>bằng LLM</h1>
+<p>Trích thông tin từ văn bản thành bảng và kiểm tra chất lượng.</p>
+</section>
 
-        <!-- Bài trước -->
-        <section>
-          <h2>Bài trước</h2>
-          <ul>
-            <li>Làm sạch dữ liệu <strong>có cấu trúc</strong>: giá trị thiếu, ngoại lai, trùng lặp.</li>
-            <li>Đóng gói các kiểm tra thành <strong>bộ quy tắc QA</strong> chạy lại được.</li>
-          </ul>
-          <p class="text-light">Bài này: đến lượt phần dữ liệu mà các quy tắc đó không xử lý được.</p>
-        </section>
+<section id="previous">
+<h2>Bài trước</h2>
+<p>Ở Bài 10, bạn đã kiểm tra các cột giá, ngày, mã chỗ ở.</p>
+<p>Cột <code>comments</code> của bảng đánh giá là văn bản tự do. Quy tắc kiểm tra cột không cho biết khách khen hay chê điều gì.</p>
+<aside class="notes"><p>Nối từ Bài 10: bộ quy tắc QA kiểm tra kiểu, miền giá trị, quan hệ giữa các bảng. Các quy tắc đó vẫn dùng được cho cột comments (thiếu, rỗng), nhưng không đọc được nội dung. Hỏi lớp: muốn biết khách hay chê điều gì nhất thì cần cột nào? (đáp: một cột ghi khía cạnh bị chê — chưa có).</p>
+</aside>
+</section>
 
-        <!-- Hôm nay -->
-        <section>
-          <h2>Tổng quan</h2>
-          <ol>
-            <li>Dữ liệu phi cấu trúc</li>
-            <li>Phương pháp đối chứng không dùng LLM</li>
-            <li>Gọi LLM từ Python</li>
-            <li>Đầu ra có cấu trúc &amp; xử lý hàng loạt</li>
-            <li>Đánh giá chất lượng, chi phí &amp; cạm bẫy</li>
-            <li>Làm việc với AI thì sao?</li>
-          </ol>
-        </section>
-      </section>
+<section id="overview">
+<h2>Tổng quan</h2>
+<ol>
+<li>Dữ liệu phi cấu trúc</li>
+<li>Phương pháp đối chứng bằng từ khoá</li>
+<li>Gọi LLM từ Python</li>
+<li>Đầu ra có cấu trúc</li>
+<li>Đánh giá chất lượng và chi phí</li>
+</ol>
+</section>
 
-      <!-- ====== Phần 1: Dữ liệu phi cấu trúc ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">1.</span><br>Dữ liệu phi cấu trúc</h1>
-          <p class="text-light">Cột khó xử lý nhất trong bảng thường là cột chứa văn bản tự do.</p>
-        </section>
+</section>
 
-        <!-- Ví dụ mở -->
-        <section data-jp-reset>
-          <h2>Một cột không giống các cột còn lại</h2>
-          <p>Bảng <span class="inline-code">reviews</span> của Inside Airbnb tại Santiago có khoảng
-            690&nbsp;nghìn đánh giá:</p>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-reviews = pd.read_csv("reviews.csv.gz")
-reviews[["listing_id", "date", "comments"]].head(3)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-   listing_id        date  comments
-0       52811  2010-11-13  Cristian's a great host, and the apartment...
-1       52811  2011-03-23  Excellent accommodation and location...
-2      211498  2012-01-05  Un departamento cómodo, bien ubicado...
-            </code></pre>
-          </div>
-          <p>Có thể lọc theo <span class="inline-code">date</span> và nối bảng theo
-            <span class="inline-code">listing_id</span>; riêng <span class="inline-code">comments</span>
-            chưa thể đưa thẳng vào <code>groupby</code>.</p>
-        </section>
+<section>
+<section id="unstructured">
+<h1><span class="text-light">1.</span><br>Dữ liệu<br>phi cấu trúc</h1>
+<p>Văn bản tự do chưa dùng được với <code>groupby</code>.</p>
+</section>
 
-        <!-- Câu hỏi thật -->
-        <section>
-          <h2>Câu hỏi thật mà bảng này phải trả lời</h2>
-          <div class="question-box">
-            <div class="question-title">Yêu cầu phân tích</div>
-            <div class="question-content">
-              "Trong 2.000 đánh giá gần nhất, khách <strong>chê điều gì nhiều nhất</strong> —
-              và khu vực nào bị chê về <strong>độ ồn</strong> nhiều nhất?"
-            </div>
-          </div>
-          <p class="text-light" style="margin-top:0.8em">Không có cột <span class="inline-code">complaint</span> nào
-            để <code>value_counts()</code> cả. Câu trả lời nằm <em>bên trong</em> văn bản.</p>
-        </section>
+<section id="data">
+<h2>Dữ liệu dùng trong bài</h2>
+<p>Bảng đánh giá của Santiago, mốc chụp <strong>29/06/2026</strong>.<br>Mỗi hàng là một đánh giá.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>rv = pd.read_csv(&quot;reviews.csv.gz&quot;)
+print(rv.shape)
+print(rv.columns.tolist())</code></pre>
+<pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim style="white-space: pre-wrap">(690112, 6)
+['listing_id', 'id', 'date', 'reviewer_id', 'reviewer_name', 'comments']</code></pre>
+</div>
+<p>Cột <code>comments</code> chứa nội dung đánh giá.</p>
+<aside class="notes"><p>Nguồn: data/reviews.csv.gz, Santiago 2026-06-29, 690.112 hàng × 6 cột. Bản rút gọn visualisations/reviews.csv chỉ có listing_id và date, không có cột comments. Notebook đọc file đã tải nếu có, nếu chưa thì đọc từ URL đúng mốc chụp (khoảng 59 MB).</p>
+</aside>
+</section>
 
-        <!-- Phổ dữ liệu -->
-        <section>
-          <h2>Phổ dữ liệu: từ bảng đến văn bản</h2>
-          <div class="pipeline">
-            <div class="stage">
-              <div class="stage-title">Có cấu trúc</div>
-              <div class="stage-desc">bảng, cột có kiểu<br><em>listings.csv</em></div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">Bán cấu trúc</div>
-              <div class="stage-desc">JSON, log, HTML<br><em>API bài 6</em></div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage stage-highlight">
-              <div class="stage-title">Phi cấu trúc</div>
-              <div class="stage-desc">văn bản tự do, ảnh, âm thanh<br><em>bảng reviews</em></div>
-            </div>
-          </div>
-          <p style="margin-top:0.8em">Càng sang phải càng giàu thông tin; càng khó đưa vào
-            <code>groupby</code>. Phần lớn dữ liệu doanh nghiệp nằm ở phía phải.</p>
-        </section>
+<section id="comments">
+<h2>Đọc thử cột comments</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>print(rv[&quot;comments&quot;].str.slice(0, 50).head(3).to_string())</code></pre>
+<pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>0    Cristian's a great host, and the apartment was...
+1    Excellent accommodation and location. Couldn't...
+2    Cristian's apartment was a fantastic spot for ...</code></pre>
+</div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>print(repr(rv.loc[11, &quot;comments&quot;][:90]))</code></pre>
+<pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim style="white-space: pre-wrap">'The apartment is really well located, a few steps from the metro.\r&lt;br/&gt;Building is great. '</code></pre>
+</div>
+<p>Đánh giá ở hàng 11 có <code>\r&lt;br/&gt;</code> giữa hai câu.</p>
+<aside class="notes"><p>str.slice(0, 50) chỉ cắt để vừa slide; dữ liệu không đổi. repr() in chuỗi kèm ký tự đặc biệt, nên thấy được \r (về đầu dòng) và thẻ &lt;br/&gt;. Hỏi lớp: &lt;br/&gt; là gì? (đáp: thẻ HTML xuống dòng).</p>
+</aside>
+</section>
 
-        <!-- Chiến lược -->
-        <section>
-          <h2>Chiến lược: không phân tích; hãy biến đổi văn bản</h2>
-          <div class="pipeline">
-            <div class="stage">
-              <div class="stage-title">Văn bản</div>
-              <div class="stage-desc">"Phòng sạch nhưng ồn quá…"</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage stage-highlight">
-              <div class="stage-title">Trích xuất</div>
-              <div class="stage-desc">dùng luật / LLM</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">Bảng nhãn</div>
-              <div class="stage-desc">sentiment, aspects, language</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">pandas</div>
-              <div class="stage-desc">groupby, pivot, plot</div>
-            </div>
-          </div>
-          <div class="key-box" style="margin-top:0.9em">
-            <span class="box-title">Quan trọng</span>
-            Chuyển dữ liệu phi cấu trúc thành <strong>bảng</strong>, rồi dùng lại các công cụ pandas
-            đã học từ bài 4–10.
-          </div>
-        </section>
+<section id="line-breaks">
+<h2>Thẻ xuống dòng trong đánh giá</h2>
+<p>Inside Airbnb ghi chỗ xuống dòng bằng thẻ HTML <code>&lt;br/&gt;</code>. Đứng trước thẻ đôi khi còn <code>\r</code> (carriage return, ký tự về đầu dòng), phần sót của cặp xuống dòng <code>\r\n</code> trên Windows.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>co_br = rv[&quot;comments&quot;].str.contains(&quot;&lt;br/&gt;&quot;, regex=False)
+print(co_br.sum(), round(co_br.mean(), 3))</code></pre>
+<pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>116471 0.169</code></pre>
+</div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>rv[&quot;comments&quot;] = rv[&quot;comments&quot;].str.replace(
+    r&quot;\r?&lt;br/&gt;&quot;, &quot; &quot;, regex=True)
+print(repr(rv.loc[11, &quot;comments&quot;][44:85]))</code></pre>
+<pre class="jp-output" data-jp-n="5"><code class="language-text" data-trim>'steps from the metro. Building is great. '</code></pre>
+</div>
+<p>Thay bằng dấu cách để hai câu không dính vào nhau.</p>
+<aside class="notes"><p>116.471 đánh giá (16,9%) có &lt;br/&gt;; 1.654 trong số đó có \r đứng ngay trước. \r là mã ASCII 13. Windows xuống dòng bằng \r\n, Linux và macOS bằng \n; có lẽ khi lưu, \n được đổi thành &lt;br/&gt; còn \r bị sót. Khi in, \r đưa con trỏ về đầu dòng nên chữ in sau đè chữ in trước; vì vậy slide trước dùng repr(). Mẫu r'\r?&lt;br/&gt;' khớp &lt;br/&gt; có hoặc không có \r phía trước. Cách thay này giống lab Bài 7. Thay bằng chuỗi rỗng thì 'metro.' và 'Building' dính thành 'metro.Building'. Đây không phải bộ làm sạch mọi dạng HTML; chỉ thay đúng thẻ đã thấy trong dữ liệu.</p>
+</aside>
+</section>
 
-        <!-- Bài toán trích xuất -->
-        <section>
-          <h2>Bài toán của bài này</h2>
-          <p>Với <strong>mỗi đánh giá</strong>, mục tiêu là tạo được một dòng như sau:</p>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>comments (đầu vào)</th>
-                <th>sentiment</th>
-                <th>aspects_khen</th>
-                <th>aspects_chê</th>
-                <th>lang</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>"Great location, but so noisy at night…"</td>
-                <td>mixed</td>
-                <td>location</td>
-                <td>noise</td>
-                <td>en</td>
-              </tr>
-              <tr>
-                <td>"Depto impecable, anfitrión atento."</td>
-                <td>positive</td>
-                <td>cleanliness, host</td>
-                <td>—</td>
-                <td>es</td>
-              </tr>
-            </tbody>
-          </table>
-          <p class="text-light" style="margin-top:0.6em">Có bảng này rồi thì câu hỏi ở đầu bài chỉ còn là một
-            <code>groupby</code>.</p>
-        </section>
-      </section>
+<section id="comments-stats">
+<h2>Thiếu, rỗng và độ dài</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>binh_luan = rv[&quot;comments&quot;]
+print(&quot;Thiếu:&quot;, binh_luan.isna().sum())
+print(&quot;Chỉ có dấu chấm:&quot;, binh_luan.str.strip().eq(&quot;.&quot;).sum())
+print(&quot;Trung vị độ dài:&quot;, binh_luan.str.len().median(), &quot;ký tự&quot;)</code></pre>
+<pre class="jp-output" data-jp-n="6"><code class="language-text" data-trim>Thiếu: 36
+Chỉ có dấu chấm: 3305
+Trung vị độ dài: 114.0 ký tự</code></pre>
+</div>
+<p>Quy tắc kiểm tra của Bài 10 vẫn cần cho cột văn bản: ô thiếu, đánh giá không có nội dung.</p>
+<aside class="notes"><p>36 ô thiếu và 3.305 đánh giá chỉ có dấu chấm. Trung vị 114 ký tự, tức khoảng hai câu ngắn; có đánh giá dài hơn 5.000 ký tự. Đánh giá viết bằng nhiều ngôn ngữ (Anh, Tây Ban Nha, Bồ Đào Nha…).</p>
+</aside>
+</section>
 
-      <!-- ====== Phần 2: Phương pháp đối chứng ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">2.</span><br>Phương pháp <br/> đối chứng <br/> không dùng LLM</h1>
-          <p class="text-light">Trước khi dùng LLM, hãy bắt đầu bằng công cụ đã học ở bài 7.</p>
-        </section>
+<section id="question">
+<h2>Câu hỏi cần trả lời</h2>
+<div class="question-box">
+<div class="question-title">Yêu cầu phân tích</div>
+<div class="question-content">Khách thường <strong>chê điều gì</strong>? Đánh giá được viết bằng <strong>những ngôn ngữ nào</strong>?</div>
+</div>
+<p style="margin-top:0.8em">Bảng không có cột ghi khía cạnh bị chê hay ngôn ngữ. Thông tin này nằm trong câu chữ của từng đánh giá.</p>
+<p>Với 690 nghìn đánh giá, từ khoá chạy được cả bảng; LLM chỉ chạy trên một mẫu (mục 5 giải thích vì sao).</p>
+<aside class="notes"><p>Hỏi lớp: muốn trả lời bằng value_counts thì cần cột gì? (đáp: một cột nhãn khía cạnh bị chê, một cột ngôn ngữ). Cả bài xoay quanh việc tạo hai loại cột này và kiểm tra xem chúng đúng đến đâu.</p>
+</aside>
+</section>
 
-        <!-- Keyword aspects -->
-        <section data-jp-reset>
-          <h2>Trích xuất khía cạnh bằng từ khoá</h2>
-          <p>Mỗi khía cạnh một bộ từ khoá, quét bằng <span class="inline-code">str.contains</span>:</p>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-KEYWORDS = {
-    "noise": r"noisy|noise|loud|ruido",
-    "cleanliness": r"clean|dirty|limpio|sucio",
+<section id="spectrum">
+<h2>Ba mức cấu trúc của dữ liệu</h2>
+<div class="pipeline">
+<div class="stage"><div class="stage-title">Có cấu trúc</div><div class="stage-desc">bảng, mỗi cột một kiểu<br><em>listings.csv</em></div></div>
+<div class="arrow">→</div>
+<div class="stage"><div class="stage-title">Bán cấu trúc</div><div class="stage-desc">JSON, log, HTML<br><em>dữ liệu API ở Bài 6</em></div></div>
+<div class="arrow">→</div>
+<div class="stage stage-highlight"><div class="stage-title">Phi cấu trúc</div><div class="stage-desc">văn bản tự do, ảnh, âm thanh<br><em>cột comments</em></div></div>
+</div>
+<p style="margin-top:0.8em">JSON có khoá để chương trình đọc từng trường. Văn bản tự do không có khoá như vậy.</p>
+<aside class="notes"><p>Phân biệt theo việc dữ liệu có sẵn khoá/cột để chương trình đọc hay không. JSON ở Bài 6 có khoá; chỉ cần đọc đúng khoá. Một đánh giá là chuỗi tự do: cùng ý 'ồn' có thể viết noisy, loud, ruidoso.</p>
+</aside>
+</section>
+
+<section id="to-table">
+<h2>Biến văn bản thành bảng nhãn</h2>
+<div class="pipeline">
+<div class="stage"><div class="stage-title">Văn bản</div><div class="stage-desc">“Location was perfect, not clean at all”</div></div>
+<div class="arrow">→</div>
+<div class="stage stage-highlight"><div class="stage-title">Trích xuất</div><div class="stage-desc">từ khoá hoặc LLM</div></div>
+<div class="arrow">→</div>
+<div class="stage"><div class="stage-title">Bảng nhãn</div><div class="stage-desc">cảm xúc, khía cạnh, ngôn ngữ</div></div>
+<div class="arrow">→</div>
+<div class="stage"><div class="stage-title">pandas</div><div class="stage-desc">groupby, value_counts</div></div>
+</div>
+<p style="margin-top:0.8em">LLM (large language model, mô hình ngôn ngữ lớn) là mô hình như Gemini, ChatGPT.</p>
+<div class="key-box">
+<span class="box-title">Quan trọng</span>
+Mỗi đánh giá được đổi thành một hàng nhãn. Sau đó bạn dùng lại các công cụ pandas từ Bài 4–10.
+</div>
+<aside class="notes"><p>Mục 2 làm bước trích xuất bằng từ khoá; mục 3–4 bằng LLM; mục 5 đo xem mỗi cách đúng đến đâu. LLM ở đây chỉ là một bước trong pipeline, không thay pandas.</p>
+</aside>
+</section>
+
+<section id="target">
+<h2>Bảng nhãn cần tạo</h2>
+<p>Mỗi đánh giá thành một hàng:</p>
+<table class="compact-table">
+<thead><tr><th>comments</th><th>sentiment</th><th>aspects_positive</th><th>aspects_negative</th><th>language</th></tr></thead>
+<tbody>
+<tr><td>“The flat was not clean at all, dust everywhere. Location was perfect though.”</td><td>mixed</td><td>location</td><td>cleanliness</td><td>en</td></tr>
+<tr><td>“Súper cómodo y muy limpio. El anfitrión respondió al instante.”</td><td>positive</td><td>cleanliness, host</td><td>—</td><td>es</td></tr>
+</tbody>
+</table>
+<p style="margin-top:0.6em"><code>sentiment</code>: cảm xúc chung; <code>aspects_…</code>: khía cạnh được khen, bị chê; <code>language</code>: mã ngôn ngữ.</p>
+<aside class="notes"><p>Hai đánh giá này nằm trong bộ 24 đánh giá minh hoạ ở mục 4; nhãn trên là nhãn gán tay. Tên cột tiếng Anh vì đây là tên trường trong schema ở mục 4. Hỏi lớp: đánh giá thứ nhất có cảm xúc gì? (đáp: mixed — có cả khen vị trí lẫn chê vệ sinh).</p>
+</aside>
+</section>
+
+</section>
+
+<section>
+<section id="baseline">
+<h1><span class="text-light">2.</span><br>Phương pháp<br>đối chứng<br>bằng từ khoá</h1>
+<p>Phương pháp đối chứng (baseline) dùng regex của Bài 7 để có kết quả đầu tiên.</p>
+</section>
+
+<section id="keyword-aspects">
+<h2>Tìm khía cạnh bằng từ khoá</h2>
+<p>Mỗi khía cạnh có một mẫu regex gồm từ tiếng Anh và tiếng Tây Ban Nha:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>TU_KHOA = {
+    &quot;noise&quot;: r&quot;noisy|noise|loud|ruido&quot;,
+    &quot;cleanliness&quot;: r&quot;clean|dirty|limpio|sucio&quot;,
 }
-for aspect, pat in KEYWORDS.items():
-    reviews[aspect] = reviews["comments"].str.contains(
-        pat, case=False, regex=True)
-
-reviews[["noise", "cleanliness"]].mean()
-            </code></pre>
-            <pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>
-noise          0.020
+for khia_canh, mau in TU_KHOA.items():
+    rv[khia_canh] = rv[&quot;comments&quot;].str.contains(mau, case=False)
+print(rv[[&quot;noise&quot;, &quot;cleanliness&quot;]].mean().round(3))</code></pre>
+<pre class="jp-output" data-jp-n="7"><code class="language-text" data-trim>noise          0.020
 cleanliness    0.164
-            </code></pre>
-          </div>
-          <p>Đoạn mã ngắn này có thể xử lý 690&nbsp;nghìn đánh giá trong vài giây.</p>
-        </section>
+dtype: float64</code></pre>
+</div>
+<p>Trung bình cột boolean là tỷ lệ <code>True</code>: 16,4% đánh giá có từ về vệ sinh.</p>
+<aside class="notes"><p>Chạy trên cả 690.112 đánh giá trong vài giây. Ô thiếu cho False (cột str của pandas 3). 16,4% là tỷ lệ NHẮC đến vệ sinh, chưa phải tỷ lệ chê: 'very clean' cũng khớp. Hỏi lớp: 'ruidoso' có khớp mẫu noise không? (đáp: có, vì chứa 'ruido'). 'limpieza' thì không khớp 'limpio'.</p>
+</aside>
+</section>
 
-        <!-- Sentiment từ điển -->
-        <section data-jp-reset>
-          <h2>Trích xuất cảm xúc bằng từ điển</h2>
-          <p>Đếm từ tích cực trừ từ tiêu cực — thô nhưng có ngay con số:</p>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-POS = r"great|perfect|excellent|excelente"
-NEG = r"bad|dirty|noisy|terrible|malo"
+<section id="keyword-negation">
+<h2>Từ khoá không phân biệt khen và chê</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>co_not_clean = rv[&quot;comments&quot;].str.contains(&quot;not clean&quot;, case=False)
+print(co_not_clean.sum())
+print(rv.loc[co_not_clean, &quot;cleanliness&quot;].all())</code></pre>
+<pre class="jp-output" data-jp-n="8"><code class="language-text" data-trim>89
+True</code></pre>
+</div>
+<p>89 đánh giá có cụm <em>not clean</em> đều được đánh dấu <code>cleanliness</code>, giống các đánh giá khen <em>very clean</em>.</p>
+<p>Muốn biết khen hay chê, cần thêm nhãn cảm xúc.</p>
+<aside class="notes"><p>all() trả True: cả 89 đánh giá đều mang cờ cleanliness. Cờ chỉ nói 'có nhắc', không nói 'chê'. Có thể thêm mẫu cho phủ định (not clean, no muy limpio…), nhưng mỗi cách nói và mỗi ngôn ngữ cần thêm một mẫu.</p>
+</aside>
+</section>
 
-score = (reviews["comments"].str.count(POS, flags=re.I)
-       - reviews["comments"].str.count(NEG, flags=re.I))
-reviews["baseline_sent"] = np.select(
-    [score > 0, score < 0], ["positive", "negative"], "mixed")
-            </code></pre>
-          </div>
-          <p class="text-light">Các từ điển đầy đủ hơn, như VADER, vẫn dựa trên cùng nguyên lý đếm từ.</p>
-        </section>
+<section id="keyword-sentiment">
+<h2>Đoán cảm xúc bằng từ điển</h2>
+<p>Đếm số từ tích cực trừ số từ tiêu cực:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="9"><code class="language-python" data-trim>TOT = r&quot;great|perfect|excellent|excelente&quot;
+XAU = r&quot;bad|dirty|noisy|terrible|malo&quot;
+diem = (rv[&quot;comments&quot;].str.count(TOT, flags=re.I)
+        - rv[&quot;comments&quot;].str.count(XAU, flags=re.I))
+rv[&quot;cam_xuc_tu_dien&quot;] = np.select(
+    [diem &gt; 0, diem &lt; 0], [&quot;positive&quot;, &quot;negative&quot;], &quot;mixed&quot;)
+print(rv[&quot;cam_xuc_tu_dien&quot;].value_counts())</code></pre>
+<pre class="jp-output" data-jp-n="9"><code class="language-text" data-trim>cam_xuc_tu_dien
+mixed       427637
+positive    258716
+negative      3759
+Name: count, dtype: int64</code></pre>
+</div>
+<p class="caption"><code>np.select</code>(điều kiện, nhãn, mặc định): mỗi hàng lấy nhãn của điều kiện đúng đầu tiên; không điều kiện nào đúng thì lấy mặc định. Điểm 0 → <code>mixed</code>.</p>
+<aside class="notes"><p>str.count đếm số lần khớp mẫu trong từng chuỗi; flags=re.I để không phân biệt hoa thường. np.select làm trên cả cột một lần (vector hoá), không lặp từng hàng như map. 427.637/690.112 (62%) đánh giá bị gán mixed: 427.601 có điểm 0 (426.374 không chứa từ nào trong hai danh sách ngắn này, 1.227 có số từ tốt bằng số từ xấu) và 36 ô thiếu (NaN so sánh với 0 đều False nên rơi vào mặc định). Phần lớn không phải vì vừa khen vừa chê. Ví dụ hàng 7 'Muy bien el departamento, con una vista preciosa…' bị gán mixed. Từ điển đầy đủ hơn như VADER vẫn dựa trên cùng nguyên tắc đếm từ.</p>
+</aside>
+</section>
 
-        <!-- Baseline giỏi/kém -->
-        <section>
-          <h2>Phương pháp đối chứng làm tốt gì, hạn chế gì?</h2>
-          <div class="two-col">
-            <div>
-              <h4 class="text-green">Làm tốt</h4>
-              <ul>
-                <li>Nhanh: cả bảng trong vài giây.</li>
-                <li>Miễn phí, chạy lại ra đúng kết quả cũ.</li>
-                <li>Giải thích được từng kết quả.</li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="text-red">Hạn chế</h4>
-              <ul>
-                <li>"not clean at all" → dính từ khoá <em>clean</em>.</li>
-                <li>Mỗi ngôn ngữ phải soạn lại từ khoá.</li>
-                <li>Khó xử lý câu mỉa mai, viết tắt hoặc sai chính tả.</li>
-              </ul>
-            </div>
-          </div>
-        </section>
+<section id="not-bad">
+<h2>Từ điển không hiểu phủ định</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="10"><code class="language-python" data-trim>not_bad = rv[&quot;comments&quot;].str.contains(&quot;not bad&quot;, case=False)
+print(rv.loc[not_bad, &quot;cam_xuc_tu_dien&quot;].value_counts())</code></pre>
+<pre class="jp-output" data-jp-n="10"><code class="language-text" data-trim>cam_xuc_tu_dien
+negative    17
+mixed       10
+positive     8
+Name: count, dtype: int64</code></pre>
+</div>
+<p>35 đánh giá có cụm <em>not bad</em>, thường là lời khen nhẹ. 17 đánh giá trong số đó bị gán <code>negative</code> vì có chữ <em>bad</em>.</p>
+<aside class="notes"><p>Hỏi lớp trước khi hiện output: 'not bad' là khen hay chê? (đáp: thường là khen nhẹ). Thêm mẫu 'not bad' vào từ điển thì lại thiếu 'no está mal', 'nada mal'… mỗi cách nói một mẫu.</p>
+</aside>
+</section>
 
-        <!-- Vai trò phương pháp đối chứng -->
-        <section>
-          <h2>Vai trò của phương pháp đối chứng</h2>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Phương pháp đối chứng (baseline) là <strong>mốc so sánh</strong> để xác định LLM có cải thiện
-            kết quả đủ nhiều so với chi phí hay không.
-          </div>
-          <p>Xây dựng phương pháp đối chứng trước, rồi đánh giá cả hai phương pháp trên cùng một
-            bộ dữ liệu gán nhãn (phần 5).</p>
-        </section>
-      </section>
+<section id="baseline-limits">
+<h2>Ưu điểm và hạn chế của từ khoá</h2>
+<div class="two-col">
+<div>
+<h4 class="text-green">Ưu điểm</h4>
+<ul>
+<li>Chạy cả bảng trong vài giây, miễn phí.</li>
+<li>Chạy lại ra đúng kết quả cũ.</li>
+<li>Biết vì sao một đánh giá được gán nhãn.</li>
+</ul>
+</div>
+<div>
+<h4 class="text-red">Hạn chế</h4>
+<ul>
+<li>Không hiểu phủ định.</li>
+<li>Mỗi ngôn ngữ phải soạn từ khoá riêng.</li>
+<li>Bỏ sót cách viết khác, viết tắt, sai chính tả.</li>
+</ul>
+</div>
+</div>
+<aside class="notes"><p>Ưu điểm 'biết vì sao' quan trọng khi bảo vệ kết quả: chỉ ra được từ khoá nào đã khớp. LLM ngược lại: hiểu ngữ cảnh tốt hơn nhưng tốn tiền, chậm, và không giải thích chắc chắn vì sao gán nhãn.</p>
+</aside>
+</section>
 
-      <!-- ====== Phần 3: Gọi LLM từ Python ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">3.</span><br>Gọi LLM từ Python</h1>
-          <p class="text-light">LLM có thể xử lý nội dung văn bản và được gọi từ mã nguồn như các API ở bài 6.</p>
-        </section>
+<section id="exercise-safety">
+<h2>Bài tập 1: Khía cạnh an toàn</h2>
+<p>Thêm khía cạnh <code>safety</code> với mẫu <code>r"safe|unsafe|seguro|insegur"</code>.</p>
+<ol>
+<li>Bao nhiêu phần trăm đánh giá khớp mẫu?</li>
+<li>In 5 đánh giá khớp đầu tiên. Khách khen hay chê sự an toàn?</li>
+<li>Trong các đánh giá khớp câu 1, bao nhiêu phần trăm khớp mẫu chê <code>r"not safe|unsafe|insegur|peligros"</code>?</li>
+</ol>
+<aside class="notes"><p>Đáp án: s = rv['comments'].str.contains(r'safe|unsafe|seguro|insegur', case=False); s.mean() ≈ 0,053 (36.784 đánh giá). 5 đánh giá đầu đều khen ('It was safe, conveniently located…'). Câu 3: c = …str.contains(r'not safe|unsafe|insegur|peligros', case=False); (s & c).sum() / s.sum() ≈ 0,031 (1.134 đánh giá). Kết luận: tỷ lệ nhắc đến một khía cạnh không phải tỷ lệ chê khía cạnh đó. Hỏi thêm: 'seguro' còn nghĩa 'chắc chắn' ('Volveremos seguro' = chắc chắn sẽ quay lại), nên mẫu câu 1 khớp cả đánh giá không nói về an toàn. Mẫu chê vẫn bỏ sót 'no es seguro'.</p>
+</aside>
+</section>
 
-        <!-- Chat vs API -->
-        <section>
-          <h2>Chat và API: 2 cách dùng một mô hình</h2>
-          <div class="two-col">
-            <div>
-              <h4>Giao diện chat</h4>
-              <ul>
-                <li>Người gõ, người đọc.</li>
-                <li>Tiện lợi cho việc khám phá, hỏi đáp.</li>
-                <li>Không lặp lại được hàng ngàn lần.</li>
-              </ul>
-            </div>
-            <div>
-              <h4>Gọi qua API</h4>
-              <ul>
-                <li>Mã nguồn gửi yêu cầu và nhận phản hồi.</li>
-                <li>Nằm <strong>trong pipeline</strong>, chạy hàng loạt.</li>
-                <li>Cách dùng của môn này.</li>
-              </ul>
-            </div>
-          </div>
-        </section>
+<section id="baseline-role">
+<h2>Vai trò của phương pháp đối chứng</h2>
+<div class="key-box">
+<span class="box-title">Quan trọng</span>
+Phương pháp đối chứng cho kết quả để so sánh. LLM tốn tiền và thời gian hơn, nên phải tốt hơn đủ nhiều mới đáng dùng.
+</div>
+<p>Chạy cả hai cách trên cùng một bộ đánh giá đã gán nhãn tay, rồi so điểm (mục 5).</p>
+<aside class="notes"><p>Baseline không cần tốt; nó cần đơn giản, chạy lại được và được đo cùng cách với LLM. Nếu LLM chỉ hơn vài điểm phần trăm trên bộ nhãn tay thì chưa chắc đáng chi phí.</p>
+</aside>
+</section>
 
-        <!-- Gemini API -->
-        <section>
-          <h2>Gemini API: Có gói miễn phí</h2>
-          <ul>
-            <li>Lấy khóa API (API key) ở <strong>Google AI Studio</strong> (aistudio.google.com) — gói miễn phí,
-              <strong>không cần thẻ</strong>.</li>
-            <li>Các mô hình dùng trong môn:</li>
-          </ul>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Mô hình</th>
-                <th>Hợp với</th>
-                <th>Giá trả phí (1M token vào/ra)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td><span class="inline-code">gemini-3.1-flash-lite</span></td>
-                <td>trích xuất hàng loạt — hạn mức miễn phí cao</td>
-                <td>$0.25 / $1.50</td>
-              </tr>
-              <tr>
-                <td><span class="inline-code">gemini-3.5-flash</span></td>
-                <td>văn bản khó, cần suy luận</td>
-                <td>$1.50 / $9.00</td>
-              </tr>
-            </tbody>
-          </table>
-          <p class="caption">Gói miễn phí có hạn mức theo ngày và theo phút. Xem mức hiện hành trong
-            AI Studio, mục Rate limits, vì các con số này có thể thay đổi.</p>
-        </section>
+</section>
 
-        <!-- API key -->
-        <section>
-          <h2>Khóa API cần được bảo mật như mật khẩu</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-from google.colab import userdata   # Colab: menu 🔑 Secrets
-API_KEY = userdata.get("GEMINI_API_KEY")
-            </code></pre>
-          </div>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            Không viết khóa thẳng vào mã nguồn, không commit lên GitHub và không dán vào chat hoặc ảnh chụp
-            màn hình. Nếu khóa bị lộ, người khác có thể dùng hạn mức hoặc tài khoản trả phí của bạn.
-          </div>
-        </section>
+<section>
+<section id="llm">
+<h1><span class="text-light">3.</span><br>Gọi LLM từ Python</h1>
+<p>Gửi yêu cầu, nhận phản hồi, như gọi API ở Bài 6.</p>
+</section>
 
-        <!-- First call -->
-        <section data-jp-reset>
-          <h2>Lần gọi đầu tiên</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-from google import genai
+<section id="chat-api">
+<h2>Giao diện chat và API</h2>
+<div class="two-col">
+<div>
+<h4>Giao diện chat</h4>
+<ul>
+<li>Người gõ câu hỏi, người đọc câu trả lời.</li>
+<li>Tiện để thử và hỏi đáp.</li>
+<li>Khó lặp lại cho hàng nghìn đánh giá.</li>
+</ul>
+</div>
+<div>
+<h4>Gọi qua API</h4>
+<ul>
+<li>Code gửi yêu cầu và nhận phản hồi.</li>
+<li>Chạy trong vòng lặp, kết quả ghi vào bảng.</li>
+<li>Cách dùng trong bài này.</li>
+</ul>
+</div>
+</div>
+<aside class="notes"><p>Cùng một mô hình; khác cách dùng. API (application programming interface) đã gặp ở Bài 6 khi lấy dữ liệu thời tiết.</p>
+</aside>
+</section>
 
-client = genai.Client(api_key=API_KEY)
-interaction = client.interactions.create(
-    model="gemini-3.1-flash-lite",
-    input="Chào bằng đúng 5 từ tiếng Việt.",
+<section id="gemini">
+<h2>Gemini API</h2>
+<p>Lấy khoá API ở <strong>Google AI Studio</strong>. Hai mô hình dùng trong bài:</p>
+<table class="compact-table">
+<thead><tr><th>Mô hình</th><th>Dùng cho</th><th>Miễn phí<br>lời gọi/phút, /ngày</th><th>Trả phí, USD<br>1 triệu token vào, ra</th></tr></thead>
+<tbody>
+<tr><td style="white-space:nowrap"><code>gemini-3.5-flash-lite</code></td><td>hàng loạt</td><td>15 / 500</td><td>0,30 / 2,50</td></tr>
+<tr><td style="white-space:nowrap"><code>gemini-3.8-flash</code></td><td>văn bản khó</td><td>5 / 20</td><td>0,75 / 3,75<br>(đến 31/12/2026)</td></tr>
+</tbody>
+</table>
+<p class="caption">Token là đơn vị văn bản mô hình xử lý; tiếng Anh khoảng 4 ký tự một token. Hạn mức của một project trong AI Studio, giá theo trang Pricing; số liệu tháng 10/2026.</p>
+<div class="warn-box">
+<span class="box-title">Cẩn thận</span>
+Gói miễn phí: nội dung gửi đi có thể được Google dùng để cải thiện sản phẩm. Chỉ gửi dữ liệu công khai.
+</div>
+<aside class="notes"><p>Nguồn (kiểm tra ngày 21/10/2026): ai.google.dev/gemini-api/docs/models (cập nhật 19/10), /pricing (19/10), /deprecations, /rate-limits (15/10), /tokens. Hạn mức gói miễn phí lấy từ AI Studio (mục Rate Limit) của project LTXLDL ngày 22/10/2026: 3.5-flash-lite 15 lời gọi/phút, 250K token/phút, 500 lời gọi/ngày; 3.8-flash 5 / 250K / 20. Trang Rate limits không công bố bảng chung; mỗi project có thể khác, sinh viên xem số của mình trong AI Studio. gemini-3.1-flash-lite ngừng hoạt động 07/05/2027, Google khuyên chuyển sang 3.5-flash-lite. Giá 3.8-flash tăng gấp đôi từ 01/01/2027 (1,50/7,50). Dòng 'Used to improve our products': gói miễn phí Yes, trả phí No.</p>
+</aside>
+</section>
+
+<section id="api-key">
+<h2>Giữ khoá API như mật khẩu</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="11"><code class="language-python" data-trim>try:
+    from google.colab import userdata    # Colab: 🔑 Secrets
+    API_KEY = userdata.get(&quot;GEMINI_API_KEY&quot;)
+except Exception:                         # máy cá nhân
+    API_KEY = os.environ.get(&quot;GEMINI_API_KEY&quot;)
+CO_KHOA = bool(API_KEY)</code></pre>
+</div>
+<div class="warn-box">
+<span class="box-title">Cẩn thận</span>
+Không viết khoá vào code, không commit lên GitHub, không dán vào chat hay ảnh chụp màn hình. Người có khoá dùng được hạn mức và tài khoản trả phí của bạn.
+</div>
+<aside class="notes"><p>userdata.get báo lỗi khi chưa có secret hoặc chưa bật Notebook access; khi đó đọc biến môi trường. CO_KHOA = False thì notebook không gọi API mà đọc kết quả đã lưu. Khoá lộ thì thu hồi ngay trong AI Studio rồi tạo khoá mới; xoá khỏi code là chưa đủ vì lịch sử git còn giữ.</p>
+</aside>
+</section>
+
+<section id="first-call">
+<h2>Lần gọi đầu tiên</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="12"><code class="language-python" data-trim>from google import genai
+
+MODEL = &quot;gemini-3.5-flash-lite&quot;
+client = genai.Client(api_key=API_KEY) if CO_KHOA else None</code></pre>
+</div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="13"><code class="language-python" data-trim>tra_loi = client.interactions.create(
+    model=MODEL,
+    input=&quot;Trong một câu: đánh giá này khen gì, chê gì? &quot;
+          &quot;Great location, so noisy.&quot;,
 )
-print(interaction.output_text)
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="2"><code class="language-text" data-trim>
-Chào bạn, rất vui gặp!
-            </code></pre>
-          </div>
-          <p>Mỗi lời gọi gửi một yêu cầu và nhận một phản hồi. Cách làm tương tự
-            <code>requests.get()</code> ở bài 6, nhưng API này xử lý nội dung văn bản.</p>
-        </section>
+print(tra_loi.output_text)</code></pre>
+<pre class="jp-output" data-jp-n="13"><code class="language-text" data-trim style="white-space: pre-wrap">Đánh giá này **khen** vị trí tuyệt vời (great location) nhưng **chê** tiếng ồn quá lớn (so noisy).</code></pre>
+</div>
+<p><code>input</code> là prompt: văn bản yêu cầu gửi cho mô hình. <code>output_text</code> là chuỗi mô hình trả về.</p>
+<aside class="notes"><p>Output là lần chạy thật ngày 22/10/2026 (gemini-3.5-flash-lite); chạy lại có thể ra câu khác. Dấu ** là định dạng markdown mô hình tự thêm. Interactions API (client.interactions.create) là cách gọi Google khuyên dùng cho dự án mới, chính thức từ 06/2026 (trang Interactions, cập nhật 15/10/2026). Code mẫu cũ trên mạng hay dùng client.models.generate_content. Notebook bọc ô gọi trong if CO_KHOA để chạy được khi chưa có khoá.</p>
+</aside>
+</section>
 
-        <!-- Prompt = hướng dẫn + dữ liệu -->
-        <section data-jp-reset>
-          <h2>Prompt = hướng dẫn + dữ liệu</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-review = reviews.loc[7, "comments"]
+<section id="free-text">
+<h2>Câu trả lời tự do chưa thành cột</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="14"><code class="language-python" data-trim>HOI = (&quot;Đánh giá sau khen gì, chê gì? Trả lời ngắn gọn.\n\n&quot;
+       &quot;Đánh giá: The flat was not clean at all, dust everywhere. &quot;
+       &quot;Location was perfect though.&quot;)
+for lan in range(3):
+    tra_loi = client.interactions.create(model=MODEL, input=HOI)
+    print(f&quot;{lan + 1}. {tra_loi.output_text}&quot;)</code></pre>
+<pre class="jp-output" data-jp-n="14"><code class="language-text" data-trim style="white-space: pre-wrap">1. * **Khen:** Vị trí tuyệt vời (Location was perfect).
+* **Chê:** Căn hộ cực kỳ bẩn, nhiều bụi (Not clean at all, dust everywhere).
+2. * **Khen:** Vị trí tuyệt vời (Location was perfect).
+* **Chê:** Căn hộ không sạch sẽ, nhiều bụi khắp nơi (Not clean at all, dust everywhere).
+3. * **Khen:** Vị trí tuyệt vời (Location was perfect).
+* **Chê:** Căn hộ không sạch sẽ, có bụi ở khắp nơi (Not clean at all, dust everywhere).</code></pre>
+</div>
+<p>Câu chữ đổi giữa các lần; nhãn là cụm từ tự do, không phải tên cột cố định.</p>
+<aside class="notes"><p>Hỏi cùng một câu ba lần. Output là ba lần chạy thật ngày 22/10/2026: nội dung giống nhau nhưng câu chê đổi chữ ở cả ba lần ('cực kỳ bẩn', 'nhiều bụi khắp nơi', 'có bụi ở khắp nơi'); nhãn là cụm tiếng Việt tự do như 'Căn hộ không sạch sẽ', không phải tên cột cố định. Kết luận dẫn sang mục 4: cần yêu cầu mô hình trả lời theo schema cố định. Hỏi lớp: muốn đếm 'khách chê gì' từ ba câu trả lời này thì phải làm gì? (đáp: lại phải tách chuỗi bằng từ khoá — quay về mục 2).</p>
+</aside>
+</section>
 
-prompt = f"""Bạn là công cụ phân tích đánh giá về chỗ ở.
-Đánh giá sau khen gì, chê gì? Trả lời ngắn gọn.
+</section>
 
-Đánh giá: {review}"""
+<section>
+<section id="structured">
+<h1><span class="text-light">4.</span><br>Đầu ra<br>có cấu trúc</h1>
+<p>Schema là danh sách trường, kiểu và giá trị được phép. Mô hình trả JSON theo schema.</p>
+</section>
 
-out = client.interactions.create(
-    model="gemini-3.1-flash-lite", input=prompt)
-print(out.output_text)
-            </code></pre>
-            <pre class="jp-output" data-jp-n="3"><code class="language-text" data-trim>
-Khen: vị trí trung tâm, chủ nhà thân thiện.
-Chê: về đêm khá ồn do gần quán bar.
-            </code></pre>
-          </div>
-        </section>
+<section id="demo-data">
+<h2>24 đánh giá minh hoạ</h2>
+<p>24 đánh giá ngắn do người soạn bài viết, bằng 5 ngôn ngữ:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="15"><code class="language-python" data-trim>minh_hoa = pd.DataFrame(REVIEWS, columns=[&quot;review_id&quot;, &quot;comments&quot;])
+minh_hoa = minh_hoa.set_index(&quot;review_id&quot;)
+ngan = minh_hoa[&quot;comments&quot;].str.slice(0, 50)
+print(ngan.loc[[2, 5, 7]].to_string())</code></pre>
+<pre class="jp-output" data-jp-n="15"><code class="language-text" data-trim>review_id
+2    The flat was not clean at all, dust everywhere...
+5    Apartamento bem localizado, mas o wifi caiu o ...
+7    L'appartement est charmant mais la rue est trè...</code></pre>
+</div>
+<p><code>REVIEWS</code> ở ô ngay trước trong notebook. Mục này gọi API cho từng đánh giá.</p>
+<aside class="notes"><p>Dùng dữ liệu nhỏ, tự soạn để đọc được hết và có nhãn tay cho từng đánh giá. Đánh giá 23 chỉ có emoji, 24 là chuỗi rỗng: hai trường hợp dùng để thử hậu kiểm. Notebook có thêm một ô kết quả lưu sẵn (lần chạy của giảng viên, gemini-3.5-flash-lite, 22/10/2026), chỉ dùng khi sinh viên chưa có khoá API; deck không giới thiệu ô này. Lab 11 dùng 10 đánh giá thật của Santiago.</p>
+</aside>
+</section>
 
-        <!-- Vấn đề của output tự do -->
-        <section data-jp-reset>
-          <h2>Văn tự do chưa thể đưa thẳng vào bảng</h2>
-          <p>Chạy lại 3 lần, nhận 3 kiểu trả lời:</p>
-          <div class="jp-cell">
-            <pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>
-Lần 1: "Khen: vị trí. Chê: tiếng ồn."
-Lần 2: "Khách hài lòng về vị trí nhưng phàn nàn về độ ồn."
-Lần 3: "- Ưu điểm: location\n- Nhược: noise (ban đêm)"
-            </code></pre>
-          </div>
-          <p>Cả ba câu trả lời có nội dung tương đương nhưng <strong>không thể chuyển ổn định</strong>
-            thành các cột. Vì vậy, mô hình cần trả lời theo một <em>mẫu cố định</em> → phần 4.</p>
-        </section>
-      </section>
+<section id="fill-form">
+<h2>Yêu cầu mô hình điền mẫu</h2>
+<p>Thay vì văn xuôi, mô hình trả về đúng các trường đã định, ví dụ với đánh giá 2:</p>
+<blockquote>The flat was not clean at all, dust everywhere. Location was perfect though.</blockquote>
+<pre><code class="language-json" data-trim>{"sentiment": "mixed",
+ "aspects_positive": ["location"],
+ "aspects_negative": ["cleanliness"],
+ "language": "en"}</code></pre>
+<p>Mẫu này gọi là schema. Kết quả đọc thẳng được thành một hàng của bảng.</p>
+<aside class="notes"><p>JSON trên là kết quả mong muốn, cũng chính là nhãn tay của đánh giá 2. Các slide sau: khai báo schema, gửi kèm lời gọi API, đọc kết quả.</p>
+</aside>
+</section>
 
-      <!-- ====== Phần 4: Đầu ra có cấu trúc ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">4.</span><br>Đầu ra có cấu trúc<br>&amp; xử lý hàng loạt</h1>
-          <p class="text-light">Yêu cầu LLM điền biểu mẫu thay vì trả lời bằng văn xuôi.</p>
-        </section>
-
-        <!-- Schema Pydantic -->
-        <section data-jp-reset>
-          <h2>Khai báo mẫu trả lời bằng Pydantic</h2>
-          <p>Khai báo biểu mẫu mà mô hình phải điền, gồm kiểu dữ liệu và tập giá trị được phép:</p>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-from pydantic import BaseModel
-from typing import Literal
-
-Aspect = Literal["location", "cleanliness", "host",
-                 "value", "noise", "amenities"]
-
+<section id="schema">
+<h2>Khai báo schema bằng Pydantic</h2>
+<p>Pydantic là thư viện khai báo kiểu dữ liệu và kiểm tra dữ liệu theo kiểu đó.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="16"><code class="language-python" data-trim>Aspect = Literal[&quot;location&quot;, &quot;cleanliness&quot;, &quot;host&quot;,
+                 &quot;value&quot;, &quot;noise&quot;, &quot;amenities&quot;]
 class ReviewInfo(BaseModel):
-    sentiment: Literal["positive", "mixed", "negative"]
-    aspects_positive: list[Aspect]
-    aspects_negative: list[Aspect]
-    language: str          # mã ISO: "en", "es", ...
-            </code></pre>
-          </div>
-          <p><span class="inline-code">Literal</span> = enum: ngoài danh sách này là <em>không hợp lệ</em>.</p>
-        </section>
+    sentiment: Literal[&quot;positive&quot;, &quot;mixed&quot;, &quot;negative&quot;]
+    aspects_positive: list[Aspect]    # khía cạnh được khen
+    aspects_negative: list[Aspect]    # khía cạnh bị chê
+    language: str                     # mã ngôn ngữ: &quot;en&quot;, &quot;es&quot;…</code></pre>
+</div>
+<p><code>ReviewInfo</code> kế thừa <code>BaseModel</code> (lớp gốc của Pydantic) nên tự kiểm tra kiểu. Mỗi dòng là một trường, dạng tên: kiểu. <code>Literal</code> liệt kê các giá trị được phép: <code>sentiment</code> chỉ nhận 3 giá trị, còn <code>language</code> là <code>str</code> nên nhận mọi chuỗi.</p>
+<aside class="notes"><p>Bản trong notebook đầy đủ hơn: Aspect khai báo bằng Literal, và language có Field(description=…) dặn mô hình dùng mã ISO 639-1, 'und' khi không rõ. Comment # không được gửi cho mô hình; description thì có, vì nằm trong schema. list[Aspect] là danh sách, mỗi phần tử phải thuộc Aspect. language chỉ là str nên mọi chuỗi đều hợp lệ. Hỏi lớp: muốn thêm khía cạnh 'safety' thì sửa ở đâu? (đáp: danh sách trong Aspect).</p>
+</aside>
+</section>
 
-        <!-- response_format -->
-        <section data-jp-reset>
-          <h2>Truyền schema vào lời gọi API</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-def call_llm(text):                       # client đã tạo ở phần 3
-    return client.interactions.create(
-        model="gemini-3.1-flash-lite",
-        input=f"Phân tích đánh giá về chỗ ở sau.\n\nĐánh giá: {text}",
-        response_format={
-            "type": "text",
-            "mime_type": "application/json",
-            "schema": ReviewInfo.model_json_schema(),
-        },
-    )
+<section id="prompt">
+<h2>Prompt gồm hướng dẫn và dữ liệu</h2>
+<p>Prompt gửi đi gồm phần hướng dẫn cố định và nội dung từng đánh giá:</p>
+<blockquote style='font-size:0.75em'>Bạn là công cụ trích xuất thông tin từ đánh giá về chỗ ở. Phân tích đánh giá sau và điền đúng schema. Chỉ gán khía cạnh THỰC SỰ được nhắc đến; đánh giá không có nội dung thì trả sentiment "mixed" và các danh sách rỗng.<br>Review: <em>{nội dung đánh giá}</em></blockquote>
+<div class="warn-box">
+<span class="box-title">Cẩn thận</span>
+Một đánh giá có câu kiểu “bỏ qua hướng dẫn trên” vẫn có thể làm mô hình trả lời lệch.
+</div>
+<aside class="notes"><p>Prompt này là prompt đã dùng khi tạo cache ngày 22/10/2026. Chuỗi được viết thành nhiều đoạn nối liền trong ngoặc để vừa màn hình; \n là xuống dòng. Câu 'bỏ qua hướng dẫn' là prompt injection: văn bản đầu vào chứa câu như lệnh. Schema và hậu kiểm ở mục 5 giới hạn tác hại, không loại bỏ hoàn toàn.</p>
+</aside>
+</section>
 
-info = ReviewInfo.model_validate_json(call_llm(review).output_text)
-info.aspects_negative
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="2"><code class="language-text" data-trim>
-['noise']
-            </code></pre>
-          </div>
-          <p>Từ chuỗi JSON, <span class="inline-code">model_validate_json</span> tạo đối tượng và đồng thời
-            <strong>kiểm tra kiểu dữ liệu</strong>.</p>
-        </section>
+<section id="one-call">
+<h2>Gọi API kèm schema</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="17"><code class="language-python" data-trim>van_ban = minh_hoa.loc[2, &quot;comments&quot;]
+DINH_DANG = {&quot;type&quot;: &quot;text&quot;, &quot;mime_type&quot;: &quot;application/json&quot;,
+             &quot;schema&quot;: ReviewInfo.model_json_schema()}
+tra_loi = client.interactions.create(
+    model=MODEL, input=PROMPT_TEMPLATE.format(text=van_ban),
+    response_format=DINH_DANG)
+print(tra_loi.output_text)</code></pre>
+<pre class="jp-output" data-jp-n="17"><code class="language-text" data-trim>{
+  &quot;sentiment&quot;: &quot;mixed&quot;,
+  &quot;aspects_positive&quot;: [
+    &quot;location&quot;
+  ],
+  &quot;aspects_negative&quot;: [
+    &quot;cleanliness&quot;
+  ],
+  &quot;language&quot;: &quot;en&quot;
+}</code></pre>
+</div>
+<p><code>response_format</code> gửi schema kèm lời gọi; mô hình trả chuỗi JSON đúng các trường.</p>
+<aside class="notes"><p>Output là lần gọi thật gemini-3.5-flash-lite ngày 22/10/2026 cho đánh giá 2. Notebook gói lời gọi trong hàm goi_llm, có thêm store=False (máy chủ không lưu lời gọi) và trả về số token vào, ra (token suy luận cũng tính là token ra). Cú pháp response_format theo trang Structured output (20/10/2026), khớp google-genai 2.19. JSON có xuống dòng và thụt lề do mô hình tự thêm; mọi ký tự đều tính token ra.</p>
+</aside>
+</section>
 
-        <!-- Enum guard -->
-        <section>
-          <h2>Schema + enum: tầng kiểm tra đầu tiên</h2>
-          <ul>
-            <li>Mô hình tạo nhãn ngoài danh mục ("wifi_speed") → bước validation
-              <strong>từ chối</strong>, không đưa kết quả vào bảng.</li>
-            <li>Thiếu trường, sai kiểu → lỗi ngay tại chỗ, không âm thầm thành <code>NaN</code>.</li>
-          </ul>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Ràng buộc <em>trước</em> bằng schema và enum hiệu quả hơn nhiều so với làm sạch <em>sau</em>.
-            Đây là tư duy QA của bài 10 áp dụng cho đầu ra của LLM.
-          </div>
-        </section>
+<section id="validate-ok">
+<h2>Đọc và kiểm tra chuỗi JSON</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="18"><code class="language-python" data-trim>info = ReviewInfo.model_validate_json(chuoi_json)
+print(info.sentiment, info.aspects_positive, info.aspects_negative)</code></pre>
+<pre class="jp-output" data-jp-n="18"><code class="language-text" data-trim>mixed ['location'] ['cleanliness']</code></pre>
+</div>
+<p><code>model_validate_json</code> đọc chuỗi JSON, kiểm tra từng trường theo schema rồi tạo đối tượng <code>ReviewInfo</code>.</p>
+<p>Đánh giá 2: “The flat was not clean at all, dust everywhere. Location was perfect though.”</p>
+<aside class="notes"><p>chuoi_json là chuỗi mô hình trả về ở slide trước. Truy cập trường bằng dấu chấm: info.sentiment. Kết quả khớp nhãn tay.</p>
+</aside>
+</section>
 
-        <!-- Batch loop -->
-        <section data-jp-reset>
-          <h2>Chạy hàng loạt: vòng lặp có kỷ luật</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-import time
+<section id="validate-fail">
+<h2>Đầu ra sai schema bị chặn</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="19"><code class="language-python" data-trim>chuoi_json = ('{&quot;sentiment&quot;: &quot;positive&quot;, '
+              '&quot;aspects_positive&quot;: [&quot;wifi_speed&quot;], '
+              '&quot;aspects_negative&quot;: []}')
+try:
+    ReviewInfo.model_validate_json(chuoi_json)
+except ValidationError as loi:
+    for e in loi.errors():
+        print(e[&quot;type&quot;], e[&quot;loc&quot;])</code></pre>
+<pre class="jp-output" data-jp-n="19"><code class="language-text" data-trim>literal_error ('aspects_positive', 0)
+missing ('language',)</code></pre>
+</div>
+<div class="key-box">
+<span class="box-title">Quan trọng</span>
+Nhãn lạ, trường thiếu gây lỗi ngay thay vì thành <code>NaN</code> trong bảng. Schema là bước kiểm tra đầu tiên với đầu ra của LLM.
+</div>
+<aside class="notes"><p>Chuỗi này tự viết để minh hoạ lỗi. literal_error tại ('aspects_positive', 0): phần tử đầu không thuộc Aspect. missing tại ('language',): thiếu trường. e['loc'] là vị trí lỗi trong JSON. Khi gọi API kèm schema, mô hình thường trả đúng cấu trúc, nhưng vẫn phải kiểm tra khi đọc vào.</p>
+</aside>
+</section>
 
-results = {}
-for rid, text in sample["comments"].items():
-    try:
-        out = call_llm(text)          # hàm gói lời gọi ở slide trước
-        results[rid] = ReviewInfo.model_validate_json(
-            out.output_text)
-    except Exception as e:
-        results[rid] = None           # ghi lại, xử lý sau
-    time.sleep(4)                     # tuân thủ giới hạn tốc độ
-            </code></pre>
-          </div>
-          <p>Gói miễn phí giới hạn <em>số yêu cầu mỗi phút</em>. Nếu không có khoảng chờ
-            <span class="inline-code">sleep</span>, chương trình có thể gặp lỗi
-            <span class="inline-code">429</span> khi đang chạy.</p>
-        </section>
+<section id="exercise-schema">
+<h2>Bài tập 2: Schema chặn được gì?</h2>
+<p>Dự đoán chuỗi nào bị chặn và vì sao, rồi chạy để kiểm tra:</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="20"><code class="language-python" data-trim>THU = {
+    &quot;a&quot;: '{&quot;sentiment&quot;: &quot;neutral&quot;, &quot;aspects_positive&quot;: [], '
+         '&quot;aspects_negative&quot;: [], &quot;language&quot;: &quot;en&quot;}',
+    &quot;b&quot;: '{&quot;sentiment&quot;: &quot;positive&quot;, &quot;aspects_positive&quot;: &quot;host&quot;, '
+         '&quot;aspects_negative&quot;: [], &quot;language&quot;: &quot;es&quot;}',
+    &quot;c&quot;: '{&quot;sentiment&quot;: &quot;positive&quot;, &quot;aspects_positive&quot;: [&quot;host&quot;, '
+         '&quot;host&quot;], &quot;aspects_negative&quot;: [], &quot;language&quot;: &quot;Spanish&quot;}',
+}</code></pre>
+</div>
+<p>Chuỗi nào qua được schema nhưng vẫn có nội dung đáng ngờ?</p>
+<aside class="notes"><p>Đáp án: a bị chặn (literal_error: 'neutral' không có trong Literal). b bị chặn (list_type: 'host' là chuỗi, không phải danh sách). c qua được: list cho phép phần tử lặp; language là str nên 'Spanish' hợp lệ dù không phải mã ISO, description không chặn. Muốn chặn thì đổi language thành Literal hoặc thêm kiểm tra ở hậu kiểm. Lời giải: vòng for qua THU.items(), try/except ValidationError, in loi.errors()[0]['type'].</p>
+</aside>
+</section>
 
-        <!-- Cache -->
-        <section data-jp-reset>
-          <h2>Bộ nhớ đệm: không gọi lại kết quả đã có</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>
-CACHE = Path("llm_cache.json")
-cache = json.loads(CACHE.read_text()) if CACHE.exists() else {}
+<section id="batch-run">
+<h2>Chạy cho cả bộ đánh giá</h2>
+<p>Trong notebook, hàm <code>trich_xuat</code> làm ba bước:</p>
+<div class="pipeline">
+<div class="stage"><div class="stage-title">1. Tra cache</div><div class="stage-desc">đã có kết quả thì dùng lại</div></div>
+<div class="arrow">→</div>
+<div class="stage stage-highlight"><div class="stage-title">2. Gọi API</div><div class="stage-desc">lưu vào cache, nghỉ 4 giây</div></div>
+<div class="arrow">→</div>
+<div class="stage"><div class="stage-title">3. Kiểm tra</div><div class="stage-desc">sai schema thì bỏ</div></div>
+</div>
+<p>Bộ nhớ đệm (cache): chạy lại không tốn lời gọi. Hạn mức (rate limit): số lời gọi tối đa mỗi phút, mỗi ngày.</p>
+<aside class="notes"><p>Thứ tự: có trong cache thì đọc; chưa có thì gọi, lưu, nghỉ 4 giây. Trong notebook, nếu chưa có khoá thì LLM_CACHE bắt đầu từ kết quả lưu sẵn của giảng viên, nên vẫn chạy tiếp được. Khoá cache gồm tên mô hình và nội dung đánh giá: đổi mô hình hoặc gặp đánh giá khác thì không đọc nhầm kết quả cũ. Khoá chưa gồm prompt: đổi prompt thì phải xoá cache. 4 giây ứng với 15 lời gọi/phút, đúng hạn mức phút của 3.5-flash-lite ở gói miễn phí (AI Studio, 22/10/2026); hạn mức ngày là 500 lời gọi. Lỗi 429 (too many requests) nghĩa là vượt hạn mức; lời gọi lỗi không được lưu vào cache nên lần chạy sau sẽ gọi lại. Có khoá: 24 lời gọi thật, nghỉ 4 giây giữa các lần, mất khoảng 2 phút; chạy trước giờ học nếu không muốn chờ. Không có khoá: cả 24 kết quả đọc từ kết quả lưu sẵn. Ở dự án thật, lúc khởi động đọc llm_cache.json vào LLM_CACHE (nếu file tồn tại). Trên Colab, file nằm trong bộ nhớ phiên và mất khi phiên kết thúc; tải về hoặc lưu lên Drive nếu cần giữ.</p>
+</aside>
+</section>
 
-def extract(rid, text):
-    if str(rid) not in cache:              # chỉ gọi khi chưa có
-        cache[str(rid)] = call_llm(text).output_text
-        CACHE.write_text(json.dumps(cache))
-    return ReviewInfo.model_validate_json(cache[str(rid)])
-            </code></pre>
-          </div>
-          <ul>
-            <li>Bộ nhớ đệm (cache) giúp tiết kiệm hạn mức; chạy lại notebook không tạo thêm yêu cầu.</li>
-            <li>Trong bài tập lớn: người chấm có thể chạy pipeline với <span class="inline-code">--skip-llm</span> —
-              đọc cache, <strong>không cần khóa API</strong>.</li>
-          </ul>
-        </section>
+<section id="to-dataframe">
+<h2>Chuyển kết quả về DataFrame</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="21"><code class="language-python" data-trim>bang = {ma: r.model_dump() for ma, r in hop_le.items()}
+nhan = pd.DataFrame.from_dict(bang, orient=&quot;index&quot;)
+bi_che = nhan[&quot;aspects_negative&quot;].explode().value_counts()
+print(bi_che)</code></pre>
+<pre class="jp-output" data-jp-n="21"><code class="language-text" data-trim>aspects_negative
+cleanliness    3
+noise          3
+amenities      3
+host           2
+location       2
+value          1
+Name: count, dtype: int64</code></pre>
+</div>
+<p><code>explode</code> tách mỗi phần tử danh sách thành một hàng; sau đó chỉ cần <code>value_counts</code>.</p>
+<aside class="notes"><p>model_dump() đổi đối tượng thành dict; orient='index' lấy mã đánh giá làm chỉ mục. Danh sách rỗng thành NaN khi explode, và value_counts bỏ qua NaN. Số nhỏ, chỉ minh hoạ cách tính.</p>
+</aside>
+</section>
 
-        <!-- Kết quả về pandas -->
-        <section data-jp-reset>
-          <h2>Chuyển kết quả về DataFrame</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>
-labels = pd.DataFrame(
-    {rid: r.model_dump() for rid, r in results.items()
-     if r is not None}
-).T.join(sample)
+<section id="language-sentiment">
+<h2>Cảm xúc theo ngôn ngữ</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="22"><code class="language-python" data-trim>print(pd.crosstab(nhan[&quot;language&quot;], nhan[&quot;sentiment&quot;]))</code></pre>
+<pre class="jp-output" data-jp-n="22"><code class="language-text" data-trim>sentiment  mixed  negative  positive
+language                            
+en             3         5         5
+es             2         1         2
+fr             1         0         0
+it             0         0         1
+pt             1         0         1
+und            1         0         1</code></pre>
+</div>
+<p>Dòng <code>und</code> gồm đánh giá chỉ có emoji và đánh giá rỗng.</p>
+<aside class="notes"><p>crosstab đã dùng ở Bài 10. Mã und theo description của trường language trong schema.</p>
+</aside>
+</section>
 
-(labels.explode("aspects_negative")
-       .groupby("aspects_negative").size()
-       .sort_values(ascending=False))
-            </code></pre>
-            <pre class="jp-output" data-jp-n="5"><code class="language-text" data-trim>
-noise          214
-cleanliness    102
-value           78
-host            31
-            </code></pre>
-          </div>
-          <p>Câu hỏi mở đầu ("khách chê gì nhiều nhất?") giờ là một <code>groupby</code> bình thường.</p>
-        </section>
-      </section>
+</section>
 
-      <!-- ====== Phần 5: Đánh giá, chi phí, cạm bẫy ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">5.</span><br>Đánh giá, chi phí<br>&amp; cạm bẫy</h1>
-          <p class="text-light">"Trông có vẻ đúng" chưa phải là đúng.</p>
-        </section>
+<section>
+<section id="evaluation">
+<h1><span class="text-light">5.</span><br>Đánh giá<br>chất lượng<br>và chi phí</h1>
+<p>Đúng schema chưa chắc đúng nội dung.</p>
+</section>
 
-        <!-- Hallucination -->
-        <section>
-          <h2>LLM có thể bịa thông tin</h2>
-          <p>Ba lỗi bịa thông tin (hallucination) ghi nhận khi soạn bài:</p>
-          <ul>
-            <li>Chỉ khen <em>vị trí</em> → mô hình thêm <span class="inline-code">cleanliness</span>.</li>
-            <li>Chỉ có 4 từ → mô hình suy ra cảm xúc và 3 khía cạnh.</li>
-            <li>Viết bằng tiếng Tây Ban Nha → mô hình trả nhãn <span class="inline-code">"pt"</span>.</li>
-          </ul>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            Đầu ra của LLM có thể trôi chảy dù sai. Câu chữ mạch lạc không chứng minh kết quả đúng.
-          </div>
-        </section>
+<section id="read-output">
+<h2>Đọc lại vài kết quả</h2>
+<table class="compact-table">
+<thead><tr><th>Đánh giá</th><th>LLM trả về</th></tr></thead>
+<tbody>
+<tr><td>17 “Quiet street, comfy bed, kind host — everything was great.”</td><td>positive; khen: location, cleanliness, host, noise, amenities</td></tr>
+<tr><td>24 (rỗng)</td><td>mixed; không khía cạnh; und</td></tr>
+</tbody>
+</table>
+<p>Đánh giá 17 không nhắc vệ sinh hay vị trí. Đánh giá 24 rỗng được trả đúng quy ước.</p>
+<div class="warn-box">
+<span class="box-title">Cẩn thận</span>
+LLM có thể bịa thông tin không có trong văn bản (hallucination). Đúng schema vẫn có thể sai nội dung.
+</div>
+<aside class="notes"><p>Cả hai là output thật của gemini-3.5-flash-lite (22/10/2026), lưu trong cache. 'Quiet street' là tiếng ồn (noise), không phải vị trí; không có từ nào về vệ sinh. Hỏi lớp: làm sao phát hiện lỗi kiểu này trên 690 nghìn đánh giá, khi không thể đọc hết? (đáp: đo trên mẫu có nhãn tay; thêm quy tắc hậu kiểm).</p>
+</aside>
+</section>
 
-        <!-- Bộ đánh giá tay -->
-        <section>
-          <h2>Bộ đánh giá: ~100 nhãn gán tay</h2>
-          <ol>
-            <li>Rút <strong>~100 đánh giá</strong> theo phương pháp ngẫu nhiên và bảo đảm đủ các ngôn ngữ chính.</li>
-            <li>Cả nhóm <strong>tự đọc, tự gán nhãn</strong> theo đúng schema; bất đồng thì thảo luận, chốt
-              hướng dẫn gán.</li>
-            <li>Chạy LLM và phương pháp đối chứng trên đúng 100 đánh giá đó, rồi so với nhãn tay.</li>
-          </ol>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Bộ nhãn tay đóng vai trò như bộ kiểm thử của dữ liệu. Nếu thiếu bộ này, nhận xét về chất lượng
-            chỉ dựa trên cảm nhận.
-          </div>
-        </section>
+<section id="gold">
+<h2>Bộ nhãn gán tay</h2>
+<ol>
+<li>Rút ngẫu nhiên một mẫu, có <code>random_state</code>.</li>
+<li>Viết hướng dẫn gán: thế nào là <code>mixed</code>, đánh giá rỗng gán gì, một khía cạnh có được nằm ở cả hai danh sách không.</li>
+<li>Hai người gán độc lập; bàn lại chỗ bất đồng.</li>
+<li>Chạy đối chứng và LLM trên đúng mẫu này, so với nhãn tay.</li>
+</ol>
+<div class="key-box">
+<span class="box-title">Quan trọng</span>
+Bộ nhãn tay đóng vai trò như bộ dữ liệu kiểm thử (test set). Không có nó, nhận xét về chất lượng chỉ là cảm nhận.
+</div>
+<aside class="notes"><p>Mẫu nên giữ tỷ lệ các ngôn ngữ chính. Notebook có nhãn tay cho cả 24 đánh giá (ô GOLD), theo quy ước: khu phố tính vào location; mỗi khía cạnh chỉ thuộc một danh sách theo ý chính; đánh giá rỗng gán mixed, không khía cạnh, und. Hai người gán độc lập để thấy hướng dẫn chỗ nào chưa rõ; tỷ lệ đồng ý giữa hai người cũng là giới hạn trên hợp lý cho mô hình. Gán nhãn tay trước khi xem kết quả LLM để không bị kết quả dẫn dắt.</p>
+</aside>
+</section>
 
-        <!-- Kết quả đo minh hoạ -->
-        <section>
-          <h2>Đo xong mới biết ai hơn ai, hơn ở đâu</h2>
-          <p>Kết quả minh hoạ trên 100 nhãn tay (notebook bài này làm bản nhỏ hơn):</p>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th></th>
-                <th>Cảm xúc (accuracy)</th>
-                <th>Khía cạnh (F1)</th>
-                <th>Ngôn ngữ (accuracy)</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Đối chứng bằng từ khoá</td>
-                <td>0.62</td>
-                <td>0.48</td>
-                <td>0.71</td>
-              </tr>
-              <tr>
-                <td>LLM (flash-lite)</td>
-                <td><strong>0.89</strong></td>
-                <td><strong>0.81</strong></td>
-                <td><strong>0.97</strong></td>
-              </tr>
-            </tbody>
-          </table>
-          <p class="caption">Chênh lệch lớn nhất nằm ở phủ định và dữ liệu đa ngôn ngữ. Đây là phần
-            giá trị gia tăng của LLM trong ví dụ này.</p>
-        </section>
+<section id="baseline-demo">
+<h2>Đối chứng trên 24 đánh giá</h2>
+<p>Từ khoá tiếng Anh cho 6 khía cạnh, soạn sau khi đọc 24 đánh giá; ví dụ <code>location</code>: location, metro, center, walkable.</p>
+<p>Cảm xúc và ngôn ngữ cũng đoán bằng đếm từ như mục 2.</p>
+<p>Từ khoá không phân biệt khen với chê, nên đối chứng không có điểm cho khía cạnh bị chê.</p>
+<aside class="notes"><p>Ngôn ngữ đoán bằng đếm một số từ đặc trưng (the/was cho tiếng Anh, muy/pero cho tiếng Tây Ban Nha…); không có từ nào khớp thì trả und. Cả hai cách được gom về cùng một dạng dict: trường → {mã đánh giá: giá trị}.</p>
+</aside>
+</section>
 
-        <!-- Phân tích lỗi -->
-        <section>
-          <h2>Phân tích lỗi</h2>
-          <ul>
-            <li>Liệt kê các đánh giá bị LLM gán sai → chúng có chung kiểu lỗi nào không
-              (văn bản dài, mỉa mai hay thuộc một ngôn ngữ cụ thể)?</li>
-            <li>Sửa <strong>prompt hoặc enum</strong> theo kiểu lỗi tìm được → <strong>đo lại</strong> trên đúng
-              bộ 100.</li>
-          </ul>
-          <div class="good-box">
-            <span class="box-title">Cách làm tốt</span>
-            Quy trình lặp: đo → xem lỗi → sửa prompt/schema → đo lại. Mỗi thay đổi prompt đều phải được
-            kiểm tra trên cùng một bộ nhãn, tương tự việc chạy lại test sau khi sửa mã nguồn.
-          </div>
-        </section>
+<section id="metrics">
+<h2>Chấm điểm bằng nhãn tay</h2>
+<p>Cảm xúc, ngôn ngữ: <strong>tỷ lệ đúng</strong>. Khía cạnh, ví dụ đánh giá 17:</p>
+<table class="compact-table" style="font-size:0.75em">
+<tbody>
+<tr><td>Nhãn tay</td><td><span style='display:inline-block;padding:0.1em 0.5em;margin:0.1em;border-radius:0.4em;border:2px solid #2E8B57;color:#2E8B57;font-weight:600'>noise</span><span style='display:inline-block;padding:0.1em 0.5em;margin:0.1em;border-radius:0.4em;border:2px solid #2E8B57;color:#2E8B57;font-weight:600'>amenities</span><span style='display:inline-block;padding:0.1em 0.5em;margin:0.1em;border-radius:0.4em;border:2px solid #2E8B57;color:#2E8B57;font-weight:600'>host</span></td></tr>
+<tr><td>LLM</td><td><span style='display:inline-block;padding:0.1em 0.5em;margin:0.1em;border-radius:0.4em;border:2px solid #2E8B57;color:#2E8B57;font-weight:600'>noise</span><span style='display:inline-block;padding:0.1em 0.5em;margin:0.1em;border-radius:0.4em;border:2px solid #2E8B57;color:#2E8B57;font-weight:600'>amenities</span><span style='display:inline-block;padding:0.1em 0.5em;margin:0.1em;border-radius:0.4em;border:2px solid #2E8B57;color:#2E8B57;font-weight:600'>host</span><span style='display:inline-block;padding:0.1em 0.5em;margin:0.1em;border-radius:0.4em;border:2px solid #E8890C;color:#E8890C;font-weight:600'>location</span><span style='display:inline-block;padding:0.1em 0.5em;margin:0.1em;border-radius:0.4em;border:2px solid #E8890C;color:#E8890C;font-weight:600'>cleanliness</span></td></tr>
+</tbody>
+</table>
+<p class='caption'><span style='color:#2E8B57;font-weight:600'>xanh</span>: đúng (3) · <span style='color:#E8890C;font-weight:600'>cam</span>: thừa (2) · thiếu: 0</p>
+<table class="compact-table">
+<tbody>
+<tr><td><strong>P</strong> (precision)</td><td>đúng / số nhãn LLM</td><td>3/5 = 0,6</td></tr>
+<tr><td><strong>R</strong> (recall)</td><td>đúng / số nhãn tay</td><td>3/3 = 1</td></tr>
+<tr><td><strong>F1</strong></td><td>2·P·R / (P + R)</td><td><strong>0,75</strong></td></tr>
+</tbody>
+</table>
+<aside class="notes"><p>F1 chỉ cao khi cả P và R cùng cao: bịa thêm nhãn làm giảm P, bỏ sót nhãn làm giảm R. Precision (độ chính xác): trong các nhãn LLM đưa ra, bao nhiêu phần đúng. Recall (độ phủ): trong các nhãn đúng, LLM tìm được bao nhiêu phần. F1 = 2·P·R / (P + R) (trung bình điều hoà): 2·0,6·1 / 1,6 = 0,75. Trung bình cộng sẽ là 0,8, cao hơn; trung bình điều hoà kéo về phía số nhỏ, nên không 'bù' được bằng cách đưa thật nhiều nhãn. Bảng điểm ở slide sau cộng số nhãn đúng, thừa, thiếu của cả 24 đánh giá rồi mới tính F1 (micro-F1); tập khía cạnh gộp cả khen lẫn chê, và có thêm một dòng F1 riêng cho khía cạnh bị chê. Hỏi lớp: nếu LLM chỉ đưa 1 nhãn đúng là host thì precision, recall bao nhiêu? (đáp: 1/1 = 1 và 1/3; F1 = 0,5). du_doan là dict theo trường (sentiment, aspects, language…); mỗi trường là dict theo mã đánh giá. .get(ma) cho None khi một đánh giá bị loại vì sai schema, nên tính là sai; với khía cạnh thì coi là tập rỗng. Hai hàm dùng cho cả đối chứng lẫn LLM và nhận bộ nhãn tay làm tham số: cùng một cách đo cho mọi bộ nhãn.</p>
+</aside>
+</section>
 
-        <!-- Chi phí -->
-        <section>
-          <h2>Chi phí tính bằng token</h2>
-          <p>Mỗi lần tương tác trả về số token đã dùng:</p>
-          <div class="jp-cell" data-jp-reset>
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-out.usage.total_input_tokens, out.usage.total_output_tokens
-            </code></pre>
-            <pre class="jp-output jp-compact" data-jp-n="1"><code class="language-text" data-trim>
-(182, 47)
-            </code></pre>
-          </div>
-          <p>Ước tính cho <strong>100.000 đánh giá</strong> (trung bình đo trên dữ liệu minh hoạ:
-            ~175 token vào, ~36 token ra) với flash-lite
-            (<span>$</span>0.25 / <span>$</span>1.50 mỗi 1M token):</p>
-          <p class="text-center"><strong>17,5M token vào ≈ <span>$</span>4.4 &nbsp;+&nbsp; 3,6M token ra ≈ <span>$</span>5.4 → ~<span>$</span>9.8</strong></p>
-          <p class="caption">Gói miễn phí có thể xử lý mẫu vài nghìn đánh giá nếu chạy trong nhiều ngày.
-            Với bài tập lớn, cần chọn mẫu phù hợp và lưu kết quả vào cache.</p>
-        </section>
+<section id="scoreboard">
+<h2>So phương pháp đối chứng với LLM</h2>
+<table class="compact-table">
+<thead><tr><th></th><th>Đối chứng</th><th>LLM</th></tr></thead>
+<tbody>
+<tr><td>Cảm xúc (tỷ lệ đúng)</td><td>0,79</td><td>1,00</td></tr>
+<tr><td>Khía cạnh (F1)</td><td>0,70</td><td>0,92</td></tr>
+<tr><td>Khía cạnh bị chê (F1)</td><td>—</td><td>0,92</td></tr>
+<tr><td>Ngôn ngữ (tỷ lệ đúng)</td><td>0,83</td><td>1,00</td></tr>
+</tbody>
+</table>
+<p>24 đánh giá là quá ít để kết luận chắc chắn. Từ khoá đối chứng được soạn theo chính các đánh giá này, nên trên dữ liệu mới điểm đối chứng có thể thấp hơn.</p>
+<aside class="notes"><p>Một đánh giá sai trên 24 làm tỷ lệ đổi khoảng 0,04. Điểm đối chứng cao hơn thực tế vì từ khoá được chọn theo đúng các câu này — giống tự ra đề rồi tự làm. Khi dùng thật: soạn từ khoá trên một phần dữ liệu, đo trên phần khác. bi_che_f1 của đối chứng là NaN: từ khoá không biết khen hay chê.</p>
+</aside>
+</section>
 
-        <!-- Khi nào dùng gì -->
-        <section>
-          <h2>Khi nào dùng gì?</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Tình huống</th>
-                <th>Công cụ hợp lý</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Mẫu rõ ràng (mã bưu điện, giá, ngày…)</td>
-                <td>biểu thức chính quy — bài 7</td>
-              </tr>
-              <tr>
-                <td>Ngữ nghĩa, đa ngôn ngữ, quy mô vừa</td>
-                <td><strong>LLM + schema + bộ nhãn tay</strong></td>
-              </tr>
-              <tr>
-                <td>Quyết định hệ trọng từng ca (pháp lý, y tế…)</td>
-                <td>con người thẩm định — LLM chỉ hỗ trợ sàng lọc</td>
-              </tr>
-            </tbody>
-          </table>
-          <p>Luôn tự hỏi: <em>sai 10% thì phân tích của bạn còn đứng vững không?</em></p>
-        </section>
-      </section>
+<section id="error-types">
+<h2>LLM sai ở đâu?</h2>
+<p>Cảm xúc và ngôn ngữ đều khớp nhãn tay; mọi lỗi là khía cạnh thừa:</p>
+<ul>
+<li>Đánh giá 3, 7, 10, 21: LLM thêm <code>amenities</code> cho nhận xét chung về chỗ ở.</li>
+<li>Đánh giá 13: LLM xếp <code>location</code> vào cả hai danh sách; prompt chưa nêu quy ước này.</li>
+<li>Đánh giá 17: LLM thêm hai khía cạnh không có trong câu.</li>
+</ul>
+<div class="key-box">
+<span class="box-title">Quan trọng</span>
+Đọc từng lỗi để tìm kiểu lỗi chung, không chỉ nhìn điểm tổng.
+</div>
+<aside class="notes"><p>Cảm xúc và ngôn ngữ đều khớp nhãn tay; mọi lỗi là khía cạnh thừa. ket_qua.get(ma) là None khi đầu ra sai schema; vòng lặp báo riêng trường hợp này thay vì lỗi KeyError. Hỏi lớp trước khi hiện output: lỗi sẽ nằm ở trường nào? Trên 24 đánh giá, cảm xúc và ngôn ngữ đều đúng; mọi lỗi là khía cạnh thừa, không có khía cạnh thiếu. amenities (tiện nghi) là nhãn rộng: 'cómodo', 'charmant', phòng nhỏ, hướng dẫn check-in đều bị xếp vào. Sửa bằng cách định nghĩa từng khía cạnh trong description của schema và trong hướng dẫn gán. Lỗi 13 là bất đồng về quy ước hơn là đọc sai: 'far from the center' chê, 'bus stop is close' khen. Hỏi lớp: sửa prompt cho lỗi 13 xong thì làm gì? (đáp: xoá cache, chạy lại cả bộ và đo trên đúng bộ nhãn tay).</p>
+</aside>
+</section>
 
-      <!-- ====== Kết ====== -->
-      <section>
-        <section>
-          <h2>Tổng kết</h2>
-          <ul>
-            <li>Dữ liệu phi cấu trúc: <strong>đổi dạng thành bảng</strong> rồi mới phân tích.</li>
-            <li><strong>Phương pháp đối chứng trước, LLM sau</strong> — cả hai cùng được đo trên một bộ nhãn tay.</li>
-            <li>Pipeline LLM cần có schema, enum, giới hạn tốc độ và <strong>cache</strong>.</li>
-            <li>Chất lượng đo bằng nhãn tay, chi phí đo bằng token — <em>không đo thì không kết luận</em>.</li>
-          </ul>
-        </section>
+<section id="post-check">
+<h2>Hậu kiểm bằng quy tắc</h2>
+<p>Ba quy tắc, chạy trên mọi kết quả mới:</p>
+<ol>
+<li>Đánh giá rỗng không được có nhãn → không vi phạm.</li>
+<li>Một khía cạnh không nằm ở cả hai danh sách → đánh giá 13 (<code>location</code>).</li>
+<li>Đánh giá không quá 5 từ thì không quá 1 khía cạnh → đánh giá 16, cảnh báo nhầm.</li>
+</ol>
+<div class="key-box">
+<span class="box-title">Quan trọng</span>
+Quy tắc hậu kiểm chạy trên mọi kết quả mới, không cần nhãn tay.
+</div>
+<aside class="notes"><p>Quy tắc đánh giá rỗng không in gì: lần chạy này mô hình trả đúng quy ước cho đánh giá 24. Quy tắc vẫn giữ vì lần chạy khác có thể sai. split() không đối số trả danh sách rỗng với chuỗi rỗng, nên 'not tu' nhận ra đánh giá rỗng. Đánh giá 16 ('Ottima posizione, appartamento pulito') khen đúng vị trí và vệ sinh. Schema không chặn được nhãn đúng định dạng nhưng không có căn cứ trong văn bản; hậu kiểm bù một phần. Ngưỡng 5 từ, 2 khía cạnh là lựa chọn của người viết quy tắc; cờ chỉ để đọc lại, không tự sửa nhãn. Hậu kiểm này không bắt được lỗi ở đánh giá 17; Bài tập 3 thử một quy tắc khác.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Làm việc với AI thì sao?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <div class="good-box">
-            <span class="box-title">AI làm tốt</span>
-            Viết mã nguồn gọi API, đề xuất danh mục khía cạnh và sinh đánh giá giả để thử schema.
-          </div>
-          <div class="warn-box">
-            <span class="box-title">AI hay sai</span>
-            Bịa tham số SDK (SDK Gemini đổi lớn năm 2026 — code mẫu cũ trên mạng rất nhiều);
-            bỏ qua giới hạn tốc độ; tự thay đổi enum trong quá trình xử lý.
-          </div>
-        </section>
+<section id="exercise-evidence">
+<h2>Bài tập 3: Khía cạnh phải có căn cứ</h2>
+<p>Viết quy tắc: mỗi khía cạnh LLM gán phải khớp ít nhất một từ khoá của khía cạnh đó trong <code>TU_KHOA_ANH</code> (ô đối chứng trong notebook). In mã đánh giá và khía cạnh không có căn cứ.</p>
+<ol>
+<li>Quy tắc có bắt được lỗi ở đánh giá 17 không?</li>
+<li>Những cảnh báo nào là nhầm? Vì sao?</li>
+</ol>
+<aside class="notes"><p>Đáp án: for ma, r in hop_le.items(): for kc in set(r.aspects_positive) | set(r.aspects_negative): if not re.search(TU_KHOA_ANH[kc], minh_hoa.loc[ma, 'comments'], flags=re.I): print(ma, kc). Kết quả: 20 cảnh báo trên 12 đánh giá. Bắt được cả hai khía cạnh bịa ở 17 và amenities thừa ở 3, 7, 10, 21: 6 trong 7 nhãn thừa so với nhãn tay (bỏ sót location ở 13 vì 'center' khớp từ khoá). 14 cảnh báo nhầm: các đánh giá không phải tiếng Anh (3, 4, 5, 7, 12, 15, 16, 20 — 'limpio', 'ruidoso', 'localizado'… không có trong từ khoá tiếng Anh) và đánh giá 8 ('spotless' là khen vệ sinh nhưng không chứa 'clean'). Kết luận: quy tắc từ khoá dùng làm cờ để đọc lại, không dùng để tự xoá nhãn.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Kiểm chứng thế nào?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <ul>
-            <li>Mã nguồn gọi API: đối chiếu <strong>tài liệu chính thức</strong>; thử trên 1–2 mẫu trước khi
-              chạy hàng loạt.</li>
-            <li>Nhãn do AI gán: đo trên <strong>bộ nhãn tay</strong> trước khi sử dụng trong phân tích.</li>
-          </ul>
-          <p class="text-light">Đây là quy trình kiểm chứng AI mà chính sách môn yêu cầu.</p>
-        </section>
+<section id="improve">
+<h2>Sửa prompt rồi đo lại</h2>
+<ol>
+<li>Đo trên bộ nhãn tay, ghi lại điểm.</li>
+<li>Đọc các đánh giá bị sai, tìm kiểu lỗi chung.</li>
+<li>Sửa prompt hoặc schema theo kiểu lỗi, ví dụ thêm quy ước <em>mỗi khía cạnh chỉ thuộc một danh sách</em>.</li>
+<li>Xoá cache, chạy lại cả bộ và đo trên <strong>đúng bộ nhãn tay đó</strong>.</li>
+</ol>
+<div class="good-box">
+<span class="box-title">Cách làm tốt</span>
+Lưu mỗi phiên bản prompt cùng điểm của nó, như chạy lại test sau mỗi lần sửa code.
+</div>
+<aside class="notes"><p>Đổi prompt thì mọi kết quả trong cache thuộc prompt cũ: xoá toàn bộ cache rồi chạy lại cả bộ. Mô hình không cho cùng kết quả mỗi lần chạy: chạy lại prompt cũ một lần để biết điểm dao động bao nhiêu trước khi kết luận. Cảnh giác sửa prompt quá sát bộ nhãn tay: điểm tăng trên 24 đánh giá chưa chắc tăng trên dữ liệu mới. Notebook có bài về nhà theo đúng các bước này.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Đọc thêm</h2>
-          <ul>
-            <li>Gemini API — Structured output, Rate limits, Pricing:
-              <a href="https://ai.google.dev/gemini-api/docs" target="_blank"
-                rel="noopener">ai.google.dev/gemini-api/docs</a></li>
-            <li>Đề bài tập lớn — mục "Hợp phần LLM": yêu cầu đầy đủ về phương pháp đối chứng,
-              bộ nhãn tay ≥100 và chi phí.</li>
-            <li>Bài 7 (biểu thức chính quy) và bài 10 (bộ quy tắc QA) bổ sung hai thành phần
-              còn lại của pipeline trong bài này.</li>
-          </ul>
-        </section>
-      </section>
+<section id="cost">
+<h2>Chi phí tính bằng token</h2>
+<p>Đo trên 24 lời gọi thật: trung bình 81 token vào, 49 token ra mỗi đánh giá.</p>
+<table class="compact-table">
+<thead><tr><th>Số đánh giá</th><th>Trả phí (3.5-flash-lite)</th><th>Gói miễn phí (500 lời gọi/ngày)</th></tr></thead>
+<tbody>
+<tr><td>100.000</td><td>khoảng 15 USD</td><td>200 ngày</td></tr>
+<tr><td>690.112 (cả bảng)</td><td>khoảng 101 USD</td><td>1.380 ngày</td></tr>
+</tbody>
+</table>
+<p>Chi phí và thời gian này là lý do chỉ chạy LLM trên mẫu.</p>
+<aside class="notes"><p>Token đo trên 24 lời gọi gemini-3.5-flash-lite ngày 22/10/2026 (token suy luận đều bằng 0); nhân với giá 0,30 / 2,50 USD mỗi 1 triệu token. Token ra chiếm khoảng 5/6 chi phí: JSON mô hình trả về có xuống dòng và thụt lề, mỗi ký tự đều tính token. Đánh giá minh hoạ ngắn hơn đánh giá thật (trung vị 114 ký tự), nên chi phí thật có thể cao hơn. Ô thứ hai dùng hạn mức 500 lời gọi/ngày của 3.5-flash-lite (AI Studio, project LTXLDL, 22/10/2026): khoảng 1.380 ngày, gần 4 năm. Mẫu 100 đánh giá chạy trong một ngày; vài nghìn đánh giá mất vài ngày, nên phải có cache để chạy tiếp qua nhiều ngày. Hỏi lớp: muốn giảm chi phí thì làm gì? (đáp: chọn mẫu, lọc đánh giá rỗng hoặc chỉ có '.', rút gọn prompt, dùng Batch API).</p>
+</aside>
+</section>
+
+<section id="batch-api">
+<h2>Batch API: rẻ hơn, chờ lâu hơn</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<ul>
+<li>Gửi một lô nhiều yêu cầu, nhận kết quả sau.</li>
+<li>Giá bằng <strong>50%</strong> giá gọi thường. Google đặt mục tiêu trả kết quả trong 24 giờ; thực tế thường nhanh hơn.</li>
+<li>Hợp với gán nhãn hàng loạt không cần kết quả ngay.</li>
+</ul>
+<p>Vẫn cần schema, kiểm tra đầu ra và cache như ở mục 4.</p>
+<aside class="notes"><p>Nguồn: ai.google.dev/gemini-api/docs/batch-api (cập nhật 17/09/2026) và trang Pricing: 3.5-flash-lite batch 0,15 / 1,25 USD mỗi 1 triệu token. Không dạy code Batch trong bài; ai cần thì đọc tài liệu.</p>
+</aside>
+</section>
+
+<section id="when">
+<h2>Khi nào dùng cách nào?</h2>
+<table class="compact-table">
+<thead><tr><th>Tình huống</th><th>Cách làm</th></tr></thead>
+<tbody>
+<tr><td>Mẫu rõ ràng: mã, giá, ngày</td><td>regex (Bài 7)</td></tr>
+<tr><td>Ngữ nghĩa, nhiều ngôn ngữ, vài nghìn văn bản</td><td><strong>LLM + schema + nhãn tay + hậu kiểm</strong></td></tr>
+<tr><td>Quyết định quan trọng cho từng trường hợp</td><td>người thẩm định; LLM chỉ hỗ trợ sàng lọc</td></tr>
+</tbody>
+</table>
+<p>Trước khi dùng nhãn LLM, hãy tự hỏi: nếu 10% nhãn sai, kết luận phân tích có đổi không?</p>
+<aside class="notes"><p>Ví dụ quyết định quan trọng: xử lý khiếu nại, pháp lý, y tế. Với câu hỏi 'khách chê gì nhiều nhất', sai 10% thường không đổi thứ hạng khi các khía cạnh cách xa nhau, nhưng có thể đổi nếu hai khía cạnh sát nhau.</p>
+</aside>
+</section>
+
+</section>
+
+<section>
+<section id="summary">
+<h2>Tổng kết</h2>
+<ul>
+<li>Văn bản tự do: đổi thành <strong>bảng nhãn</strong> rồi mới phân tích bằng pandas.</li>
+<li>Xây dựng <strong>phương pháp đối chứng</strong> trước; đo cả hai cách trên cùng bộ nhãn tay.</li>
+<li>Gọi LLM qua API theo <strong>schema</strong>, trong hạn mức, có <strong>cache</strong>.</li>
+<li>Đúng schema chưa chắc đúng nội dung: cần <strong>nhãn tay và hậu kiểm</strong>; chi phí tính bằng token.</li>
+</ul>
+</section>
+
+<section id="ai">
+<h2>Làm việc với AI thì sao?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
+<div class="good-box">
+<span class="box-title">AI làm tốt</span>
+Viết code gọi API, đề xuất danh mục khía cạnh, sinh đánh giá giả để thử schema.
+</div>
+<div class="warn-box">
+<span class="box-title">AI hay sai</span>
+Viết theo cách gọi cũ hoặc dùng mô hình đã ngừng hoạt động (như <code>gemini-2.0-flash</code>); bỏ qua hạn mức; tự đổi danh mục khía cạnh giữa các lần chạy.
+</div>
+<aside class="notes"><p>Nguồn: trang Models và Deprecations (19/10/2026) ghi Gemini 2.0 Flash đã ngừng hoạt động. Code mẫu trên mạng và kiến thức của trợ lý AI thường cũ hơn tài liệu hiện hành. Đánh giá giả do AI sinh chỉ dùng để thử code, không dùng để đo chất lượng.</p>
+</aside>
+</section>
+
+<section id="verify">
+<h2>Kiểm chứng thế nào?</h2>
+<ul>
+<li>Code gọi API: đối chiếu <strong>tài liệu chính thức</strong> và tên mô hình hiện hành; chạy thử trên 1–2 đánh giá trước khi chạy hàng loạt.</li>
+<li>Nhãn do LLM gán: đo trên <strong>bộ nhãn tay</strong> và chạy hậu kiểm trước khi dùng trong phân tích.</li>
+</ul>
+</section>
+
+<section id="references">
+<h2>Đọc thêm</h2>
+<ol>
+<li>Gemini API: <a href="https://ai.google.dev/gemini-api/docs/interactions" target="_blank" rel="noopener">Interactions</a>, <a href="https://ai.google.dev/gemini-api/docs/structured-output" target="_blank" rel="noopener">Structured output</a>, <a href="https://ai.google.dev/gemini-api/docs/pricing" target="_blank" rel="noopener">Pricing</a>, <a href="https://ai.google.dev/gemini-api/docs/rate-limits" target="_blank" rel="noopener">Rate limits</a></li>
+<li><a href="https://docs.pydantic.dev/latest/concepts/models/" target="_blank" rel="noopener">Pydantic: Models</a></li>
+<li><a href="projects/project_airbnb.html" target="_blank" rel="noopener">Bài tập lớn</a>: yêu cầu của hợp phần LLM</li>
+</ol>
+</section>
+
+</section>
 
       <!-- Footer -->
       <div class="footer">
         LTXLDL (2627-1) · Bài 11: Xử lý dữ liệu phi cấu trúc bằng LLM
       </div>
-      <!-- End of footer -->
     </div>
   </div>
   <script src="revealjs/dist/reveal.js"></script>
