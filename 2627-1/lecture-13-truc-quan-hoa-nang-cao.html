@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <title>LTXLDL | Bài 13: Trực quan hoá nâng cao &amp; phản biện biểu đồ</title>
+  <title>LTXLDL | Bài 13: Trực quan hoá nâng cao và phản biện biểu đồ</title>
 
   <link rel="stylesheet" href="revealjs/dist/reset.css">
   <link rel="stylesheet" href="revealjs/dist/reveal.css" />
@@ -19,406 +19,482 @@
   <div class="reveal">
     <div class="slides">
 
-      <!-- ====== Mở bài ====== -->
-      <section>
-        <section>
-          <h1>Lập trình <br /> xử lý dữ liệu</h1>
-          <div>
-            <p>Học kì 1, năm học 2026–2027</p>
-            <p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
-          </div>
-        </section>
+<section>
+<section id="course">
+<h1>Lập trình<br>xử lý dữ liệu</h1>
+<p>Học kì 1, năm học 2026–2027</p>
+<p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
+</section>
 
-        <section>
-          <h1>
-            <span class="text-light">Bài 13</span>
-            <br>
-            Trực quan hoá <br> nâng cao<br>&amp; phản biện biểu đồ
-          </h1>
-          <p class="text-light">seaborn, bản đồ, biểu đồ tương tác và cách thẩm định hình do AI sinh.</p>
-        </section>
+<section id="title">
+<h1><span class="text-light">Bài 13</span><br>Trực quan hoá<br>nâng cao và<br>phản biện biểu đồ</h1>
+<p>So sánh nhóm bằng seaborn; phản biện biểu đồ gây hiểu sai.</p>
+</section>
 
-        <section>
-          <h2>Bài trước</h2>
-          <ul>
-            <li>Bài 12 giới thiệu bốn dạng biểu đồ cơ bản và các nguyên tắc trình bày trung thực.</li>
-            <li>Bài này mở rộng sang biểu đồ <strong>thống kê nhiều chiều</strong>,
-              <strong>bản đồ theo vùng</strong> và cách <strong>phản biện</strong> biểu đồ.</li>
-          </ul>
-        </section>
+<section id="previous">
+<h2>Bài trước</h2>
+<p>Ở Bài 12, bạn đã vẽ bốn dạng biểu đồ cơ bản và học năm điểm kiểm tra một hình.</p>
+<p>Bài này so sánh <strong>phân phối</strong> giữa các nhóm và <strong>phản biện</strong> biểu đồ.</p>
+<aside class="notes"><p>Bài 12 và Bài 13 học chung một buổi. Ở Bài 12, để so sánh giá nguyên căn và phòng riêng phải tự lọc từng nhóm
+rồi vẽ hai khung. seaborn làm việc đó bằng một tham số.
+Hỏi lớp: muốn so sánh giá của 4 loại phòng thì với Bài 12 phải viết mấy lần lọc? (đáp: 4).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Tổng quan</h2>
-          <ol>
-            <li>seaborn: hình thống kê cấp cao</li>
-            <li>Bản đồ choropleth với GeoJSON</li>
-            <li>Biểu đồ tương tác (giới thiệu)</li>
-            <li>Phản biện biểu đồ</li>
-            <li>Làm việc với AI thì sao?</li>
-          </ol>
-        </section>
-      </section>
+<section id="overview">
+<h2>Tổng quan</h2>
+<ol>
+<li>So sánh phân phối giữa các nhóm</li>
+<li>Chọn cách biểu diễn dữ liệu</li>
+<li>Phản biện ba biểu đồ lỗi</li>
+<li>Tự học: bản đồ và biểu đồ tương tác</li>
+</ol>
+<aside class="notes"><p>Mạch bài: McKinney §9.2 (seaborn) và Berkeley Data 100: Visualization I (boxplot, so sánh phân phối),
+Visualization II (mã hoá, bảng màu, chồng lên hay đặt cạnh, ngữ cảnh). Mục 4 để sinh viên tự học.</p>
+</aside>
+</section>
 
-      <!-- ====== Phần 1: seaborn ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">1.</span><br>seaborn:<br>hình thống kê <br> cấp cao</h1>
-          <p class="text-light">Giao diện thống kê cấp cao được xây trên matplotlib.</p>
-        </section>
+</section>
 
-        <section data-jp-reset>
-          <h2><code>set_theme</code>: thiết lập phong cách chung</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-import seaborn as sns
-sns.set_theme(style="whitegrid")
+<section>
+<section id="groups-sec">
+<h1><span class="text-light">1.</span><br>So sánh phân phối<br>giữa các nhóm</h1>
+<p class="text-light">Giá nguyên căn và phòng riêng khác nhau ở trung vị hay cả phân phối?</p>
+</section>
 
-sns.boxplot(data=df, x="price", y="room_type")
-            </code></pre>
-          </div>
-          <ul>
-            <li>seaborn nhận <strong>DataFrame và tên cột</strong>; nhiều biểu đồ không cần gộp nhóm trước.</li>
-            <li>seaborn vẫn dùng matplotlib và trả về <code>ax</code>, nên có thể chỉnh tiếp như ở bài 12.</li>
-          </ul>
-        </section>
+<section id="seaborn">
+<h2>Vẽ từ DataFrame bằng seaborn</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>import seaborn as sns
+sns.set_theme(style=&quot;whitegrid&quot;)    # phong cách chung
 
-        <section>
-          <h2>Boxplot: so sánh phân phối giữa các nhóm</h2>
-          <figure class="fig">
-            <img src="img/lecture-13/box-gia-loai.svg" alt="Boxplot giá theo loại phòng" style="width:92%">
-            <figcaption class="caption">Mỗi hộp thể hiện trung vị và khoảng tứ phân vị (IQR) của một nhóm
-              trên thang log. Hình cho thấy cả mức giá và độ chồng lấn giữa bốn phân phối.</figcaption>
-          </figure>
-        </section>
+co_gia = df.dropna(subset=[&quot;price&quot;])     # chỗ ở có giá
+ax = sns.histplot(data=co_gia, x=&quot;price&quot;, log_scale=True)</code></pre>
+</div>
+<p>Truyền DataFrame và <strong>tên cột</strong>.<br><code>log_scale=True</code>: vẽ trên thang log.</p>
+<aside class="notes"><p>data= nhận DataFrame; x=, y=, hue= nhận tên cột. log_scale=True: trục vẫn ghi giá gốc (Bài 12 phải tự lấy np.log10).
+Hàm vẽ một khung trả về ax: đặt tiêu đề, nhãn trục tiếp như Bài 12.
+McKinney §9.2, Plotting with pandas and seaborn. co_gia = df.dropna(subset=["price"]), 17.688 chỗ ở,
+khai báo ở ô chuẩn bị. set_theme ghi đè rcParams, giống khai báo rcParams ở Bài 12.</p>
+</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2><code>hue</code>: thể hiện nhóm bằng màu</h2>
-          <div class="two-col two-col--wide-right">
-            <div>
-              <div class="jp-cell jp-plain">
-                <pre class="jp-input"><code class="language-python" data-trim>
-q = ["Santiago",
-     "Las Condes"]
-sns.histplot(
-    df[df.neighbourhood
-       .isin(q)],
-    x="price",
-    hue="neighbourhood",
-    log_scale=True,
-    element="step",
-    stat="density",
-    common_norm=False)
-                </code></pre>
-              </div>
-            </div>
-            <div>
-              <figure class="fig">
-                <img src="img/lecture-13/hist-hue-quan.svg" alt="Histogram giá hai quận theo hue">
-              </figure>
-            </div>
-          </div>
-          <p class="caption"><span class="inline-code">hue=</span> tách nhóm bằng màu ngay trong lệnh vẽ;
-            <span class="inline-code">common_norm=False</span> chuẩn hoá riêng từng nhóm để so
-            <em>hình dạng</em> thay vì quy mô.</p>
-        </section>
+<section id="box-read">
+<h2>Cách đọc biểu đồ hộp (boxplot)</h2>
+<figure class="fig">
+<img src="img/lecture-13/box-giai-thich.svg" alt="Các thành phần của một boxplot" style="width:92%">
+</figure>
+<p>Hộp: 50% ở giữa, dài bằng <strong>IQR</strong> (Bài 10). Râu: tới 1,5 × IQR.</p>
+<aside class="notes"><p>Râu kéo tới điểm xa nhất còn trong 1,5 × IQR tính từ mép hộp; xa hơn là điểm ngoại lai.
+Hình là giá của 3.148 phòng riêng có giá, thang log. Trên thang log, quy tắc 1,5 × IQR tính trên log10(giá):
+seaborn với log_scale=True tính các giá trị này sau khi đổi thang, nên râu hai bên cân đối.
+Hỏi lớp: một hộp tóm tắt bao nhiêu chỗ ở? (đáp: tất cả 3.148).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Heatmap: bảng pivot bằng màu</h2>
-          <figure class="fig">
-            <img src="img/lecture-13/heatmap-quan-loai.svg" alt="Heatmap giá theo quận và loại phòng"
-              style="width:78%">
-            <figcaption class="caption"><code>sns.heatmap(annot=True)</code> dùng màu để so sánh nhanh
-              các ô trong bảng pivot, đồng thời giữ lại giá trị ở từng ô.</figcaption>
-          </figure>
-        </section>
+<section id="boxplot">
+<h2>So sánh giá giữa các loại phòng</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>thu_tu = [&quot;Shared room&quot;, &quot;Private room&quot;,
+          &quot;Entire home/apt&quot;, &quot;Hotel room&quot;]
+ax = sns.boxplot(data=co_gia, x=&quot;price&quot;, y=&quot;room_type&quot;,
+                 order=thu_tu, log_scale=True, showfliers=False)</code></pre>
+</div>
+<p class="caption"><code>order</code>: thứ tự các nhóm; <code>showfliers=False</code>: ẩn điểm ngoại lai.</p>
+<figure class="fig">
+<img src="img/lecture-13/box-gia-loai.svg" alt="Boxplot giá theo loại phòng" style="width:634px">
+</figure>
+<p><strong>Nguyên căn có luôn đắt hơn phòng riêng không?</strong></p>
+<aside class="notes"><p>order: thứ tự các nhóm; showfliers=False: ẩn điểm ngoại lai.
+Đáp: không. Hai hộp chồng lấn: khoảng 28% phòng riêng đắt hơn mức Q1 của nguyên căn (46.788 CLP/đêm),
+tức đắt hơn một phần tư số nguyên căn rẻ nhất. Trung vị: phòng chung 20.541, phòng riêng 34.235, nguyên căn 64.900,
+khách sạn 117.138,5 CLP/đêm. Khách sạn (n = 56) và phòng chung (n = 59) ít chỗ ở: hộp dao động mạnh nếu thêm vài chỗ ở.
+Data 100 Visualization I: boxplot, violin plot để so sánh phân phối của một biến định lượng theo một biến định tính.</p>
+</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Dữ liệu dạng dài phù hợp với seaborn</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-# rộng -> dài: mỗi dòng = (quận, loại phòng, giá trung vị)
-dai = pivot.reset_index().melt(
-    id_vars="neighbourhood",
-    var_name="room_type", value_name="gia")
-            </code></pre>
-          </div>
-          <p>seaborn thường dùng dữ liệu có mỗi dòng là một quan sát và mỗi cột là một biến
-            (tidy data). <span class="inline-code">melt</span> chuyển bảng pivot từ dạng rộng sang dạng dài.</p>
-        </section>
+<section id="hue">
+<h2>Hai quận trên cùng một khung</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>hai_quan = co_gia[co_gia[&quot;neighbourhood&quot;]
+                  .isin([&quot;Santiago&quot;, &quot;Las Condes&quot;])]
+ax = sns.histplot(data=hai_quan, x=&quot;price&quot;, hue=&quot;neighbourhood&quot;,
+                  log_scale=True, stat=&quot;density&quot;,
+                  common_norm=False)</code></pre>
+</div>
+<figure class="fig">
+<img src="img/lecture-13/hist-hue-quan.svg" alt="Histogram giá hai quận theo hue" style="width:614px">
+</figure>
+<p class="caption"><code>stat="density"</code>, <code>common_norm=False</code>: diện tích mỗi nhóm bằng 1, để so sánh hình dạng.</p>
+<aside class="notes"><p>hue: mỗi nhóm một màu. stat="density" với common_norm=False: diện tích mỗi nhóm bằng 1, so sánh hình dạng chứ không so sánh số lượng.
+Trung vị: quận Santiago 47.755, Las Condes 97.460 CLP/đêm (gấp 2,04 lần). Quận Santiago có 6.884 chỗ ở
+có giá, Las Condes 2.742 (gấp 2,5 lần). Không chuẩn hoá riêng thì ở mức giá thấp cột Santiago áp đảo,
+từ khoảng 80 nghìn CLP trở lên Las Condes lại nhiều hơn (Bài tập 1). Hình thêm element="step" để hai nhóm chồng lên vẫn nhìn rõ.</p>
+</aside>
+</section>
 
-        <section>
-          <h2><code>FacetGrid</code>: lưới nhiều biểu đồ nhỏ</h2>
-          <div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
-          <div class="two-col two-col--wide-right">
-            <div>
-              <ul>
-                <li><span class="inline-code">sns.displot(..., col="snapshot")</span> tạo một biểu đồ
-                  nhỏ cho mỗi mốc chụp, dùng chung thang đo.</li>
-                <li>Nhiều khung nhỏ cùng khuôn thường dễ đọc hơn một biểu đồ nhồi nhiều đường màu.</li>
-              </ul>
-            </div>
-            <div>
-              <figure class="fig">
-                <img src="img/lecture-13/facet-snapshot.svg" alt="FacetGrid phân phối giá theo mốc chụp">
-              </figure>
-            </div>
-          </div>
-        </section>
-      </section>
+<section id="facet">
+<h2>Một khung hay nhiều khung?</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>bon_quan = [&quot;Santiago&quot;, &quot;Providencia&quot;, &quot;Las Condes&quot;, &quot;Ñuñoa&quot;]
+sns.displot(data=co_gia[co_gia[&quot;neighbourhood&quot;].isin(bon_quan)],
+            x=&quot;price&quot;, col=&quot;neighbourhood&quot;, col_order=bon_quan,
+            log_scale=True, stat=&quot;density&quot;, common_norm=False)</code></pre>
+</div>
+<figure class="fig">
+<img src="img/lecture-13/facet-quan.svg" alt="Bốn khung nhỏ, mỗi quận một khung">
+</figure>
+<table class="compact-table">
+<thead><tr><th></th><th>Khi nào dùng</th></tr></thead>
+<tbody>
+<tr><td><code>hue=</code>: vẽ chung một khung, mỗi nhóm một màu</td><td>2–3 nhóm, cần so sánh trực tiếp</td></tr>
+<tr><td><code>col=</code> (<code>sns.displot</code>): mỗi nhóm một khung nhỏ, chung thang</td><td>nhiều nhóm; vẽ chung thì rối</td></tr>
+</tbody>
+</table>
+<aside class="notes"><p>Data 100 Visualization II, mục Harnessing Conditioning: superposition (chồng lên, hue) và juxtaposition (đặt cạnh, col).
+Bài 12 đã làm đặt cạnh bằng plt.subplots(1, 2, sharex=True, sharey=True); displot làm gọn hơn.
+displot là hàm cấp lưới, trả về FacetGrid chứ không phải ax (McKinney §9.2, Facet Grids and Categorical Data).</p>
+</aside>
+</section>
 
-      <!-- ====== Phần 2: Bản đồ ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">2.</span><br>Bản đồ choropleth</h1>
-          <p class="text-light">Bổ sung ranh giới quận cho bản đồ điểm ở bài 12.</p>
-        </section>
+<section id="heatmap">
+<h2>Biểu diễn bảng pivot bằng màu</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>quan_dong = df[&quot;neighbourhood&quot;].value_counts().head(8).index
+pv = (co_gia[co_gia[&quot;neighbourhood&quot;].isin(quan_dong)]
+      .pivot_table(values=&quot;price&quot;, index=&quot;neighbourhood&quot;,
+                   columns=&quot;room_type&quot;, aggfunc=&quot;median&quot;)
+      [[&quot;Entire home/apt&quot;, &quot;Private room&quot;]] / 1000)
+sns.heatmap(pv, annot=True, fmt=&quot;.0f&quot;, cmap=&quot;Blues&quot;)</code></pre>
+</div>
+<p class="caption"><code>annot=True</code>: ghi giá trị trong ô; <code>fmt=".0f"</code>: làm tròn; đơn vị nghìn CLP/đêm.</p>
+<figure class="fig">
+<img src="img/lecture-13/heatmap-quan-loai.svg" alt="Heatmap giá theo quận và loại phòng" style="width:470px">
+</figure>
+<aside class="notes"><p>annot=True ghi giá trị trong ô; fmt=".0f" làm tròn, không lấy số lẻ.
+Bảng là giá trung vị (nghìn CLP/đêm) của 8 quận đông nhất. Tỷ số nguyên căn / phòng riêng: Lo Barnechea
+khoảng 2,7 lần, Estación Central khoảng 1,4 lần. Ô phòng riêng ở Lo Barnechea (69 chỗ ở) và Estación Central (55) dựa trên ít chỗ ở; xem n bằng
+aggfunc="size".</p>
+</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>GeoJSON + geopandas + merge</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-import geopandas as gpd
+<section id="exercise-count">
+<h2>Bài tập 1: Vẽ theo số đếm hay mật độ?</h2>
+<p>Vẽ lại hình của hai quận, bỏ <code>stat</code> và <code>common_norm</code> (mặc định là đếm).</p>
+<p><strong>Dự đoán trước khi chạy: hai nhóm trông thế nào? Mỗi hình trả lời câu hỏi nào?</strong></p>
+<aside class="notes"><p>Đáp: đếm thì tổng của Santiago gấp 2,5 lần (6.884 so với 2.742 chỗ ở): dưới khoảng 56 nghìn CLP cột Santiago cao gấp
+nhiều lần ở mức giá thấp (khoảng 15–55 nghìn CLP, với số khoảng mặc định), từ khoảng 80 nghìn trở lên Las Condes lại nhiều hơn. Hai đỉnh lệch nhau, khó so sánh hình dạng. Hình đếm trả lời "mức giá nào có nhiều chỗ ở nhất"; hình mật độ trả lời "giá của
+mỗi quận phân bố ra sao". Cả hai đúng, chọn theo câu hỏi.</p>
+</aside>
+</section>
 
-geo = gpd.read_file(".../neighbourhoods.geojson")   # ranh giới quận
-kpi = df.groupby("neighbourhood")["price"].median().reset_index()
+</section>
 
-ban_do = geo.merge(kpi, on="neighbourhood", how="left")
-ban_do.plot(column="price", cmap="Blues", legend=True)
-            </code></pre>
-          </div>
-          <p>Ba bước: đọc ranh giới → tính chỉ số theo quận → <code>merge</code> rồi
-            <code>plot(column=...)</code>. File GeoJSON có sẵn trong mỗi mốc chụp Inside Airbnb.</p>
-        </section>
+<section>
+<section id="encode-sec">
+<h1><span class="text-light">2.</span><br>Chọn cách<br>biểu diễn dữ liệu</h1>
+<p class="text-light">Độ dài, góc, diện tích hay màu sắc?</p>
+</section>
 
-        <section>
-          <h2>Kết quả và bẫy diện tích</h2>
-          <figure class="fig">
-            <img src="img/lecture-13/choropleth-gia.svg" alt="Choropleth giá trung vị Santiago"
-              style="width:74%">
-            <figcaption class="caption">Giá trung vị cao hơn ở khu vực đông bắc Santiago.
-              Tuy nhiên, Lo Barnechea chiếm gần nửa diện tích bản đồ mà chỉ có 791 chỗ ở.</figcaption>
-          </figure>
-        </section>
+<section id="encodings">
+<h2>Bốn cách biểu diễn số liệu</h2>
+<figure class="fig">
+<img src="img/lecture-13/ma-hoa.svg" alt="Năm con số mã hoá bằng độ dài, góc, diện tích, màu" style="width:902px">
+</figure>
+<p>Mắt so sánh <strong>vị trí và độ dài</strong> chính xác nhất; góc, diện tích, màu kém hơn.</p>
+<aside class="notes"><p>A đến E: Santiago 7.182, Providencia 2.997, Las Condes 2.862, Ñuñoa 1.813, Lo Barnechea 824 chỗ ở.
+Hỏi lớp: B hay C lớn hơn? Trên cột thấy ngay B; trên hình tròn, diện tích, màu gần như không phân biệt được.
+Vì vậy so sánh nhóm nên dùng cột hoặc điểm, không dùng biểu đồ tròn.
+Thứ hạng theo Cleveland và McGill (1984),
+Graphical Perception, JASA 79(387).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Choropleth: diện tích ≠ tầm quan trọng</h2>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            Vùng có <strong>diện tích</strong> lớn thường thu hút sự chú ý hơn vùng nhỏ, ngay cả khi
-            có ít chỗ ở hơn. Choropleth thể hiện <em>giá trị theo vùng</em>, không thể hiện
-            <em>quy mô nguồn cung</em>.
-          </div>
-          <ul>
-            <li>Luôn kèm bảng hoặc chú thích <strong>cỡ mẫu n của mỗi quận</strong>, hoặc thêm bản đồ
-              thể hiện số chỗ ở.</li>
-            <li>Dùng một dải màu tuần tự từ nhạt đến đậm để thể hiện độ lớn.</li>
-          </ul>
-        </section>
-      </section>
+<section id="colormaps">
+<h2>Chọn bảng màu theo loại dữ liệu</h2>
+<figure class="fig">
+<img src="img/lecture-13/bang-mau.svg" alt="Bốn bảng màu" style="width:94%">
+</figure>
+<p>Chọn bằng tham số <code>cmap</code> hoặc <code>palette</code>.</p>
+<aside class="notes"><p>cmap dùng cho heatmap, bản đồ; palette dùng cho hue. Bảng tuần tự đều độ sáng (Blues, viridis) vẫn đọc được khi in đen trắng.
+Data 100 Visualization II, mục Harnessing Color: jet so với viridis. jet có dải vàng sáng ở giữa, mắt thấy như
+một ranh giới. Bảng màu định tính chỉ cho nhóm không có thứ tự; dùng cho giá thì người đọc không biết màu nào lớn hơn.</p>
+</aside>
+</section>
 
-      <!-- ====== Phần 3: Tương tác ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">3.</span><br>Biểu đồ tương tác</h1>
-          <p class="text-light">Dùng khi cần khám phá chi tiết của từng điểm dữ liệu.</p>
-        </section>
+</section>
 
-        <section data-jp-reset>
-          <h2>plotly express: xem chi tiết khi rê chuột</h2>
-          <div class="two-col two-col--wide-right">
-            <div>
-              <div class="jp-cell jp-plain">
-                <pre class="jp-input"><code class="language-python" data-trim>
-import plotly.express as px
+<section>
+<section id="critique-sec">
+<h1><span class="text-light">3.</span><br>Phản biện<br>ba biểu đồ lỗi</h1>
+<p class="text-light">AI vẽ nhanh, nhưng không bảo đảm cách trình bày đúng.</p>
+</section>
 
-px.scatter(
-    s, x="longitude",
-    y="latitude",
-    color="room_type",
-    hover_name="name",
-    hover_data=["price",
-        "neighbourhood"])
-                </code></pre>
-              </div>
-            </div>
-            <div>
-              <figure class="fig">
-                <img src="img/lecture-13/plotly-hover.png" alt="Biểu đồ phân tán tương tác plotly">
-              </figure>
-            </div>
-          </div>
-          <p class="caption">Cú pháp tương tự seaborn; biểu đồ HTML cho phép rê chuột xem tên chỗ ở,
-            giá và quận của từng điểm (ảnh tĩnh minh hoạ nội dung hover).</p>
-        </section>
+<section id="fault-a">
+<h2>Phản biện hình A</h2>
+<figure class="fig">
+<img src="img/lecture-13/ai-loi-truc-kep.svg" alt="Biểu đồ trục kép" style="width:778px">
+</figure>
+<p><strong>Theo hình, giá có tăng cùng nhịp với số đánh giá không?</strong></p>
+<p class="caption">Chuỗi giá là số minh hoạ.</p>
+<aside class="notes"><p>Inside Airbnb không có giá theo tháng trong một mốc chụp, nên chuỗi giá là số minh hoạ: tăng đều
+từ 55 lên 62 nghìn CLP cộng nhiễu. Hỏi lớp trước khi chuyển slide: hai đường gần như chồng khít, vậy giá tăng
+bao nhiêu phần trăm, số đánh giá tăng bao nhiêu lần? (đáp ở slide sau).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Biểu đồ tĩnh hay tương tác?</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Bối cảnh</th>
-                <th>Lựa chọn</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Khám phá dữ liệu, minh hoạ trên lớp, dashboard nội bộ</td>
-                <td>biểu đồ <strong>tương tác</strong> (plotly; xem chi tiết khi rê chuột)</td>
-              </tr>
-              <tr>
-                <td>Báo cáo PDF, slide và bản in</td>
-                <td>biểu đồ <strong>tĩnh</strong> (matplotlib/seaborn; dùng chú thích thay cho tương tác)</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
-      </section>
+<section id="fix-a">
+<h2>Hai trục y tạo ra quan hệ giả</h2>
+<div class="two-col">
+<div>
+<figure class="fig">
+<img src="img/lecture-13/ai-loi-truc-kep-nho.svg" alt="Hình lỗi A">
+<figcaption class="caption"><strong>Hình lỗi</strong></figcaption>
+</figure>
+</div>
+<div>
+<figure class="fig">
+<img src="img/lecture-13/sua-truc-kep.svg" alt="Bản sửa: hai khung, chung trục thời gian">
+<figcaption class="caption"><strong>Bản sửa</strong></figcaption>
+</figure>
+</div>
+</div>
+<table class="compact-table">
+<thead><tr><th>Lỗi</th><th>Cách sửa</th></tr></thead>
+<tbody>
+<tr><td>Hai trục y, mỗi trục một thang tự chọn</td><td>Hai khung chung trục thời gian</td></tr>
+<tr><td>Giá +13% trông dốc như số đánh giá ×2,7</td><td>Trục y bắt đầu từ 0</td></tr>
+<tr><td>Tiêu đề khẳng định nhân quả</td><td>Tiêu đề chỉ mô tả dữ liệu</td></tr>
+</tbody>
+</table>
+<aside class="notes"><p>Số đánh giá: 8.218 (01/2024) lên 22.296 (05/2026), gấp 2,7 lần. Giá minh hoạ: trung bình 3 tháng đầu
+so với 3 tháng cuối tăng khoảng 13% (ô notebook in số chính xác). Trục giá chạy 52 đến 64 nên chuỗi giá (kể cả nhiễu)
+lấp gần kín chiều cao. Điểm kiểm tra phát hiện được: trục (2) và nguồn, diễn giải (5).
+Trục y từ 0 ở bản sửa: biểu đồ đường không bắt buộc bắt đầu từ 0 (Bài 12), nhưng ở đây cần để mức tăng 13% không bị phóng đại.
+Số đánh giá cũng chỉ là đại diện gián tiếp cho nhu cầu.</p>
+</aside>
+</section>
 
-      <!-- ====== Phần 4: Phản biện ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">4.</span><br>Phản biện<br>ba biểu đồ lỗi</h1>
-          <p class="text-light">AI có thể tạo biểu đồ nhanh nhưng không bảo đảm cách trình bày đúng.
-            Ba ví dụ sau minh hoạ những lỗi thường gặp.</p>
-        </section>
+<section id="fault-b">
+<h2>Phản biện hình B</h2>
+<figure class="fig">
+<img src="img/lecture-13/ai-loi-pie.svg" alt="Biểu đồ tròn 12 lát" style="width:557px">
+</figure>
+<p><strong>Providencia hay Las Condes có nhiều chỗ ở hơn?</strong></p>
+<aside class="notes"><p>Providencia 2.997, Las Condes 2.862 chỗ ở: chênh 4,7%, góc gần như bằng nhau. Nhãn các lát nhỏ
+chồng lên nhau là hành vi mặc định của matplotlib khi có nhiều lát mỏng: cố ý giữ làm một lỗi của hình. Hỏi lớp, rồi mới chuyển sang slide sửa.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Hình lỗi A</h2>
-          <figure class="fig">
-            <img src="img/lecture-13/ai-loi-truc-kep.svg" alt="Biểu đồ trục kép" style="width:82%">
-          </figure>
-          <div>Hình gợi ra kết luận gì? Dữ liệu có đủ căn cứ không?</div>
-        </section>
+<section id="fix-b">
+<h2>Hạn chế của biểu đồ tròn</h2>
+<div class="two-col">
+<div>
+<figure class="fig">
+<img src="img/lecture-13/ai-loi-pie-nho.svg" alt="Hình lỗi B">
+<figcaption class="caption"><strong>Hình lỗi</strong></figcaption>
+</figure>
+</div>
+<div>
+<figure class="fig">
+<img src="img/lecture-13/sua-pie.svg" alt="Bản sửa: thanh ngang xếp hạng">
+<figcaption class="caption"><strong>Bản sửa</strong></figcaption>
+</figure>
+</div>
+</div>
+<table class="compact-table">
+<thead><tr><th>Lỗi</th><th>Cách sửa</th></tr></thead>
+<tbody>
+<tr><td>Góc khó so sánh: Providencia ≈ Las Condes</td><td>Thanh ngang, so sánh bằng độ dài</td></tr>
+<tr><td>12 màu thừa, nhãn chồng nhau</td><td>Tô nổi một quận; nhãn ở đầu thanh</td></tr>
+<tr><td>Bỏ 19 quận (4,7%) mà không ghi</td><td>Thêm thanh “các quận còn lại”</td></tr>
+</tbody>
+</table>
+<aside class="notes"><p>Biểu đồ tròn tự quy 12 quận thành 100%, nên Santiago là 40,7% trên hình tròn nhưng 38,8% số chỗ ở thật.
+Điểm kiểm tra phát hiện được: dạng và màu (4), nguồn và diễn giải (5). Bản sửa trên slide giữ 7 quận đông nhất và gộp 24 quận còn lại (11,0%) để hình đủ lớn.
+Data 100 Visualization II: tránh biểu đồ tròn khi cần so sánh chính xác.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Hình A: trục kép</h2>
-          <div class="two-col">
-            <div>
-              <ul>
-                <li>Hai trục y có thang đo riêng. Điều chỉnh <span class="inline-code">ylim</span> có thể
-                  làm hai đường trông đồng biến dù hình chưa chứng minh được tương quan.</li>
-                <li>Trục bên phải chỉ chạy từ 54 đến 63, nên biến động khoảng 5% trông lớn hơn thực tế.</li>
-              </ul>
-            </div>
-            <div>
-              <figure class="fig">
-                <img src="img/lecture-13/sua-truc-kep.svg" alt="Bản sửa: hai khung chung trục thời gian">
-                <figcaption class="caption"><strong>Sửa:</strong> tách thành hai khung riêng, chung trục
-                  thời gian — không dựng tương quan giả.</figcaption>
-              </figure>
-            </div>
-          </div>
-        </section>
+<section id="fault-c">
+<h2>Phản biện hình C</h2>
+<figure class="fig">
+<img src="img/lecture-13/ai-loi-quy-mo.svg" alt="Hai quận khác quy mô trên một trục" style="width:778px">
+</figure>
+<p><strong>Số đánh giá ở Estación Central có thật sự gần như không tăng?</strong></p>
+<aside class="notes"><p>Dữ liệu thật: số đánh giá mỗi năm, nối bảng đánh giá với bảng chỗ ở để lấy quận (merge, Bài 5).
+Bỏ năm 2026 chưa trọn. Hỏi lớp: số đánh giá của Estación Central năm 2025 gấp mấy lần năm 2022? (đáp: 8,2 lần).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Hình lỗi B</h2>
-          <figure class="fig">
-            <img src="img/lecture-13/ai-loi-pie.svg" alt="Biểu đồ tròn 12 lát" style="width:58%">
-          </figure>
-          <div>Đọc thử: Ñuñoa hơn hay kém La Florida bao nhiêu?</div>
-        </section>
+<section id="fix-c">
+<h2>Quy về chỉ số để so sánh tốc độ tăng</h2>
+<div class="two-col">
+<div>
+<figure class="fig">
+<img src="img/lecture-13/ai-loi-quy-mo-nho.svg" alt="Hình lỗi C">
+<figcaption class="caption"><strong>Hình lỗi</strong></figcaption>
+</figure>
+</div>
+<div>
+<figure class="fig">
+<img src="img/lecture-13/sua-chi-so.svg" alt="Bản sửa: quy về chỉ số, kỳ gốc 2022 = 100">
+<figcaption class="caption"><strong>Bản sửa</strong></figcaption>
+</figure>
+</div>
+</div>
+<table class="compact-table">
+<thead><tr><th>Lỗi</th><th>Cách sửa</th></tr></thead>
+<tbody>
+<tr><td>Hai quy mô trên một trục</td><td>Chỉ số, kỳ gốc 2022 = 100</td></tr>
+<tr><td>Tiêu đề kết luận sai</td><td>Tiêu đề theo chỉ số</td></tr>
+</tbody>
+</table>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>chi_so = hai / hai.loc[2022] * 100   # hai: số đánh giá theo năm</code></pre>
+</div>
+<aside class="notes"><p>hai: số đánh giá mỗi năm của hai quận (2022–2025); năm 2025: 86.144 so với 4.261, trên một trục nhóm nhỏ trông phẳng.
+Chỉ số: chia cho kỳ gốc rồi nhân 100.
+Từ 2022 đến 2025: quận Santiago gấp 4,4 lần, Estación Central gấp 8,2 lần. Cách sửa khác: trục y thang log.
+Lưu ý: reviews.csv chỉ chứa đánh giá của các chỗ ở còn trong mốc chụp, nên năm càng cũ càng bị đếm thiếu,
+mức tăng bị thổi phồng; so sánh hai quận với nhau thì cùng chịu sai lệch này.
+Điểm kiểm tra phát hiện được: trục (2), nguồn và diễn giải (5).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Hình B: biểu đồ tròn 12 lát</h2>
-          <div class="two-col">
-            <div>
-              <ul>
-                <li>Biểu đồ có 12 lát và nhiều nhãn chồng lấn, nên khó so sánh chính xác các góc gần nhau.</li>
-                <li>Mười hai màu không mã hoá thêm thông tin và làm hình khó đọc hơn.</li>
-              </ul>
-            </div>
-            <div>
-              <figure class="fig">
-                <img src="img/lecture-13/sua-pie.svg" alt="Bản sửa: thanh ngang xếp hạng">
-                <figcaption class="caption"><strong>Sửa:</strong> thanh ngang xếp hạng — so bằng
-                  độ dài, đủ chỗ cho nhãn.</figcaption>
-              </figure>
-            </div>
-          </div>
-        </section>
+<section id="faults-summary">
+<h2>Đối chiếu ba lỗi với năm điểm kiểm tra</h2>
+<table class="compact-table">
+<thead><tr><th>Hình</th><th>Lỗi</th><th>Điểm kiểm tra</th><th>Sửa</th></tr></thead>
+<tbody>
+<tr><td>A</td><td>trục kép, tiêu đề nhân quả</td><td>trục; nguồn và diễn giải</td><td>hai khung chung trục x</td></tr>
+<tr><td>B</td><td>góc khó so sánh, bỏ phần còn lại</td><td>dạng và màu; nguồn và diễn giải</td><td>thanh ngang, đủ 100%</td></tr>
+<tr><td>C</td><td>hai quy mô trên một trục</td><td>trục; nguồn và diễn giải</td><td>chỉ số, kỳ gốc = 100</td></tr>
+</tbody>
+</table>
+<aside class="notes"><p>Chưa có hình nào lỗi cỡ mẫu: đó là Bài tập 2.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Hình lỗi C</h2>
-          <figure class="fig">
-            <img src="img/lecture-13/ai-loi-hai-tien-te.svg" alt="Hai thành phố hai tiền tệ một trục"
-              style="width:88%">
-          </figure>
-          <div>Có thể so trực tiếp CLP với BRL trên cùng một trục không?</div>
-        </section>
+<section id="exercise-n">
+<h2>Bài tập 2: Lập hồ sơ lỗi</h2>
+<figure class="fig">
+<img src="img/lecture-13/ai-loi-n.svg" alt="Xếp hạng quận theo giá trung vị" style="width:672px">
+</figure>
+<p><strong>Áp dụng năm điểm kiểm tra cho hình trên. Hình thiếu gì? Sửa thế nào?</strong></p>
+<aside class="notes"><p>Đáp: cỡ mẫu (3). La Pintana chỉ có 1 chỗ ở có giá (184.169 CLP/đêm), La Granja 10, Huechuraba 48.
+Sửa: lọc quận có từ 30 chỗ ở (9 quận dưới ngưỡng) hoặc ghi n cạnh mỗi thanh; tiêu đề nói về những quận đủ dữ liệu.
+Kiểm tra bằng tk.loc["La Pintana"]. Bài 12 đã lọc n ≥ 500 vì lý do này.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Hình C: hồ sơ lỗi và bản sửa</h2>
-          <p>CLP và BRL không thể so trực tiếp. Quy hai chuỗi về
-            <strong>chỉ số với tháng đầu = 100</strong> để so nhịp thay đổi:</p>
-          <figure class="fig">
-            <img src="img/lecture-13/sua-index-100.svg" alt="Quy hai chuỗi về chỉ số 100" style="width:78%">
-            <figcaption class="caption">Hai chuỗi minh hoạ đã được quy về cùng mốc 100.</figcaption>
-          </figure>
-        </section>
+</section>
 
-        <section>
-          <h2>Năm câu hỏi để thẩm định một biểu đồ</h2>
-          <div class="key-box">
-            <span class="box-title">Kiểm tra trước khi dùng biểu đồ</span>
-            <ol style="margin:0.2em 0 0 1em">
-              <li>Trục: bắt đầu từ đâu, có bị nén/cắt không, có trục kép không?</li>
-              <li>Đơn vị và thang: các đại lượng trên cùng trục có cùng đơn vị không? Thang log hay thường?</li>
-              <li>Cỡ mẫu: nhóm được vẽ có bao nhiêu quan sát (n)?</li>
-              <li>Dạng hình có hợp câu hỏi không (pie 12 lát, 3D…)?</li>
-              <li>Tiêu đề và lời diễn giải có vượt quá điều dữ liệu cho phép không?</li>
-            </ol>
-          </div>
-        </section>
-      </section>
+<section>
+<section id="self-sec">
+<h1><span class="text-light">4.</span><br>Tự học: bản đồ<br>và biểu đồ tương tác</h1>
+<p class="text-light">Đọc slide và chạy notebook.</p>
+</section>
 
-      <!-- ====== Kết ====== -->
-      <section>
-        <section>
-          <h2>Tổng kết</h2>
-          <ul>
-            <li>seaborn dùng DataFrame và tên cột để so sánh phân phối giữa các nhóm.</li>
-            <li>Bản đồ choropleth cần dữ liệu vùng, chỉ số đã gộp và cỡ mẫu của từng vùng.</li>
-            <li>Biểu đồ tương tác phù hợp để khám phá; biểu đồ tĩnh phù hợp để xuất bản.</li>
-            <li>Năm điểm cần kiểm tra là trục, đơn vị, cỡ mẫu, dạng biểu đồ và lời diễn giải.</li>
-          </ul>
-        </section>
+<section id="choropleth-code">
+<h2>Bản đồ tô màu theo quận</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>import geopandas as gpd
 
-        <section>
-          <h2>Làm việc với AI thì sao?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <div class="good-box">
-            <span class="box-title">AI làm tốt</span>
-            Sinh mã nguồn seaborn hoặc plotly theo mô tả, gợi ý dạng biểu đồ và hỗ trợ sửa lỗi cú pháp geopandas.
-          </div>
-          <div class="warn-box">
-            <span class="box-title">AI hay sai</span>
-            Có thể dùng trục kép hoặc biểu đồ tròn quá nhiều lát, ghép hai đơn vị vào một trục,
-            hoặc đặt tiêu đề vượt quá điều dữ liệu cho phép.
-          </div>
-        </section>
+geo = gpd.read_file(&quot;neighbourhoods.geojson&quot;)     # ranh giới quận
+kpi = (co_gia.groupby(&quot;neighbourhood&quot;)
+       .agg(gia=(&quot;price&quot;, &quot;median&quot;), n=(&quot;price&quot;, &quot;size&quot;))
+       .reset_index())
+ban_do = geo.merge(kpi, on=&quot;neighbourhood&quot;, how=&quot;left&quot;)
+ban_do.plot(column=&quot;gia&quot;, legend=True)</code></pre>
+</div>
+<p>Bản đồ tô màu theo vùng gọi là <strong>choropleth</strong>. GeoJSON chứa ranh giới các quận; <code>plot(column="gia")</code> tô màu mỗi quận theo cột <code>gia</code>.</p>
+<aside class="notes"><p>GeoJSON có sẵn trong mỗi mốc chụp. geopandas đọc GeoJSON thành GeoDataFrame: mỗi hàng một quận, cột geometry là đa giác.
+how="left" giữ đủ 32 quận; plot(column="gia") tô màu mỗi quận theo cột gia.
+32 quận trong GeoJSON; San Ramón không có chỗ ở nào nên sau merge là NaN. Notebook đọc file từ data/ nếu có.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Kiểm chứng thế nào?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <ul>
-            <li>Kiểm tra mọi hình do AI sinh bằng <strong>năm câu hỏi</strong> ở phần 4.</li>
-            <li>Tự tính lại ít nhất một giá trị trên hình và đối chiếu với dữ liệu nguồn.</li>
-          </ul>
-        </section>
+<section id="choropleth">
+<h2>Ảnh hưởng của diện tích trên bản đồ</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<figure class="fig">
+<img src="img/lecture-13/choropleth-gia.svg" alt="Bản đồ giá trung vị theo quận" style="width:470px">
+</figure>
+<p>Lo Barnechea: <strong>một nửa diện tích</strong>, chỉ 791 chỗ ở có giá (4,5%).</p>
+<aside class="notes"><p>Lo Barnechea chiếm 50,4% diện tích (đo trên hệ toạ độ UTM 19S), 791 chỗ ở có giá. La Pintana: 1 chỗ ở,
+trung vị 184.169, nếu tô màu sẽ đậm thứ hai bản đồ. Hình dùng thang màu log (vì Lo Barnechea vượt xa) và gạch chéo
+10 quận: 9 quận có dưới 30 chỗ ở có giá và San Ramón không có chỗ ở nào.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Đọc thêm</h2>
-          <ul>
-            <li>VanderPlas, <em>Python Data Science Handbook</em>, 2nd ed. — mục Seaborn.</li>
-            <li>Tài liệu seaborn — <em>tutorial gallery</em> (chọn biểu đồ theo bài toán).</li>
-            <li>📖 Tự học: Financial Times, <em>Visual Vocabulary</em> — hướng dẫn chọn dạng biểu đồ.</li>
-          </ul>
-        </section>
-      </section>
+<section id="plotly">
+<h2>Biểu đồ tương tác với plotly</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>import plotly.express as px
+mau = co_gia.sample(3000, random_state=1)
+px.scatter(mau, x=&quot;longitude&quot;, y=&quot;latitude&quot;, color=&quot;room_type&quot;,
+           hover_name=&quot;name&quot;, hover_data=[&quot;price&quot;, &quot;neighbourhood&quot;])</code></pre>
+</div>
+<p>Rê chuột lên một điểm để xem tên, giá, quận. Báo cáo in vẫn dùng hình tĩnh.</p>
+<aside class="notes"><p>Cú pháp như seaborn: DataFrame và tên cột. Hợp để khám phá và trình diễn trên máy; báo cáo PDF, slide in thì dùng hình tĩnh.
+Demo trực tiếp trong notebook nếu còn thời gian. mau là 3.000 chỗ ở lấy ngẫu nhiên (random_state=1) để trình duyệt nhẹ.
+fig.write_html("ban_do.html") lưu thành trang HTML mở bằng trình duyệt.</p>
+</aside>
+</section>
+
+</section>
+
+<section>
+<section id="summary">
+<h2>Tổng kết</h2>
+<ul>
+<li>seaborn nhận DataFrame và tên cột; boxplot, <code>hue</code>, <code>col</code> để so sánh phân phối giữa các nhóm.</li>
+<li>Mắt so sánh vị trí và độ dài tốt nhất; chọn bảng màu theo loại dữ liệu.</li>
+<li>Ba lỗi hay gặp: trục kép, biểu đồ tròn nhiều lát, hai quy mô trên một trục.</li>
+<li>Rà soát mọi hình bằng năm điểm: thông điệp, trục, cỡ mẫu, dạng và màu, nguồn và diễn giải.</li>
+</ul>
+</section>
+
+<section id="ai">
+<h2>Làm việc với AI thì sao?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
+<div class="good-box">
+<span class="box-title">AI làm tốt</span>
+Viết code seaborn, geopandas, plotly từ mô tả; gợi ý dạng biểu đồ; sửa lỗi cú pháp.
+</div>
+<div class="warn-box">
+<span class="box-title">AI hay sai</span>
+Dùng trục kép, biểu đồ tròn nhiều lát, ghép hai quy mô hoặc hai đơn vị lên một trục, xếp hạng nhóm
+không ghi cỡ mẫu, đặt tiêu đề khẳng định nhân quả.
+</div>
+<aside class="notes"><p>Cả ba hình lỗi và hình ở Bài tập 2 là kiểu hình AI hay sinh khi yêu cầu chỉ nói "vẽ so sánh A và B".</p>
+</aside>
+</section>
+
+<section id="verify">
+<h2>Kiểm chứng thế nào?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
+<ul>
+<li>Rà soát hình do AI sinh bằng <strong>năm điểm kiểm tra</strong>; ghi lại lỗi và cách sửa.</li>
+<li>Tự tính lại ít nhất một giá trị trên hình và xem cỡ mẫu của nhóm đó.</li>
+</ul>
+<aside class="notes"><p>Yêu cầu AI ghi rõ dữ liệu đã lọc thế nào, rồi tự đọc code để xác nhận.</p>
+</aside>
+</section>
+
+<section id="references">
+<h2>Đọc thêm</h2>
+<ol>
+<li><a href="https://wesmckinney.com/book/plotting-and-visualization" target="_blank" rel="noopener">McKinney, chương 9, §9.2–9.3</a></li>
+<li><a href="https://ds100.org/course-notes/visualization-2" target="_blank" rel="noopener">Berkeley Data 100: Visualization II</a></li>
+<li><a href="https://seaborn.pydata.org/tutorial.html" target="_blank" rel="noopener">seaborn: User guide and tutorial</a></li>
+<li><a href="https://geopandas.org/en/stable/docs/user_guide/mapping.html" target="_blank" rel="noopener">geopandas: Mapping and plotting</a>,
+<a href="https://plotly.com/python/plotly-express/" target="_blank" rel="noopener">plotly express</a></li>
+<li><a href="https://github.com/Financial-Times/chart-doctor/tree/main/visual-vocabulary" target="_blank" rel="noopener">Financial Times: Visual Vocabulary</a></li>
+</ol>
+</section>
+
+</section>
 
       <!-- Footer -->
       <div class="footer">
-        LTXLDL (2627-1) · Bài 13: Trực quan hoá nâng cao &amp; phản biện biểu đồ
+        LTXLDL (2627-1) · Bài 13: Trực quan hoá nâng cao
       </div>
     </div>
   </div>

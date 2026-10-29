@@ -19,430 +19,583 @@
   <div class="reveal">
     <div class="slides">
 
-      <!-- ====== Mở bài ====== -->
-      <section>
-        <section>
-          <h1>Lập trình <br /> xử lý dữ liệu</h1>
-          <div>
-            <p>Học kì 1, năm học 2026–2027</p>
-            <p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
-          </div>
-        </section>
+<section>
+<section id="course">
+<h1>Lập trình<br>xử lý dữ liệu</h1>
+<p>Học kì 1, năm học 2026–2027</p>
+<p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
+</section>
 
-        <section>
-          <h1>
-            <span class="text-light">Bài 12</span>
-            <br>
-            Trực quan hoá cơ bản
-          </h1>
-          <p class="text-light">matplotlib, pandas plot và cách tạo biểu đồ tự giải thích được.</p>
-        </section>
+<section id="title">
+<h1><span class="text-light">Bài 12</span><br>Trực quan hoá<br>cơ bản</h1>
+<p>Vẽ biểu đồ để trả lời câu hỏi về dữ liệu bằng matplotlib và pandas.</p>
+</section>
 
-        <section>
-          <h2>Bài trước</h2>
-          <ul>
-            <li>LLM trích xuất dữ liệu phi cấu trúc; chất lượng được đo bằng tập dữ liệu gán nhãn thủ công.</li>
-            <li>Sau bước làm sạch và trích xuất, dữ liệu đã sẵn sàng để
-              <strong>trình bày bằng biểu đồ</strong>.</li>
-          </ul>
-        </section>
+<section id="previous">
+<h2>Bài trước</h2>
+<p>Ở Bài 11, bạn đã đổi cột <code>comments</code> thành bảng nhãn để phân tích bằng pandas.</p>
+<p>Bài này trình bày dữ liệu bằng biểu đồ: số đánh giá theo tháng (Bài 8), giá đã làm sạch (Bài 10).</p>
+<aside class="notes"><p>Nối từ các bài trước: Bài 8 đã đếm số đánh giá theo tháng, Bài 10 đã làm sạch giá.
+Hỏi lớp: nhìn bảng 18.534 hàng có thấy giá phân bố thế nào không? (đáp: không; cần tóm tắt hoặc vẽ).
+Bài 12 và Bài 13 học chung một buổi: Bài 12 là công cụ cơ bản, Bài 13 so sánh nhóm và phản biện biểu đồ.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Tổng quan</h2>
-          <ol>
-            <li>Vì sao cần biểu đồ và nên chọn dạng nào?</li>
-            <li>matplotlib: Figure, Axes và bốn dạng biểu đồ cơ bản</li>
-            <li>pandas <code>.plot</code> và xuất hình từ pipeline</li>
-            <li>Biểu đồ rõ ràng và trung thực</li>
-            <li>Làm việc với AI thì sao?</li>
-          </ol>
-        </section>
-      </section>
+<section id="overview">
+<h2>Tổng quan</h2>
+<ol>
+<li>Vì sao cần biểu đồ?</li>
+<li>Vẽ biểu đồ với matplotlib</li>
+<li>Biểu đồ cột, histogram và phân tán</li>
+<li>Vẽ nhanh và lưu hình</li>
+<li>Tránh gây hiểu sai khi trình bày</li>
+</ol>
+<aside class="notes"><p>Mạch bài theo McKinney chương 9: §9.1 (matplotlib: Figure, Axes, nhãn, chú thích, lưu hình,
+cấu hình) và §9.2 (vẽ bằng pandas). Cách chọn dạng biểu đồ theo câu hỏi và loại biến lấy từ
+Berkeley Data 100, Visualization I.</p>
+</aside>
+</section>
 
-      <!-- ====== Phần 1 ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">1.</span><br>Vì sao cần biểu đồ?<br>Nên chọn dạng nào?</h1>
-          <p class="text-light"><code>describe()</code> không cho biết hình dạng của dữ liệu.</p>
-        </section>
+</section>
 
-        <section>
-          <h2>Bốn bộ dữ liệu cùng bảng thống kê</h2>
-          <figure class="fig">
-            <img src="img/lecture-12/anscombe.svg" alt="Bộ tứ Anscombe" style="width:98%">
-            <figcaption class="caption">Bộ tứ Anscombe có cùng trung bình, phương sai, tương quan và
-              đường hồi quy; nhưng vẽ biểu đồ sẽ cho thấy bốn cấu trúc hoàn toàn khác nhau.</figcaption>
-          </figure>
-        </section>
+<section>
+<section id="why">
+<h1><span class="text-light">1.</span><br>Vì sao cần biểu đồ?</h1>
+<p class="text-light">Bảng thống kê giống nhau chưa chắc dữ liệu giống nhau.</p>
+</section>
 
-        <section>
-          <h2>Câu hỏi chọn dạng biểu đồ</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Bạn muốn nhìn thấy…</th>
-                <th>Chọn biểu đồ dạng…</th>
-                <th>Ví dụ trong bài này</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Diễn biến theo thời gian</td>
-                <td><strong>đường</strong> (line)</td>
-                <td>đánh giá theo tháng</td>
-              </tr>
-              <tr>
-                <td>So sánh giữa các nhóm</td>
-                <td><strong>cột</strong> (bar; dùng thanh ngang nếu tên dài)</td>
-                <td>giá theo quận</td>
-              </tr>
-              <tr>
-                <td>Hình dáng phân phối</td>
-                <td><strong>histogram</strong></td>
-                <td>phân phối giá</td>
-              </tr>
-              <tr>
-                <td>Quan hệ hai đại lượng</td>
-                <td><strong>phân tán</strong> (scatter)</td>
-                <td>vị trí × giá</td>
-              </tr>
-            </tbody>
-          </table>
-          <p>Chọn dạng biểu đồ dựa trên <em>câu hỏi phân tích</em>. Nếu chỉ cần nhấn mạnh một con số thì không cần vẽ biểu đồ.</p>
-        </section>
-      </section>
+<section id="anscombe-table">
+<h2>Thống kê của bốn bộ dữ liệu</h2>
+<table class="compact-table">
+<thead><tr><th>Bộ</th><th>Trung bình x</th><th>Trung bình y</th><th>Độ lệch chuẩn y</th><th>r</th><th>Đường thẳng khớp nhất</th></tr></thead>
+<tbody>
+<tr><td>I</td><td>9,0</td><td>7,50</td><td>2,03</td><td>0,82</td><td>3,0 + 0,5·x</td></tr>
+<tr><td>II</td><td>9,0</td><td>7,50</td><td>2,03</td><td>0,82</td><td>3,0 + 0,5·x</td></tr>
+<tr><td>III</td><td>9,0</td><td>7,50</td><td>2,03</td><td>0,82</td><td>3,0 + 0,5·x</td></tr>
+<tr><td>IV</td><td>9,0</td><td>7,50</td><td>2,03</td><td>0,82</td><td>3,0 + 0,5·x</td></tr>
+</tbody>
+</table>
+<p class="caption">r: hệ số tương quan.</p>
+<p><strong>Bốn bộ dữ liệu này có giống nhau không?</strong></p>
+<aside class="notes"><p>Mỗi bộ có 11 cặp (x, y). r gần 1: hai biến cùng tăng, gần theo một đường thẳng.
+Nguồn: F. J. Anscombe (1973), Graphs in Statistical Analysis, The American Statistician 27(1).
+Số trong bảng do ô notebook tính lại (r của bộ IV là 0,817, làm tròn 0,82).
+Hỏi lớp trước khi chuyển slide: bốn bộ có giống nhau không? Đa số sẽ đáp có, vì mọi cột đều bằng nhau.</p>
+</aside>
+</section>
 
-      <!-- ====== Phần 2 ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">2.</span><br>matplotlib:<br>Figure, Axes <br> &amp; bốn dạng cơ bản</h1>
-          <p class="text-light">Giao diện lập trình chung cho nhiều dạng biểu đồ.</p>
-        </section>
+<section id="anscombe">
+<h2>Biểu đồ của bốn bộ dữ liệu</h2>
+<figure class="fig">
+<img src="img/lecture-12/anscombe.svg" alt="Bộ tứ Anscombe" style="width:902px">
+</figure>
+<aside class="notes"><p>Chỉ bộ I hợp với một đường thẳng. Bộ II là đường cong; bộ III có một điểm lệch;
+ở bộ IV, một điểm quyết định cả đường thẳng.
+Đây là lý do thứ nhất để vẽ: thống kê tóm tắt che mất hình dạng (Data 100 gọi là
+vẽ để tự hiểu dữ liệu). Lý do thứ hai là truyền đạt kết quả cho người khác, phần cuối bài.
+Hỏi lớp: bộ nào hợp với đường thẳng? (đáp: chỉ bộ I).</p>
+</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Bộ đôi <code>fig</code> và <code>ax</code></h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-import matplotlib.pyplot as plt
+<section id="choose">
+<h2>Chọn dạng biểu đồ theo câu hỏi</h2>
+<table class="compact-table">
+<thead><tr><th>Câu hỏi</th><th>Dạng biểu đồ</th><th>Ví dụ trong bài</th></tr></thead>
+<tbody>
+<tr><td>Thay đổi theo thời gian thế nào?</td><td><strong>đường</strong> (line)</td><td>số đánh giá mỗi tháng</td></tr>
+<tr><td>Các nhóm khác nhau thế nào?</td><td><strong>cột</strong>, <strong>thanh ngang</strong> (bar)</td><td>giá trung vị theo quận</td></tr>
+<tr><td>Một biến số phân bố ra sao?</td><td><strong>histogram</strong> (biểu đồ tần suất)</td><td>giá mỗi đêm</td></tr>
+<tr><td>Hai biến số liên quan thế nào?</td><td><strong>phân tán</strong> (scatter)</td><td>kinh độ × vĩ độ, màu theo giá</td></tr>
+</tbody>
+</table>
+<aside class="notes"><p>Data 100 chia theo loại biến: một biến định tính (loại phòng, quận) thì đếm và vẽ cột;
+một biến định lượng (giá) thì histogram; hai biến định lượng thì phân tán; biến thời gian thì đường.
+Chỉ cần nhấn mạnh một con số thì không cần biểu đồ: viết con số đó ra.
+Bài 13: so sánh cả phân phối giữa nhiều nhóm (boxplot).</p>
+</aside>
+</section>
 
-fig, ax = plt.subplots(figsize=(8, 4))    # tờ giấy + khung vẽ
-ax.plot(thang.index, thang.values)        # vẽ lên khung
-ax.set_title("...")
-ax.set_ylabel("số đánh giá / tháng")
-plt.show()
-            </code></pre>
-          </div>
-          <ul>
-            <li><strong>Figure</strong> là toàn bộ hình; <strong>Axes</strong> là từng vùng vẽ trong hình.</li>
-            <li>Dùng <span class="inline-code">ax.*</span> giúp kiểm soát từng chi tiết và thuận tiện
-              khi ghép nhiều vùng vẽ.</li>
-          </ul>
-        </section>
+</section>
 
-        <section>
-          <h2>Đọc một biểu đồ hoàn chỉnh</h2>
-          <figure class="fig">
-            <img src="img/lecture-12/anatomy.svg" alt="Đọc biểu đồ" style="width:88%">
-            <figcaption class="caption">4 thành phần tối thiểu: tiêu đề nêu thông điệp, chú thích nêu
-              điểm cần lưu ý, nhãn trục có đơn vị, nguồn dữ liệu.</figcaption>
-          </figure>
-        </section>
+<section>
+<section id="figax-sec">
+<h1><span class="text-light">2.</span><br>Vẽ biểu đồ<br>với matplotlib</h1>
+<p class="text-light">Số đánh giá mỗi tháng thay đổi thế nào?</p>
+</section>
 
-        <section data-jp-reset>
-          <h2>Biểu đồ đường: diễn biến theo thời gian</h2>
-          <div class="two-col two-col--wide-right">
-            <div>
-              <div class="jp-cell jp-plain">
-                <pre class="jp-input"><code class="language-python" data-trim>
-# bỏ tháng 06/2026 chưa trọn
-thang = (rv.set_index("date")
-    .resample("ME").size()
-    .loc["2023":"2026-05"])
+<section id="data">
+<h2>Dữ liệu dùng trong bài</h2>
+<p>Santiago, mốc chụp <strong>29/06/2026</strong>.</p>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>print(df.shape, rv.shape)
+print(df[[&quot;neighbourhood&quot;, &quot;room_type&quot;, &quot;price&quot;]].head(3))
+print(rv.head(3))</code></pre>
+<pre class="jp-output" data-jp-n="1"><code class="language-text" data-trim>(18534, 19) (690112, 2)
+  neighbourhood        room_type    price
+0         Ñuñoa     Private room  45647.0
+1      Recoleta     Private room  19856.0
+2      Recoleta  Entire home/apt  46776.0
+   listing_id       date
+0       52811 2010-11-13
+1       52811 2011-03-23
+2       52811 2012-01-23</code></pre>
+</div>
+<p><code>df</code>: mỗi hàng một chỗ ở (giá: CLP/đêm).<br><code>rv</code>: mỗi hàng một đánh giá.</p>
+<aside class="notes"><p>Hai file visualisations/. Ô chuẩn bị của notebook đã import np, pd, plt và khai báo hai màu XANH, CAM.
+Bản visualisations nhẹ hơn bản đầy đủ: listings 19 cột, giá đã là số; reviews chỉ có
+listing_id và date. 846 chỗ ở thiếu giá (17.688 chỗ ở có giá).</p>
+</aside>
+</section>
 
+<section id="monthly">
+<h2>Đếm số đánh giá mỗi tháng</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim># bỏ tháng 06/2026 chưa trọn (mốc chụp 29/06)
+thang = (rv[rv[&quot;date&quot;] &lt; &quot;2026-06-01&quot;]
+         .set_index(&quot;date&quot;)
+         .resample(&quot;ME&quot;).size()
+         .loc[&quot;2023&quot;:])
+print(thang.tail(3))</code></pre>
+<pre class="jp-output" data-jp-n="2"><code class="language-text" data-trim>date
+2026-03-31    25108
+2026-04-30    21656
+2026-05-31    22296
+Freq: ME, dtype: int64</code></pre>
+</div>
+<aside class="notes"><p>resample("ME").size() (Bài 8): đếm số hàng trong mỗi tháng; nhãn là ngày cuối tháng.
+Tháng 6 chưa trọn: mốc chụp 29/06 (16.112 đánh giá đến hết 29/06; file còn 204 đánh giá ghi ngày 30/06–01/07).
+Giữ lại thì đường cuối tụt xuống giả.
+Hỏi lớp: giữ tháng 6 thì đường cuối ra sao? (đáp: tụt, dù nhu cầu không giảm).
+Bắt đầu từ 2023 để hình gọn: 41 tháng. Notebook có ô vẽ toàn bộ chuỗi từ 2015.</p>
+</aside>
+</section>
+
+<section id="figax">
+<h2>Tạo hình và khung vẽ</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>fig, ax = plt.subplots(figsize=(9, 4))
+ax.plot(thang.index, thang.values, color=&quot;#1E93AB&quot;)
+ax.set_title(&quot;Số đánh giá hằng tháng tăng nhanh từ 2023&quot;)
+ax.set_ylabel(&quot;số đánh giá / tháng&quot;)
+plt.show()</code></pre>
+</div>
+<table class="compact-table">
+<thead><tr><th>Lệnh</th><th>Ý nghĩa</th></tr></thead>
+<tbody>
+<tr><td><code>plt.subplots(figsize=...)</code></td><td><strong>Figure</strong> (cả hình, rộng × cao theo inch) và <strong>Axes</strong> (khung vẽ)</td></tr>
+<tr><td><code>ax.plot(x, y, color=...)</code></td><td>vẽ đường qua các điểm</td></tr>
+<tr><td><code>ax.set_title</code>, <code>ax.set_ylabel</code></td><td>đặt tiêu đề và nhãn trục y</td></tr>
+<tr><td><code>plt.show()</code></td><td>hiện hình</td></tr>
+</tbody>
+</table>
+<aside class="notes"><p>figsize=(9, 4): rộng 9, cao 4 inch. Màu viết theo mã hex.
+McKinney §9.1, Figures and Subplots. Viết qua ax (giao diện hướng đối tượng) thay vì plt.plot:
+khi hình có nhiều khung thì biết rõ đang vẽ vào khung nào.
+Hỏi lớp: một hình có hai khung cạnh nhau thì có mấy Figure, mấy Axes? (đáp: 1 Figure, 2 Axes).</p>
+</aside>
+</section>
+
+<section id="anatomy">
+<h2>Thành phần của một biểu đồ</h2>
+<figure class="fig">
+<img src="img/lecture-12/anatomy.svg" alt="Các thành phần của một biểu đồ hoàn chỉnh" style="width:787px">
+</figure>
+<aside class="notes"><p>Hình của slide trước, thêm chú thích điểm đỉnh (ax.annotate) và nguồn (ax.text); code trong notebook.
+Tiêu đề nêu thông điệp có căn cứ: 05/2023 có 5.066 đánh giá, 05/2026 có 22.296 (gấp 4,4 lần).
+Đỉnh 03/2026: 25.108 đánh giá. Theo năm: 75.190 (2023), 131.267 (2024), 211.432 (2025).
+Lưu ý số đánh giá chỉ là đại diện gián tiếp cho số lượt thuê, và reviews.csv chỉ chứa đánh giá của
+các chỗ ở còn trong mốc chụp nên năm cũ bị đếm thiếu.</p>
+</aside>
+</section>
+
+<section id="customize">
+<h2>Tuỳ chỉnh màu, kiểu đường và chú giải</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<table class="compact-table">
+<thead><tr><th>Muốn</th><th>Cách viết</th></tr></thead>
+<tbody>
+<tr><td>màu, kiểu đường, dấu điểm (marker)</td><td><code>ax.plot(x, y, color="k", linestyle="--", marker="o")</code></td></tr>
+<tr><td>độ dày đường</td><td><code>lw=2</code> (linewidth)</td></tr>
+<tr><td>chú giải cho nhiều đường</td><td><code>ax.plot(..., label="Santiago")</code> rồi <code>ax.legend()</code></td></tr>
+<tr><td>vạch chia và giới hạn trục</td><td><code>ax.set_xticks([...])</code>, <code>ax.set_xlim(a, b)</code></td></tr>
+<tr><td>chú thích một điểm</td><td><code>ax.annotate(chuoi, xy=(x, y), xytext=...)</code></td></tr>
+<tr><td>chữ tự do, ví dụ nguồn</td><td><code>ax.text(x, y, chuoi, transform=ax.transAxes)</code></td></tr>
+</tbody>
+</table>
+<aside class="notes"><p>McKinney §9.1: Colors, Markers, and Line Styles; Ticks, Labels, and Legends; Annotations.
+Slide tự học, không giảng chi tiết. Ô notebook vẽ toàn bộ chuỗi từ 2015, thêm đường trung bình
+trượt 12 tháng (rolling, Bài 8) và chú giải.</p>
+</aside>
+</section>
+
+</section>
+
+<section>
+<section id="kinds-sec">
+<h1><span class="text-light">3.</span><br>Biểu đồ cột,<br>histogram<br>và phân tán</h1>
+<p class="text-light">So sánh các nhóm, xem phân phối của một biến, tìm quan hệ giữa hai biến.</p>
+</section>
+
+<section id="top">
+<h2>Tính giá trung vị theo quận</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="4"><code class="language-python" data-trim>tk = df.groupby(&quot;neighbourhood&quot;)[&quot;price&quot;].agg(
+    median=&quot;median&quot;, n=&quot;size&quot;)
+top = tk[tk[&quot;n&quot;] &gt;= 500].sort_values(&quot;median&quot;)
+print(top)</code></pre>
+<pre class="jp-output" data-jp-n="4"><code class="language-text" data-trim>                 median     n
+neighbourhood                
+Santiago        47755.0  7182
+Ñuñoa           60981.0  1813
+Providencia     72845.0  2997
+Las Condes      97460.0  2862
+Lo Barnechea   426230.0   824</code></pre>
+</div>
+<p>Chỉ giữ quận có từ 500 chỗ ở.</p>
+<aside class="notes"><p>Trung vị của nhóm nhỏ dao động mạnh nên lọc theo n; còn lại 5 quận.
+groupby và agg đã học ở Bài 5. n là số chỗ ở (kể cả thiếu giá), median bỏ qua giá thiếu.
+Santiago có 31 quận có chỗ ở; chỉ 5 quận đạt 500. Bài 13 sẽ gặp một quận chỉ có 1 chỗ ở
+mà đứng thứ hai về giá trung vị.</p>
+</aside>
+</section>
+
+<section id="barh">
+<h2>Xếp hạng giá theo quận</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="5"><code class="language-python" data-trim>fig, ax = plt.subplots()
+bars = ax.barh(top.index, top[&quot;median&quot;])
+ax.bar_label(bars)
+ax.set_xlabel(&quot;giá trung vị (CLP/đêm)&quot;)</code></pre>
+</div>
+<p class="caption"><code>barh</code>: thanh ngang (<code>bar</code>: cột đứng). <code>bar_label</code>: ghi giá trị ở đầu thanh.</p>
+<figure class="fig">
+<img src="img/lecture-12/barh-quan.svg" alt="Biểu đồ thanh ngang giá theo quận" style="width:653px">
+</figure>
+<aside class="notes"><p>Thanh ngang để tên quận dài không phải xoay chữ; bar_label ghi giá trị ở đầu thanh.
+Hình trên slide thêm màu cam cho thanh cần nhấn và nhãn có dấu ngăn nghìn (code trong notebook).
+Lo Barnechea 426.230 CLP/đêm, gấp 4,4 lần Las Condes (97.460); tiếp theo Providencia 72.845,
+Ñuñoa 60.981, Santiago 47.755. Lo Barnechea có khu trượt tuyết (Farellones, Valle Nevado) và mốc chụp
+29/06 rơi vào đầu mùa trượt tuyết. Hỏi lớp: vì sao sắp xếp thanh theo giá thay vì theo tên? (đáp: để
+đọc ra thứ hạng ngay).</p>
+</aside>
+</section>
+
+<section id="hist-raw">
+<h2>Phân phối giá trên thang thường</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="6"><code class="language-python" data-trim>gia = df[&quot;price&quot;].dropna()
 fig, ax = plt.subplots()
-ax.plot(thang.index,
-        thang.values,
-        color="#1E93AB",
-        lw=2)
-                </code></pre>
-              </div>
-            </div>
-            <div>
-              <figure class="fig">
-                <img src="img/lecture-12/line-reviews.svg" alt="Biểu đồ đường số đánh giá theo tháng">
-              </figure>
-            </div>
-          </div>
-          <p class="caption">Kết quả tổng hợp theo tháng ở bài 8 được dùng trực tiếp để vẽ biểu đồ.</p>
-        </section>
+ax.hist(gia, bins=50)   # chia trục x thành 50 khoảng
+ax.set_xlabel(&quot;giá (CLP/đêm)&quot;)
+ax.set_ylabel(&quot;số chỗ ở&quot;)</code></pre>
+</div>
+<figure class="fig">
+<img src="img/lecture-12/hist-tho.svg" alt="Histogram giá trên thang thường" style="width:614px">
+</figure>
+<p><strong>Vì sao gần như chỉ thấy một cột?</strong></p>
+<aside class="notes"><p>Đáp: giá lớn nhất khoảng 97 triệu CLP/đêm (gần chắc là lỗi nhập), nên mỗi khoảng rộng gần
+2 triệu; 99,9% chỗ ở rơi vào khoảng đầu. Bài 10 đã gặp phân phối giá này.
+dropna bỏ 846 chỗ ở thiếu giá, còn 17.688.</p>
+</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Biểu đồ thanh ngang: xếp hạng nhóm</h2>
-          <div class="two-col two-col--wide-right">
-            <div>
-              <div class="jp-cell jp-plain">
-                <pre class="jp-input"><code class="language-python" data-trim>
-top = (tk[tk["n"] >= 500]
-    .nlargest(8, "median")
-    .sort_values("median"))
+<section id="hist-log">
+<h2>Phân phối giá trên thang log</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="7"><code class="language-python" data-trim>fig, ax = plt.subplots()
+ax.hist(np.log10(gia), bins=50)
+ax.set_xlabel(&quot;log10(giá CLP/đêm)&quot;)</code></pre>
+</div>
+<figure class="fig">
+<img src="img/lecture-12/hist-gia.svg" alt="Histogram giá thang log" style="width:595px">
+</figure>
+<table class="compact-table">
+<thead><tr><th>log10(giá)</th><th>4</th><th>5</th><th>6</th></tr></thead>
+<tbody>
+<tr><td>giá (CLP/đêm)</td><td>10.000</td><td>100.000</td><td>1.000.000</td></tr>
+</tbody>
+</table>
+<aside class="notes"><p>Data 100 Visualization II, mục Transformations: biến đổi log trải các giá trị dồn cục ra để thấy
+hình dạng. Cột cao nhất ở khoảng 49–62 nghìn CLP; trung vị 59.000. Đuôi phải vẫn dài sau khi lấy log.
+bins quá ít làm mất cấu trúc, quá nhiều thì nhiễu; notebook có bài thử bins.</p>
+</aside>
+</section>
 
-bars = ax.barh(top.index,
-               top["median"])
-ax.bar_label(bars, ...)
-                </code></pre>
-              </div>
-            </div>
-            <div>
-              <figure class="fig">
-                <img src="img/lecture-12/barh-quan.svg" alt="Biểu đồ thanh ngang giá theo quận">
-              </figure>
-            </div>
-          </div>
-          <p class="caption">Thanh ngang giúp đọc tên quận dễ hơn. <code>bar_label</code> ghi giá trị
-            trực tiếp; màu cam chỉ dùng cho nhóm cần nhấn mạnh.</p>
-        </section>
-
-        <section data-jp-reset>
-          <h2>Histogram: hình dạng phân phối</h2>
-          <div class="two-col two-col--wide-right">
-            <div>
-              <div class="jp-cell jp-plain">
-                <pre class="jp-input"><code class="language-python" data-trim>
-ax.hist(np.log10(gia),
-        bins=55)
-ax.set_xlabel(
-    "log10(giá CLP/đêm)")
-                </code></pre>
-              </div>
-            </div>
-            <div>
-              <figure class="fig">
-                <img src="img/lecture-12/hist-gia.svg" alt="Histogram giá thang log">
-              </figure>
-            </div>
-          </div>
-          <p class="caption">Thang log giúp quan sát rõ phân phối giá. Số khoảng <code>bins</code>
-            quá ít làm mất cấu trúc; quá nhiều làm tăng nhiễu.</p>
-        </section>
-
-        <section data-jp-reset>
-          <h2>Biểu đồ phân tán: 18.000 điểm theo vị trí</h2>
-          <div class="two-col two-col--wide-right">
-            <div>
-              <div class="jp-cell jp-plain">
-                <pre class="jp-input"><code class="language-python" data-trim>
+<section id="scatter">
+<h2>Phân bố giá theo vị trí</h2>
+<div class="two-col">
+<div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="8"><code class="language-python" data-trim>diem = df.dropna(
+    subset=[&quot;price&quot;])
+tv = diem[&quot;price&quot;].median()
 mau = np.where(
-    s["price"] > median,
-    "#E8890C", "#1E93AB")
+    diem[&quot;price&quot;] &gt; tv,
+    CAM, XANH)
+fig, ax = plt.subplots()
+ax.scatter(
+    diem[&quot;longitude&quot;],
+    diem[&quot;latitude&quot;],
+    s=6, c=mau, alpha=0.45)</code></pre>
+</div>
+</div>
+<div>
+<figure class="fig">
+<img src="img/lecture-12/scatter-map.svg" alt="Biểu đồ phân tán toạ độ theo giá">
+</figure>
+</div>
+</div>
+<p class="caption"><code>np.where</code>: chọn màu theo điều kiện. <code>s</code>: cỡ điểm; <code>c</code>: màu từng điểm; <code>alpha</code>: độ đục. CAM, XANH: hai mã màu khai báo sẵn.</p>
+<aside class="notes"><p>np.where(điều kiện, a, b): từng phần tử, đúng thì lấy a, sai thì b. s: cỡ điểm; c: màu từng điểm;
+alpha=0.45: độ đục 45% (0 là trong suốt, 1 là đục hẳn), chỗ nhiều điểm chồng nhau thì đậm hơn.
+Kinh độ và vĩ độ là hai biến định lượng; giá đưa vào màu. Ở góc đông bắc (Las Condes, Vitacura,
+Lo Barnechea: 3.861 chỗ ở) 86% chỗ ở đắt hơn trung vị, so với 40% ở phần còn lại.
+Hỏi lớp: chấm cam dồn về đâu? Cụm cam lẻ ở kinh độ khoảng −70,25 đến −70,30 là khu trượt tuyết.
+Nhiều điểm hơn nữa thì có thể lấy mẫu hoặc dùng ax.hexbin (Data 100 Visualization II, mục Overplotting).</p>
+</aside>
+</section>
 
-ax.scatter(s["longitude"],
-           s["latitude"],
-           s=6, c=mau,
-           # 0 trong→1 đục
-           alpha=0.45)
-                </code></pre>
-              </div>
-            </div>
-            <div>
-              <figure class="fig">
-                <img src="img/lecture-12/scatter-map.png" alt="Biểu đồ phân tán toạ độ theo giá">
-              </figure>
-            </div>
-          </div>
-          <p class="caption">Kinh độ, vĩ độ và hai nhóm màu tạo thành một bản đồ điểm đơn giản.
-            <code>alpha=0.45</code> — độ trong suốt thấp — giúp hạn chế hiện tượng các điểm che lấp nhau.</p>
-        </section>
+<section id="subplots">
+<h2>So sánh trên cùng thang đo</h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="9"><code class="language-python" data-trim>co_gia = df.dropna(subset=[&quot;price&quot;])
+nc = co_gia[co_gia[&quot;room_type&quot;] == &quot;Entire home/apt&quot;]
+pr = co_gia[co_gia[&quot;room_type&quot;] == &quot;Private room&quot;]
+fig, axes = plt.subplots(1, 2, figsize=(10, 3.5),
+                         sharex=True, sharey=True)
+axes[0].hist(np.log10(nc[&quot;price&quot;]), bins=50)
+axes[1].hist(np.log10(pr[&quot;price&quot;]), bins=50)</code></pre>
+</div>
+<figure class="fig">
+<img src="img/lecture-12/subplots-loai.svg" alt="Hai histogram chung thang đo" style="width:710px">
+</figure>
+<p class="caption"><code>plt.subplots(1, 2)</code>: 1 hàng, 2 khung (<code>axes[0]</code>, <code>axes[1]</code>); <code>sharex</code>, <code>sharey</code>: chung thang trục.</p>
+<aside class="notes"><p>plt.subplots(1, 2): 1 hàng, 2 khung; axes[0] là khung trái.
+Không chung thang thì mỗi khung tự co trục theo dữ liệu của mình: khung phòng riêng (ít chỗ ở hơn)
+sẽ có cột cao bằng khung nguyên căn và hai phân phối trông như cùng mức giá.
+Nguyên căn n = 14.425, phòng riêng n = 3.148 (có giá). Trung vị 64.900 và 34.235 CLP/đêm.
+Bài 13 làm việc này gọn hơn bằng seaborn.</p>
+</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2><code>subplots</code>: đặt hai vùng vẽ cạnh nhau</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-fig, axes = plt.subplots(1, 2, figsize=(10, 4), sharey=True)
+<section id="exercise-choose">
+<h2>Bài tập 1: Chọn dạng biểu đồ</h2>
+<p>Chọn dạng biểu đồ và cột dữ liệu cho mỗi câu hỏi:</p>
+<ol>
+<li>Mỗi loại phòng chiếm bao nhiêu phần trăm số chỗ ở?</li>
+<li>Đa số chỗ ở nhận ít hay nhiều đánh giá mỗi tháng (<code>reviews_per_month</code>)?</li>
+<li>Chỗ ở có nhiều đánh giá trong 12 tháng qua (<code>number_of_reviews_ltm</code>) có rẻ hơn không?</li>
+<li>Số đánh giá mỗi tuần trong năm 2025 thay đổi thế nào?</li>
+</ol>
+<p><strong>Vẽ thử câu 3 trong notebook, không quá 6 dòng code.</strong></p>
+<aside class="notes"><p>Đáp án: (1) thanh ngang của value_counts(normalize=True), (2) histogram, nên dùng thang log
+hoặc giới hạn trục vì đuôi dài, (3) phân tán number_of_reviews_ltm × giá, giá thang log
+(ax.set_yscale("log")) và alpha nhỏ, (4) đường của rv.set_index("date").resample("W").size() trong 2025.
+Câu 3: nhóm giá cao nhất có xu hướng ít đánh giá hơn (1% đắt nhất: trung vị 2 đánh giá trong 12 tháng; toàn bộ chỗ ở có giá: 6),
+nhưng nhìn chung giá và số đánh giá gần như không liên quan; không kết luận nhân quả.</p>
+</aside>
+</section>
 
-axes[0].hist(gia_t9, bins=40)
-axes[0].set_title("09/2025")
-axes[1].hist(gia_t6, bins=40)
-axes[1].set_title("06/2026")
-            </code></pre>
-          </div>
-          <p>Khi so sánh hai mốc chụp, <span class="inline-code">sharey=True</span> dùng chung thang đo,
-            tránh tạo ấn tượng sai do hai trục khác nhau.</p>
-        </section>
-      </section>
+</section>
 
-      <!-- ====== Phần 3 ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">3.</span><br>pandas .plot<br>&amp; xuất hình từ pipeline</h1>
-          <p class="text-light">Vẽ nhanh khi khám phá dữ liệu.</p>
-        </section>
+<section>
+<section id="export-sec">
+<h1><span class="text-light">4.</span><br>Vẽ nhanh<br>và lưu hình</h1>
+<p class="text-light">Xem nhanh bằng pandas chỉ cần một dòng; hình cho báo cáo thì lưu bằng code.</p>
+</section>
 
-        <section data-jp-reset>
-          <h2><code>.plot</code>: vẽ nhanh khi khám phá dữ liệu</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="1"><code class="language-python" data-trim>
-thang.plot()                                  # đường
-df["room_type"].value_counts().plot.barh()    # thanh ngang
-df["price"].plot.hist(bins=50)                # histogram
-            </code></pre>
-          </div>
-          <p>pandas cũng gọi matplotlib và tự tạo các thành phần mặc định.
-            <code>.plot</code> phù hợp để khám phá nhanh dữ liệu; <code>fig, ax</code> phù hợp với hình chất lượng cao đưa vào báo cáo.</p>
-        </section>
+<section id="pandas-plot">
+<h2>Vẽ nhanh bằng <code>.plot</code></h2>
+<div class="two-col">
+<div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="10"><code class="language-python" data-trim>dem = (df[&quot;room_type&quot;]
+       .value_counts())
+ax = dem.plot.barh()
+plt.show()</code></pre>
+</div>
+<p class="caption"><code>.plot.barh()</code>: thanh ngang từ Series, trả về <code>ax</code>.</p>
+</div>
+<div>
+<figure class="fig">
+<img src="img/lecture-12/plot-nhap.svg" alt="Bản nháp vẽ bằng pandas">
+</figure>
+</div>
+</div>
+<aside class="notes"><p>pandas gọi matplotlib, tự lấy index làm nhãn; .plot() mặc định là đường.
+McKinney §9.2, Plotting with pandas. Hình nháp: không có tiêu đề, trục x không có đơn vị,
+nhãn là tên tiếng Anh của loại phòng. Bài tập 2 cuối bài sẽ hoàn thiện chính hình này.
+Lưu ý: gọi nhiều lệnh .plot trong cùng một ô thì chúng vẽ chồng lên cùng một khung.</p>
+</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2><code>savefig</code>: xuất hình từ pipeline</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="2"><code class="language-python" data-trim>
-fig.savefig("figures/gia_theo_quan.png",
-            dpi=150, bbox_inches="tight")
-            </code></pre>
-          </div>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Mọi hình trong báo cáo được sinh tự động vào <code>figures/</code> khi chạy pipeline.
-            Khi cần sửa hình, hãy sửa mã nguồn và chạy lại thay vì chỉnh tay hoặc chụp màn hình.
-          </div>
-        </section>
+<section id="savefig">
+<h2>Lưu hình bằng <code>savefig</code></h2>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="11"><code class="language-python" data-trim>fig = ax.figure          # Figure chứa ax vừa vẽ
+fig.savefig(&quot;figures/so_cho_o_theo_loai.svg&quot;,
+            bbox_inches=&quot;tight&quot;)</code></pre>
+</div>
+<div class="key-box">
+<span class="box-title">Quan trọng</span>
+Sửa hình thì sửa code rồi chạy lại, không chỉnh tay hay chụp màn hình.
+</div>
+<p class="caption"><code>bbox_inches="tight"</code>: cắt sát lề, không mất chữ ở mép.</p>
+<aside class="notes"><p>bbox_inches="tight": cắt sát lề, không mất chữ ở mép. Định dạng chọn theo đuôi file.
+McKinney §9.1, Saving Plots to File. Thư mục figures/ phải có sẵn
+(Path("figures").mkdir(exist_ok=True) ở ô chuẩn bị). fig.savefig vẫn lưu đúng sau plt.show();
+còn plt.savefig gọi sau plt.show() thì có thể ra hình trống vì hình hiện hành đã đóng.</p>
+</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2>Hai cách lưu hình: raster và vector</h2>
-          <div class="jp-cell jp-plain">
-            <pre class="jp-input"><code class="language-python" data-trim>
-# matplotlib chọn định dạng theo đuôi file
-fig.savefig("line.svg")          # cho web
-fig.savefig("bao_cao.pdf")       # cho báo cáo
-fig.savefig("map.png", dpi=150)  # ảnh raster
-            </code></pre>
-          </div>
-          <p>Ảnh raster như <code>PNG</code> lưu một lưới điểm ảnh (pixel); phóng to sẽ vỡ, dung lượng
-            nặng theo số điểm ảnh — nên <code>dpi</code> chỉ có nghĩa với ảnh raster. Ảnh vector như
-            <code>SVG</code> và <code>PDF</code> lưu đường nét và chữ; phóng bao nhiêu cũng nét,
-            dung lượng nặng theo số đối tượng vẽ.</p>
-        </section>
+<section id="formats">
+<h2>PNG, SVG hay PDF?</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<table class="compact-table">
+<thead><tr><th>Hình</th><th>PNG</th><th>SVG</th><th>PDF</th></tr></thead>
+<tbody>
+<tr><td>Đường, 41&nbsp;điểm</td><td>~48&nbsp;KB</td><td>~20&nbsp;KB</td><td>~6&nbsp;KB</td></tr>
+<tr><td>Bản đồ điểm, 17.688&nbsp;điểm</td><td>~156&nbsp;KB</td><td>~2,7&nbsp;MB</td><td>~295&nbsp;KB</td></tr>
+<tr><td>Bản đồ điểm, <code>rasterized=True</code></td><td>~156&nbsp;KB</td><td>~188&nbsp;KB</td><td>~122&nbsp;KB</td></tr>
+</tbody>
+</table>
+<ul>
+<li><strong>PNG</strong>: lưới điểm ảnh, phóng to bị vỡ.</li>
+<li><strong>SVG, PDF</strong>: đường nét và chữ, phóng to vẫn nét.</li>
+<li><code>rasterized=True</code>: riêng lớp điểm lưu thành ảnh, chữ và trục vẫn nét.</li>
+</ul>
+<aside class="notes"><p>PNG là ảnh raster, dpi = số điểm ảnh mỗi inch. SVG, PDF là ảnh vector: mỗi điểm vẽ là một đối tượng nên hình dày điểm rất nặng.
+rasterized=True: riêng lớp điểm thành ảnh, chữ và trục vẫn là vector.
+Số đo bằng ô notebook (matplotlib 3.11, font mặc định); dung lượng đổi chút ít theo phiên bản và font.
+Hình trên slide của bài này là SVG; bản đồ điểm dùng rasterized=True.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Chọn định dạng theo mật độ điểm</h2>
-          <table class="compact-table">
-            <thead>
-              <tr><th>Hình</th><th>PNG</th><th>SVG</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Đường, ~41&nbsp;điểm</td><td>48&nbsp;KB</td><td>23&nbsp;KB</td></tr>
-              <tr><td>Phân tán, 18.000&nbsp;điểm</td><td>156&nbsp;KB</td><td>~2,7&nbsp;MB</td></tr>
-            </tbody>
-          </table>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Ảnh vector nét hơn, nhưng mỗi điểm là một đối tượng; hình quá dày điểm làm SVG phình gấp
-            ~18× PNG. Bài giảng này dùng SVG cho biểu đồ đường, cột, histogram; PNG cho bản đồ điểm.
-          </div>
-          <p class="caption">PDF cũng là ảnh vector, dùng cho báo cáo và in ấn: 6&nbsp;KB cho biểu đồ
-            đường, 296&nbsp;KB cho bản đồ điểm.</p>
-        </section>
+<section id="rcparams">
+<h2>Định dạng chung cho các hình</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<div class="jp-cell"><pre class="jp-input" data-jp-n="12"><code class="language-python" data-trim>plt.rcParams.update({
+    &quot;axes.spines.top&quot;: False,    # bỏ viền trên
+    &quot;axes.spines.right&quot;: False,  # bỏ viền phải
+    &quot;axes.grid&quot;: True,           # bật lưới
+    &quot;grid.alpha&quot;: 0.25,          # lưới mờ
+    &quot;font.size&quot;: 12,
+})</code></pre>
+</div>
+<p>Khai báo một lần ở đầu notebook.</p>
+<aside class="notes"><p>McKinney §9.1, matplotlib Configuration. Các hình sau ô này trong notebook sẽ không còn viền
+trên, phải. plt.rcdefaults() trả về mặc định.</p>
+</aside>
+</section>
 
-        <section data-jp-reset>
-          <h2><code>rcParams</code>: khai báo phong cách một lần</h2>
-          <div class="jp-cell">
-            <pre class="jp-input" data-jp-n="3"><code class="language-python" data-trim>
-plt.rcParams.update({
-    "figure.facecolor": "white",
-    "axes.spines.top": False, "axes.spines.right": False,
-    "axes.grid": True, "grid.alpha": 0.25,
-    "font.size": 12,
-})
-            </code></pre>
-          </div>
-          <p>Khai báo một lần ở đầu notebook hoặc script để mọi hình có cùng phong cách.
-            Tính nhất quán của các biểu đồ trong báo cáo là một tiêu chí quan trọng.</p>
-        </section>
-      </section>
+</section>
 
-      <!-- ====== Phần 4 ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">4.</span><br>Biểu đồ rõ ràng<br>và trung thực</h1>
-          <p class="text-light">Cách trình bày có thể khiến người đọc hiểu sai dù số liệu đúng.</p>
-        </section>
+<section>
+<section id="honest-sec">
+<h1><span class="text-light">5.</span><br>Tránh gây hiểu sai<br>khi trình bày</h1>
+<p class="text-light">Số liệu đúng, cách vẽ vẫn có thể làm người đọc hiểu sai.</p>
+</section>
 
-        <section>
-          <h2>Trục y bị cắt làm phóng đại chênh lệch</h2>
-          <figure class="fig">
-            <img src="img/lecture-12/truc-y.svg" alt="So sánh trục y cắt và trục y từ 0" style="width:96%">
-            <figcaption class="caption">Cùng một bộ số liệu, trục bắt đầu từ 30 làm chênh lệch có vẻ lớn hơn.
-              Với biểu đồ cột, trục biểu diễn độ dài cần bắt đầu từ 0.</figcaption>
-          </figure>
-        </section>
+<section id="truncated">
+<h2>Ảnh hưởng của việc cắt trục y</h2>
+<figure class="fig">
+<img src="img/lecture-12/truc-y.svg" alt="So sánh trục y cắt và trục y từ 0" style="width:806px">
+</figure>
+<p>Thanh khách sạn trông dài gấp <strong>~20 lần</strong> thanh phòng riêng; thực tế chỉ gấp <strong>3,4 lần</strong>.</p>
+<aside class="notes"><p>Biểu đồ cột dùng độ dài để so sánh, nên trục phải bắt đầu từ 0.
+Trung vị: phòng riêng 34.235, nguyên căn 64.900, khách sạn 117.138,5 CLP/đêm. Khách sạn chỉ có
+56 chỗ ở, một lý do nữa để thận trọng (Bài 13: cỡ mẫu).
+Biểu đồ đường thì không bắt buộc bắt đầu từ 0, vì đường so sánh độ thay đổi chứ không so sánh độ dài.
+Hỏi lớp: nhìn hình trái, khách sạn đắt gấp mấy lần phòng riêng? (đáp: trông khoảng 20 lần, thật 3,4 lần).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Giảm chi tiết trang trí, tăng tín hiệu</h2>
-          <ul>
-            <li>Bỏ đường viền trên/phải và làm mờ lưới để dữ liệu nổi bật hơn.</li>
-            <li>Mỗi hình nên truyền đạt <strong>một thông điệp chính</strong>.</li>
-            <li>Dùng màu nhất quán; chỉ dùng màu thứ hai để nhấn một đối tượng cần chú ý.</li>
-          </ul>
-        </section>
+<section id="checklist">
+<h2>Năm điểm kiểm tra một biểu đồ</h2>
+<ol>
+<li><strong>Thông điệp</strong>: tiêu đề nói hình cho thấy gì.</li>
+<li><strong>Trục</strong>: nhãn, đơn vị; cột bắt đầu từ 0.</li>
+<li><strong>Cỡ mẫu</strong>: mỗi nhóm có bao nhiêu quan sát?</li>
+<li><strong>Dạng và màu</strong>: hợp câu hỏi, không trang trí.</li>
+<li><strong>Nguồn và diễn giải</strong>: không vượt quá dữ liệu.</li>
+</ol>
+<aside class="notes"><p>Dùng cho hình tự vẽ, hình của người khác và hình do AI sinh. Trục: hình so sánh dùng chung thang.
+Nguồn: ghi nguồn và mốc chụp.
+Bài 13 dùng lại đúng năm điểm này để phản biện ba hình lỗi. Data 100 Visualization II
+(mục Context) cũng nêu: tiêu đề, nhãn trục, đơn vị, chú giải, chú thích (caption).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Tiêu chí kiểm tra</h2>
-          <div class="good-box">
-            <span class="box-title">Trước khi cho hình vào báo cáo</span>
-            <ol style="margin:0.2em 0 0 1em">
-              <li>Tiêu đề nêu <em>thông điệp</em>, không chỉ gọi tên biểu đồ.</li>
-              <li>Trục có nhãn và <em>đơn vị</em>; biểu đồ cột bắt đầu từ 0; hình so sánh dùng chung thang đo.</li>
-              <li>Ghi nguồn dữ liệu và mốc chụp.</li>
-              <li>Người đọc có thể hiểu đúng hình mà không cần đọc tiêu đề hay không?</li>
-            </ol>
-          </div>
-        </section>
-      </section>
+<section id="exercise-publish">
+<h2>Bài tập 2: Hoàn thiện hình nháp</h2>
+<div class="two-col">
+<div>
+<figure class="fig">
+<img src="img/lecture-12/plot-nhap.svg" alt="Bản nháp vẽ bằng pandas">
+</figure>
+</div>
+<div>
+<ul>
+<li>trục x là <strong>% số chỗ ở</strong>, ghi n;</li>
+<li>tiêu đề nêu thông điệp;</li>
+<li>nguồn và mốc chụp;</li>
+<li>lưu vào <code>figures/</code>.</li>
+</ul>
+</div>
+</div>
+<p><strong>Dùng <code>fig, ax</code>; xong đổi bài với bạn bên cạnh để kiểm tra năm điểm.</strong></p>
+<aside class="notes"><p>Gợi ý lời giải: ty_le = df["room_type"].value_counts(normalize=True).sort_values() * 100;
+bars = ax.barh(ty_le.index, ty_le.values); ax.bar_label(bars, [f" {v:.0f}%" for v in ty_le]);
+nhãn trục "% số chỗ ở (n = 18.534)"; tiêu đề "81% chỗ ở tại Santiago là nguyên căn"
+(15.004 / 18.534 = 81,0%); ax.text cho nguồn; fig.savefig(...).
+Có thể đổi nhãn sang tiếng Việt bằng ty_le.rename(...). Kiểm tra lại một giá trị bằng value_counts.</p>
+</aside>
+</section>
 
-      <!-- ====== Kết ====== -->
-      <section>
-        <section>
-          <h2>Tổng kết</h2>
-          <ul>
-            <li>Thống kê mô tả không cho thấy toàn bộ cấu trúc; dạng biểu đồ phải phù hợp với câu hỏi.</li>
-            <li><code>fig, ax</code> cùng biểu đồ đường, cột, histogram và phân tán đáp ứng phần lớn nhu cầu cơ bản.</li>
-            <li><code>.plot</code> dùng để khám phá; <code>savefig</code> và <code>rcParams</code> hỗ trợ xuất hình nhất quán.</li>
-            <li>Biểu đồ cần dùng thang đo phù hợp, có thông điệp rõ và ghi nguồn dữ liệu.</li>
-          </ul>
-        </section>
+</section>
 
-        <section>
-          <h2>Làm việc với AI thì sao?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <div class="good-box">
-            <span class="box-title">AI làm tốt</span>
-            Sinh mã nguồn matplotlib từ mô tả, chẳng hạn biểu đồ thanh ngang có nhãn giá trị và
-            màu nhấn cho thanh lớn nhất; hỗ trợ tra cứu cách dùng API.
-          </div>
-          <div class="warn-box">
-            <span class="box-title">AI hay sai</span>
-            Tạo biểu đồ cột có trục bị cắt, đặt tiêu đề chung chung hoặc dùng quá nhiều màu trang trí.
-          </div>
-        </section>
+<section>
+<section id="summary">
+<h2>Tổng kết</h2>
+<ul>
+<li>Thống kê tóm tắt che mất hình dạng; chọn dạng biểu đồ theo <strong>câu hỏi</strong>.</li>
+<li><code>fig, ax</code>: đường, thanh ngang, histogram, phân tán; nhiều khung thì <strong>chung thang</strong>.</li>
+<li>Giá dồn cục thì vẽ trên <strong>thang log</strong>; nhiều điểm thì điểm nhỏ và <code>alpha</code>.</li>
+<li><code>.plot</code> để khám phá; <code>savefig</code> để hình sinh lại được bằng code.</li>
+<li>Năm điểm kiểm tra: thông điệp, trục, cỡ mẫu, dạng và màu, nguồn và diễn giải.</li>
+</ul>
+</section>
 
-        <section>
-          <h2>Kiểm chứng thế nào?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <ul>
-            <li>Kiểm tra mọi hình do AI sinh bằng <strong>danh sách ở phần 4</strong>.</li>
-            <li>Đối chiếu ít nhất một giá trị trên hình với dữ liệu gốc, chẳng hạn kiểm tra
-              thanh lớn nhất bằng <code>nlargest</code>.</li>
-          </ul>
-        </section>
+<section id="ai">
+<h2>Làm việc với AI thì sao?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
+<div class="good-box">
+<span class="box-title">AI làm tốt</span>
+Viết code matplotlib từ mô tả, ví dụ thanh ngang có nhãn giá trị và màu nhấn; tra cứu tham số.
+</div>
+<div class="warn-box">
+<span class="box-title">AI hay sai</span>
+Đặt tiêu đề chung chung, trục cột không bắt đầu từ 0, nhiều màu không mang thông tin,
+quên đơn vị hoặc vẽ cả tháng chưa trọn.
+</div>
+<aside class="notes"><p>Ví dụ yêu cầu: "vẽ giá trung vị theo quận bằng thanh ngang, tô cam quận cao nhất". AI thường
+viết đúng cú pháp nhưng không biết tháng 06/2026 chưa trọn hay cột price có giá 97 triệu.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Đọc thêm</h2>
-          <ul>
-            <li>McKinney, <em>Python for Data Analysis</em>, 3rd ed. — ch. 9 (Plotting
-              and Visualization).</li>
-            <li>VanderPlas, <em>Python Data Science Handbook</em>, 2nd ed. — Part 4 (Matplotlib).</li>
-            <li>📖 Tự học: matplotlib docs — <em>Anatomy of a figure</em>.</li>
-          </ul>
-        </section>
-      </section>
+<section id="verify">
+<h2>Kiểm chứng thế nào?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
+<ul>
+<li>Rà soát hình do AI sinh bằng <strong>năm điểm kiểm tra</strong> ở mục 5.</li>
+<li>Tự tính lại ít nhất một giá trị trên hình, ví dụ thanh dài nhất bằng
+<code>tk.loc["Lo Barnechea"]</code> hoặc <code>nlargest</code>.</li>
+</ul>
+<aside class="notes"><p>Hai lỗi khó thấy nhất là lọc dữ liệu (bỏ hàng thiếu, cắt tháng) và gộp nhóm; hình vẫn đẹp
+nhưng số sai. So sánh số hàng trước và sau mỗi bước lọc.</p>
+</aside>
+</section>
+
+<section id="references">
+<h2>Đọc thêm</h2>
+<ol>
+<li><a href="https://wesmckinney.com/book/plotting-and-visualization" target="_blank" rel="noopener">McKinney, chương 9, §9.1–9.2</a></li>
+<li>Berkeley Data 100: <a href="https://ds100.org/course-notes/visualization-1" target="_blank" rel="noopener">Visualization I</a>, <a href="https://ds100.org/course-notes/visualization-2" target="_blank" rel="noopener">Visualization II</a></li>
+<li><a href="https://jakevdp.github.io/PythonDataScienceHandbook/04.00-introduction-to-matplotlib.html" target="_blank" rel="noopener">VanderPlas, Python Data Science Handbook, phần 4</a></li>
+<li><a href="https://matplotlib.org/stable/gallery/showcase/anatomy.html" target="_blank" rel="noopener">matplotlib: Anatomy of a figure</a></li>
+</ol>
+</section>
+
+</section>
 
       <!-- Footer -->
       <div class="footer">
