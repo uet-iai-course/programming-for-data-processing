@@ -5,7 +5,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-  <title>LTXLDL | Bài 14: Kể chuyện bằng dữ liệu và thẩm định phân tích AI</title>
+  <title>LTXLDL | Bài 14: Kể chuyện bằng dữ liệu và thẩm định bản phân tích do AI viết</title>
 
   <link rel="stylesheet" href="revealjs/dist/reset.css">
   <link rel="stylesheet" href="revealjs/dist/reveal.css" />
@@ -19,478 +19,547 @@
   <div class="reveal">
     <div class="slides">
 
-      <!-- ====== Mở bài ====== -->
-      <section>
-        <section>
-          <h1>Lập trình <br /> xử lý dữ liệu</h1>
-          <div>
-            <p>Học kì 1, năm học 2026–2027</p>
-            <p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
-          </div>
-        </section>
+<section>
+<section id="course">
+<h1>Lập trình<br>xử lý dữ liệu</h1>
+<p>Học kì 1, năm học 2026–2027</p>
+<p>Viện Trí tuệ nhân tạo, Trường ĐH Công nghệ, ĐHQGHN</p>
+</section>
 
-        <section>
-          <h1>
-            <span class="text-light">Bài 14</span>
-            <br>
-            Kể chuyện <br> bằng dữ liệu<br>và thẩm định <br> phân tích AI
-          </h1>
-          <p class="text-light">Bài nội dung cuối: tổng hợp quy trình phân tích và trình bày dữ liệu.</p>
-        </section>
+<section id="title">
+<h1><span class="text-light">Bài 14</span><br>Kể chuyện<br>bằng dữ liệu</h1>
+<p>Trình bày kết quả phân tích cho người đọc và thẩm định (audit) một báo cáo do AI viết.</p>
+</section>
 
-        <section>
-          <h2>Quy trình đã học</h2>
-          <div class="pipeline">
-            <div class="stage">
-              <div class="stage-title">Thu thập</div>
-              <div class="stage-desc">B6</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">Làm sạch</div>
-              <div class="stage-desc">B7–10</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">Làm giàu</div>
-              <div class="stage-desc">B11 (LLM)</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">Trực quan</div>
-              <div class="stage-desc">B12–13</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage stage-highlight">
-              <div class="stage-title">Kể chuyện</div>
-              <div class="stage-desc">bài này</div>
-            </div>
-          </div>
-          <p style="margin-top:0.8em">Kết quả phân tích chỉ có giá trị khi người đọc hiểu được
-            kết luận và bằng chứng.</p>
-        </section>
+<section id="previous">
+<h2>Bài trước</h2>
+<div class="pipeline">
+<div class="stage"><div class="stage-title">Thu thập</div><div class="stage-desc">Bài 6</div></div>
+<div class="arrow">→</div>
+<div class="stage"><div class="stage-title">Làm sạch</div><div class="stage-desc">Bài 7–10</div></div>
+<div class="arrow">→</div>
+<div class="stage"><div class="stage-title">Làm giàu</div><div class="stage-desc">Bài 11</div></div>
+<div class="arrow">→</div>
+<div class="stage"><div class="stage-title">Trực quan hoá</div><div class="stage-desc">Bài 12–13</div></div>
+<div class="arrow">→</div>
+<div class="stage stage-highlight"><div class="stage-title">Kể chuyện</div><div class="stage-desc">Bài 14</div></div>
+</div>
+<p>Ở Bài 12–13, bạn đã vẽ biểu đồ và học năm điểm kiểm tra một hình. Bài này đi từ biểu đồ đến báo cáo, rồi thẩm định một báo cáo do AI viết.</p>
+<aside class="notes"><p>Bài nội dung cuối, dạy riêng một buổi. Năm điểm kiểm tra (thông điệp; trục; cỡ mẫu; dạng và màu; nguồn và diễn giải)
+được dùng lại ở mục 2 và mục 4. Hỏi lớp: kết quả phân tích của nhóm bạn đang nằm ở đâu, notebook hay báo cáo? (đáp: phần lớn
+còn ở notebook; bài này chuyển nó thành báo cáo).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Tổng quan</h2>
-          <ol>
-            <li>Từ phân tích đến câu chuyện</li>
-            <li>Các bẫy diễn giải</li>
-            <li>Thẩm định một bản phân tích do AI viết</li>
-            <li>Làm việc với AI thì sao?</li>
-          </ol>
-        </section>
-      </section>
+<section id="overview">
+<h2>Tổng quan</h2>
+<ol>
+<li>Khám phá và trình bày</li>
+<li>Dựng câu chuyện từ dữ liệu</li>
+<li>Lỗi thường gặp khi diễn giải số liệu</li>
+<li>Thẩm định một bản phân tích do AI viết</li>
+</ol>
+<aside class="notes"><p>Mạch bài: Knaflic, Storytelling with Data (2015), ch. 1 (bối cảnh, khám phá và trình bày, ý chính) và ch. 7 (câu chuyện);
+Wilke, Fundamentals of Data Visualization (2019), ch. 29 Telling a story and making a point, ch. 22 Titles, captions, and tables;
+Berkeley Data 100, Visualization II, mục Harnessing Context; Bergstrom và West, Calling Bullshit (INFO 270, ĐH Washington):
+tuần 4 Causality, tuần 5 Statistical traps and trickery, tuần 12 Refuting bullshit.</p>
+</aside>
+</section>
 
-      <!-- ====== Phần 1 ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">1.</span><br>Từ phân tích<br>đến câu chuyện</h1>
-          <p class="text-light">Người đọc cần câu trả lời có căn cứ, không cần toàn bộ biểu đồ đã thử.</p>
-        </section>
+</section>
 
-        <section>
-          <h2>Kết luận trước, chi tiết sau</h2>
-          <div class="two-col">
-            <div>
-              <h4 class="text-red">Kể theo trình tự mình làm</h4>
-              <p class="text-light" style="font-size:0.85em">"Đầu tiên em tải dữ liệu… rồi em làm sạch…
-                rồi em thử X nhưng không được… cuối cùng em thấy Y."</p>
-            </div>
-            <div>
-              <h4 class="text-green">Kể theo nhu cầu người đọc</h4>
-              <p class="text-light" style="font-size:0.85em">"Y — vì ba bằng chứng sau. (Chi tiết
-                phương pháp ở phụ lục.)"</p>
-            </div>
-          </div>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Cấu trúc kim tự tháp: câu trả lời → bằng chứng → phương pháp.
-            Nhật ký quá trình phân tích nên nằm ở <em>phụ lục</em>, không phải phần trình bày chính.
-          </div>
-        </section>
+<section>
+<section id="explore-sec">
+<h1><span class="text-light">1.</span><br>Khám phá<br>và trình bày</h1>
+<p class="text-light">Xác định người đọc và điều họ cần biết trước khi viết.</p>
+</section>
 
-        <section>
-          <h2>Ba thành phần của một câu chuyện dữ liệu</h2>
-          <div class="pipeline">
-            <div class="stage">
-              <div class="stage-title">Bối cảnh</div>
-              <div class="stage-desc">ai hỏi, hỏi gì, vì sao lúc này</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage stage-highlight">
-              <div class="stage-title">Phát hiện</div>
-              <div class="stage-desc">phát hiện nào trả lời câu hỏi</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">Hệ quả</div>
-              <div class="stage-desc">hàm ý và giới hạn của kết luận</div>
-            </div>
-          </div>
-          <p style="margin-top:0.8em">Mỗi mục lớn trong báo cáo bài tập lớn nên có đủ ba thành phần;
-            tiêu đề mục là một <strong>câu khẳng định</strong>, tương tự tiêu đề biểu đồ ở bài 12.</p>
-        </section>
+<section id="explore-explain">
+<h2>Hai mục đích của phân tích</h2>
+<table class="compact-table">
+<thead><tr><th></th><th>Khám phá</th><th>Trình bày</th></tr></thead>
+<tbody>
+<tr><td>Người đọc</td><td>chính bạn</td><td>người khác</td></tr>
+<tr><td>Số hình</td><td>nhiều, thử nhiều cách</td><td>vài hình, chọn lọc</td></tr>
+<tr><td>Tiêu đề hình</td><td>gọi tên biểu đồ</td><td>nêu kết luận</td></tr>
+<tr><td>Mục tiêu</td><td>tìm điều đáng nói</td><td>giúp người đọc quyết định</td></tr>
+</tbody>
+</table>
+<aside class="notes"><p>Knaflic ch. 1: khám phá giống mở 100 con hàu để tìm 2 viên ngọc; khi trình bày, chỉ đưa ra 2 viên ngọc, không đưa cả
+100 con hàu. Báo cáo bài tập lớn là trình bày; notebook phân tích là khám phá. Hỏi lớp: notebook của nhóm có bao nhiêu hình,
+báo cáo cần bao nhiêu? (đáp: thường vài hình cho mỗi câu hỏi chính).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Các con số: làm tròn có chủ đích</h2>
-          <div class="two-col">
-            <div>
-              <h4 class="text-red">Khó nhớ</h4>
-              <ul>
-                <li>"Giá trung vị là 59.000 CLP, tại Las Condes là 97.460 CLP."</li>
-              </ul>
-            </div>
-            <div>
-              <h4 class="text-green">Dễ nhớ</h4>
-              <ul>
-                <li>"Las Condes có giá cao hơn khoảng <strong>65%</strong> so với mặt bằng chung
-                  (97 so với 59 nghìn CLP/đêm)."</li>
-              </ul>
-            </div>
-          </div>
-          <p>Bảng giữ các con số chính xác; câu văn nên nêu <em>tỷ lệ so sánh</em>, chẳng hạn
-            "gấp đôi", "1 trên 5" hoặc "chưa đến 1%".</p>
-        </section>
+<section id="audience">
+<h2>Người đọc và quyết định cần đưa ra</h2>
+<table class="compact-table">
+<thead><tr><th>Người đọc</th><th>Cần quyết định</th><th>Cần thấy</th></tr></thead>
+<tbody>
+<tr><td>Chủ nhà mới ở Santiago</td><td>đặt giá bao nhiêu</td><td>giá trung vị theo quận, loại phòng</td></tr>
+<tr><td>Sở du lịch thành phố</td><td>có cần quản lý cho thuê ngắn hạn</td><td>số chỗ ở theo quận, xu hướng</td></tr>
+<tr><td>Giảng viên chấm bài tập lớn</td><td>phân tích có căn cứ không</td><td>dữ liệu, cách tính, giới hạn</td></tr>
+</tbody>
+</table>
+<p>Cùng một bộ dữ liệu, mỗi người đọc cần một câu chuyện khác.</p>
+<aside class="notes"><p>Knaflic ch. 1 (the importance of context): ai, cái gì, như thế nào. Người đọc của báo cáo bài tập lớn là giảng viên và
+người đọc giả định nhóm tự chọn (ghi ở đầu báo cáo). Hỏi lớp: chủ nhà mới có cần biết số đánh giá theo tháng không?
+(đáp: ít; họ cần giá theo quận và loại phòng).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Nêu giới hạn làm tăng độ tin cậy</h2>
-          <ul>
-            <li>Các bài trước đã chỉ ra nhiều giới hạn: số đánh giá chỉ là <em>biến đại diện</em>,
-              kỳ chưa trọn, 846 giá trị giá bị thiếu, nhãn LLM sai khoảng 10% và bẫy diện tích.</li>
-            <li>Giới hạn cần được nêu ngay cạnh kết luận để người đọc đánh giá độ tin cậy.</li>
-          </ul>
-          <div class="good-box">
-            <span class="box-title">Cách làm tốt</span>
-            Mỗi kết luận lớn cần ghi rõ nguồn dữ liệu, cỡ mẫu, giả định và loại sai số có thể gặp.
-          </div>
-        </section>
-      </section>
+<section id="big-idea">
+<h2>Nêu ý chính trong một câu</h2>
+<div class="sample bad"><span class="sample-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span><div><span class="sample-label">Chỉ nêu chủ đề</span><p class="quote">Giá Airbnb ở Santiago</p></div></div>
+<div class="sample good"><span class="sample-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><span class="sample-label">Nêu ý chính</span><p class="quote">Giá thuê phổ biến ở Santiago chỉ bằng một nửa giá trung bình.</p></div></div>
+<p>Ý chính là câu mở đầu của báo cáo.</p>
+<aside class="notes"><p>Knaflic ch. 1, "the Big Idea": một câu hoàn chỉnh, nêu quan điểm và điều quan trọng với người đọc (what's at stake).
+Knaflic viết cho bối cảnh tư vấn nên ý chính thường là lời khuyên; báo cáo dữ liệu của môn này nêu phát hiện chính, vì lời khuyên
+kiểu "nên đặt giá…" vượt quá dữ liệu. Viết ý chính trước khi soạn để chọn hình, chọn số; trong báo cáo, nó là câu mở đầu. Số liệu: giá trung vị 59.000, giá trung bình 118.200 CLP/đêm
+(17.688 chỗ ở có giá); 59.000 / 118.200 = 0,50. Hỏi lớp: chủ đề bài tập lớn của nhóm là gì, và ý chính là gì?</p>
+</aside>
+</section>
 
-      <!-- ====== Phần 2 ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">2.</span><br>Kể chuyện đúng mực</h1>
-          <p class="text-light">Bốn cách một câu chuyện dữ liệu "đúng số nhưng sai nghĩa".</p>
-        </section>
+<section id="exercise-big-idea">
+<h2>Bài tập 1: Viết ý chính trong một câu</h2>
+<table class="compact-table">
+<thead><tr><th>Quận</th><th>Giá trung vị (CLP/đêm)</th><th>Số chỗ ở</th></tr></thead>
+<tbody>
+<tr><td>Santiago</td><td>47.755</td><td>7.182</td></tr>
+<tr><td>Ñuñoa</td><td>60.981</td><td>1.813</td></tr>
+<tr><td>Providencia</td><td>72.845</td><td>2.997</td></tr>
+<tr><td>Las Condes</td><td>97.460</td><td>2.862</td></tr>
+<tr><td>Lo Barnechea</td><td>426.230</td><td>824</td></tr>
+</tbody>
+</table>
+<p class="caption">Năm quận có từ 500 chỗ ở trở lên.</p>
+<p><strong>Bạn viết báo cáo cho sở du lịch thành phố. Viết ý chính trong một câu từ bảng trên.</strong></p>
+<aside class="notes"><p>Đáp án mẫu: "Quận Santiago có nhiều chỗ ở nhất, gấp 2,4 lần quận đứng sau, nhưng giá thuê phổ biến thấp nhất
+trong năm quận đông nhất." Mọi số lấy từ bảng: 7.182 / 2.997 = 2,4; trung vị 47.755 thấp nhất. Sở du lịch quan tâm chỗ ở
+tập trung ở đâu, nên số chỗ ở đứng trước giá. Câu chưa đạt: "Giá thuê khác nhau giữa các quận" (chỉ gọi tên chủ đề).
+Lo Barnechea (426.230) là ngoại lệ về giá, không hợp làm ý chính: ít chỗ ở hơn và có khu trượt tuyết (mục 4, ý 5).
+Câu của sinh viên không cần đúng chữ; cần một phát hiện, có con số đọc được từ bảng, hợp với người đọc.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Tương quan ≠ nhân quả</h2>
-          <div class="question-box">
-            <div class="question-title">Nhớ bài 7?</div>
-            <div class="question-content">
-              Chỗ ở có tên nhắc đến "metro" rẻ hơn khoảng 11%. Vậy <em>"gần metro làm giảm giá
-              cho thuê"</em>?
-            </div>
-          </div>
-          <p style="margin-top:0.7em">Chưa thể kết luận như vậy. <strong>Loại phòng</strong> là một
-            biến gây nhiễu cần kiểm tra. Dữ liệu quan sát chỉ cho phép nói hai yếu tố
-            <strong>đi kèm</strong>, không cho phép nói yếu tố này <strong>gây ra</strong> yếu tố kia.</p>
-        </section>
+</section>
 
-        <section>
-          <h2>Chọn kỳ gốc có lợi</h2>
-          <ul>
-            <li>"Số lượng đánh giá tại Santiago <strong>tăng 50 lần</strong> kể từ năm 2020!" — đúng dữ liệu,
-              nhưng kỳ gốc là tháng thấp nhất trong đại dịch COVID-19 (4/2020 chỉ có 321 đánh giá).</li>
-            <li>Với cùng dữ liệu, nếu so với mức trung bình tháng của năm 2019, mức tăng chỉ còn khoảng 8 lần.</li>
-          </ul>
-          <div class="warn-box">
-            <span class="box-title">Cẩn thận</span>
-            Bài 13 cho kết quả khoảng 16 lần khi so theo <strong>năm</strong> (2020→2025); ở đây là
-            50 lần vì so theo <strong>tháng</strong>, bắt đầu từ đáy COVID-19. Cùng một hiện tượng nhưng
-            hai thước đo cho hai con số rất khác nhau. Cần khai báo và giải thích kỳ gốc đã chọn.
-          </div>
-        </section>
+<section>
+<section id="story-sec">
+<h1><span class="text-light">2.</span><br>Dựng câu chuyện<br>từ dữ liệu</h1>
+<p class="text-light">Sắp xếp báo cáo theo thứ tự kết luận, bằng chứng, giới hạn.</p>
+</section>
 
-        <section>
-          <h2>Nghịch lý Simpson: tổng thể nói ngược từng phần</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Giá trung vị</th>
-                <th>T9/2025</th>
-                <th>T6/2026</th>
-                <th>Đổi</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Nguyên căn</td>
-                <td>60k</td>
-                <td>66k</td>
-                <td class="text-green">+10%</td>
-              </tr>
-              <tr>
-                <td>Phòng riêng</td>
-                <td>30k</td>
-                <td>33k</td>
-                <td class="text-green">+10%</td>
-              </tr>
-              <tr>
-                <td><strong>Toàn thị trường</strong></td>
-                <td><strong>55k</strong></td>
-                <td><strong>52k</strong></td>
-                <td class="text-red"><strong>−5%</strong></td>
-              </tr>
-            </tbody>
-          </table>
-          <p style="margin-top:0.5em">Trung vị của cả hai phân khúc đều tăng, nhưng tỷ trọng phòng riêng
-            tăng làm trung vị chung giảm. <em>Cơ cấu mẫu đã thay đổi</em> giữa hai mốc chụp:
-            cần kiểm tra tỷ trọng các nhóm trước khi diễn giải một con số gộp.
-            <span class="caption">(số minh hoạ)</span></p>
-        </section>
+<section id="story-arc">
+<h2>Bốn phần của một câu chuyện</h2>
+<div class="pipeline">
+<div class="stage"><div class="stage-title">Mở đầu</div><div class="stage-desc">Santiago có 18.534 chỗ ở trên Airbnb</div></div>
+<div class="arrow">→</div>
+<div class="stage"><div class="stage-title">Vấn đề</div><div class="stage-desc">nhu cầu thuê còn tăng không?</div></div>
+<div class="arrow">→</div>
+<div class="stage"><div class="stage-title">Phân tích</div><div class="stage-desc">số đánh giá theo tháng, so với cùng tháng năm trước</div></div>
+<div class="arrow">→</div>
+<div class="stage stage-highlight"><div class="stage-title">Kết luận</div><div class="stage-desc">tăng 54%,<br>kèm giới hạn</div></div>
+</div>
+<p>Mỗi mục lớn của báo cáo có đủ bốn phần; tiêu đề mục là một câu nêu kết luận.</p>
+<aside class="notes"><p>Wilke §29.1 What is a story?: Opening – Challenge – Action – Resolution. Knaflic ch. 7 dùng cấu trúc ba hồi
+mở – thân – kết. Ví dụ dùng số đánh giá vì nhóm nào cũng có bảng reviews.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Diễn đạt đúng mức</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Số liệu</th>
-                <th>Diễn đạt quá mức</th>
-                <th>Diễn đạt đúng mức</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>+3% YoY</td>
-                <td>"bùng nổ"</td>
-                <td>"nhích nhẹ"</td>
-              </tr>
-              <tr>
-                <td>r = 0.2</td>
-                <td>"liên hệ chặt chẽ"</td>
-                <td>"liên hệ yếu"</td>
-              </tr>
-              <tr>
-                <td>n = 30</td>
-                <td>"xu hướng rõ rệt"</td>
-                <td>"tín hiệu ban đầu, mẫu nhỏ"</td>
-              </tr>
-            </tbody>
-          </table>
-          <p>Từ ngữ là một phần của phép đo. Các cách diễn đạt như <em>"thường", "có thể"</em>
-            hay <em>"trong dữ liệu này"</em> giúp thể hiện đúng mức độ chắc chắn của kết luận.</p>
-        </section>
-      </section>
+<section id="lead-first">
+<h2>Đặt kết luận lên trước</h2>
+<div class="sample bad"><span class="sample-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span><div><span class="sample-label">Kể theo trình tự đã làm</span><p class="quote">Đầu tiên nhóm tải dữ liệu, rồi làm sạch, rồi thử vẽ vài hình… cuối cùng thấy số đánh giá tăng.</p></div></div>
+<div class="sample good"><span class="sample-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><span class="sample-label">Kể theo nhu cầu người đọc</span><p class="quote">Số đánh giá tháng 5/2026 tăng 54% so với tháng 5/2025. Hình 1 cho thấy số liệu từng tháng; cách tính ở phụ lục.</p></div></div>
+<aside class="notes"><p>Wilke §29.1 gọi là cấu trúc Lead – Development: báo chí và bài báo khoa học đều đưa kết luận lên đầu. Nhật ký quá trình
+phân tích để ở phụ lục hoặc notebook. Hỏi lớp: trong báo cáo của nhóm, kết luận chính đang ở trang mấy?</p>
+</aside>
+</section>
 
-      <!-- ====== Phần 3 ====== -->
-      <section>
-        <section>
-          <h1><span class="text-light">3.</span><br>Thẩm định một bản phân tích do AI viết</h1>
-          <p class="text-light">Notebook bài này có một báo cáo do AI tạo, gồm năm kết luận về Santiago.
-            Phần này thẩm định ba kết luận tiêu biểu.</p>
-        </section>
+<section id="title-conclusion">
+<h2>Tiêu đề nêu kết luận</h2>
+<div class="two-col">
+<div>
+<figure class="fig">
+<img src="img/lecture-14/tieu-de-mo-ta.svg" alt="Tiêu đề chỉ gọi tên biểu đồ">
+<figcaption class="caption">Tiêu đề gọi tên</figcaption>
+</figure>
+</div>
+<div>
+<figure class="fig">
+<img src="img/lecture-14/tieu-de-ket-luan.svg" alt="Tiêu đề nêu kết luận">
+<figcaption class="caption">Tiêu đề nêu kết luận</figcaption>
+</figure>
+</div>
+</div>
+<p class="caption">Màu xám cho bối cảnh, màu cam cho điều cần thấy; <code>ax.annotate</code> ghi giá trị (Bài 12).</p>
+<aside class="notes"><p>Số đánh giá tháng 5/2025 là 14.509, tháng 5/2026 là 22.296: 22.296 / 14.509 = 1,537, tức tăng khoảng 54%.
+Wilke §22.1: tiêu đề nói hình cho thấy điều gì. Data 100 Visualization II, mục Harnessing Context: tiêu đề và chú thích nêu
+điều rút ra. Đây là điểm "thông điệp" trong năm điểm kiểm tra của Bài 12. Knaflic ch. 4: màu nhấn hướng mắt người đọc.
+Hỏi lớp: nhìn hình trái, bạn mất bao lâu để thấy điều cần thấy? Còn ở hình phải thì sao?</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Báo cáo AI cần thẩm định — năm kết luận</h2>
-          <div class="key-box" style="text-align:left">
-            <span class="box-title">Prompt: "viết báo cáo thị trường ngắn, ấn tượng"</span>
-            <ul style="margin:0.3em 0 0 1em">
-              <li><strong>KL1</strong> — 18.534 chỗ ở, 81% nguyên căn.</li>
-              <li><strong>KL2</strong> — giá trung bình <strong>118.200 CLP/đêm</strong>.</li>
-              <li><strong>KL3</strong> — đánh giá tháng 6 <strong>giảm 28%</strong> ("hạ nhiệt").</li>
-              <li><strong>KL4</strong> — phòng khoe "metro" rẻ ~11% ("làm giảm giá").</li>
-              <li><strong>KL5</strong> — Lo Barnechea đắt nhất (426.230 CLP/đêm).</li>
-            </ul>
-          </div>
-          <p style="margin-top:0.5em">Mọi con số đều đúng — ta mổ kỹ <span class="text-red">KL2, KL3, KL4</span>;
-            <span class="text-green">KL1, KL5</span> đạt cả bốn bước (xem bảng phán quyết).</p>
-        </section>
+<section id="compare-number">
+<h2>Đặt con số trong phép so sánh</h2>
+<div class="sample bad"><span class="sample-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span><div><span class="sample-label">Khó hình dung</span><p class="quote">Giá trung vị toàn thành phố là 59.000 CLP/đêm, ở Las Condes là 97.460 CLP/đêm.</p></div></div>
+<div class="sample good"><span class="sample-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><span class="sample-label">Dễ hình dung</span><p class="quote">Giá trung vị ở Las Condes cao hơn mức chung của thành phố khoảng <strong>65%</strong> (97.460 so với 59.000 CLP/đêm).</p></div></div>
+<p>Bảng giữ số chính xác; câu văn nêu tỷ lệ so sánh.</p>
+<aside class="notes"><p>97.460 / 59.000 = 1,652, cao hơn khoảng 65%. Các cách nói dễ nhớ: "gấp đôi", "1 trên 5", "chưa đến 1%".
+Calling Bullshit tuần 2 (Spotting bullshit): luôn đặt một con số cạnh một mốc so sánh để thấy nó lớn hay nhỏ.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Quy trình thẩm định bốn bước</h2>
-          <div class="pipeline">
-            <div class="stage">
-              <div class="stage-title">1. Truy số</div>
-              <div class="stage-desc">tự tính lại từ dữ liệu gốc</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">2. Kiểm phương pháp</div>
-              <div class="stage-desc">trung bình hay trung vị? đã kiểm tra chất lượng? kỳ cuối đã trọn?</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage">
-              <div class="stage-title">3. Kiểm diễn giải</div>
-              <div class="stage-desc">lời có đúng mức với số? có suy diễn nhân quả?</div>
-            </div>
-            <div class="arrow">→</div>
-            <div class="stage stage-highlight">
-              <div class="stage-title">4. Phán quyết</div>
-              <div class="stage-desc">đúng / sai / chưa thể kiểm chứng</div>
-            </div>
-          </div>
-          <p style="margin-top:0.8em">Mỗi kết luận cần một phán quyết riêng. Không thể suy từ một
-            kết luận đúng rằng toàn bộ báo cáo đều đúng.</p>
-        </section>
+<section id="limits">
+<h2>Nêu giới hạn cạnh kết luận</h2>
+<table class="compact-table">
+<thead><tr><th>Giới hạn</th><th>Bài</th><th>Cách nêu trong báo cáo</th></tr></thead>
+<tbody>
+<tr><td>Số đánh giá không phải số lượt thuê</td><td>8</td><td>"số đánh giá", không viết "lượt khách"</td></tr>
+<tr><td>Tháng cuối chưa trọn</td><td>8</td><td>ghi "đến 29/06" hoặc bỏ tháng đó</td></tr>
+<tr><td>846 chỗ ở thiếu giá</td><td>10</td><td>"trên 17.688 chỗ ở có giá"</td></tr>
+<tr><td>Nhãn LLM đo trên 24 đánh giá</td><td>11</td><td>"F1 0,92 trên mẫu nhỏ"</td></tr>
+<tr><td>Thiếu đánh giá của chỗ ở đã ngừng đăng</td><td>Lab 13</td><td>"mức tăng thực tế có thể thấp hơn"</td></tr>
+</tbody>
+</table>
+<p class="caption">Con số +54% ở slide «Tiêu đề nêu kết luận» cần đi kèm giới hạn ở dòng 1 và dòng cuối.</p>
+<aside class="notes"><p>Năm điểm kiểm tra: cỡ mẫu (3) và nguồn, diễn giải (5). F1 khía cạnh 0,92 trên 24 đánh giá gán nhãn tay (Bài 11).
+reviews.csv chỉ chứa đánh giá của các chỗ ở còn trong mốc chụp, nên năm càng cũ càng bị đếm thiếu (Lab 13).
+Ví dụ: ở mốc 27/09/2025, tháng 5/2025 có 17.304 đánh giá; so với 22.296 thì chỉ tăng 28,8%, không phải 54%.
+Nêu giới hạn làm người đọc tin báo cáo hơn, không phải kém đi.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Kết luận KL2 — "trung bình 118.200"</h2>
-          <div class="question-box">
-            <div class="question-title">Trích báo cáo AI</div>
-            <div class="question-content">
-              "Giá thuê trung bình ở Santiago là <strong>118.200 CLP/đêm</strong> (~3,3 triệu đồng) —
-              du khách nên chuẩn bị ngân sách tương ứng."
-            </div>
-          </div>
-          <p style="margin-top:0.7em"><strong>Truy số:</strong> giá trung bình đúng là 118.200 ✓.
-            <strong>Kiểm phương pháp:</strong> bài 10 đã chỉ ra 177 giá ngoại lai làm trung bình
-            cao hơn 44%, trong khi một nửa số chỗ ở có giá dưới 59.000. <strong>Phán quyết:</strong>
-            số đúng nhưng thước đo không phù hợp với mục đích dự trù ngân sách; nên dùng trung vị.</p>
-        </section>
+<section id="build-up">
+<h2>Xây dựng hình phức tạp từng bước</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<ul>
+<li>Hình cho người ra quyết định: một thông điệp, ít chi tiết.</li>
+<li>Với hình phức tạp, trình bày dần: phần đơn giản trước, thêm từng lớp sau.</li>
+<li>Hình dễ nhớ: một màu nhấn, chú thích ngay trên hình.</li>
+</ul>
+<aside class="notes"><p>Wilke §29.2 Make a figure for the generals, §29.3 Build up towards complex figures, §29.4 Make your figures memorable.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Kết luận KL3 — "giảm 28%, hạ nhiệt"</h2>
-          <div class="question-box">
-            <div class="question-title">Trích báo cáo AI</div>
-            <div class="question-content">
-              "Số đánh giá tháng 6/2026 <strong>giảm 28%</strong> so với tháng 5 —
-              thị trường Santiago đang hạ nhiệt đáng lo ngại."
-            </div>
-          </div>
-          <p style="margin-top:0.7em"><strong>Truy số:</strong> mức giảm 28% là đúng ✓; so với cùng kỳ
-            (tháng 6/2025) thì vẫn <strong>tăng 6%</strong>. <strong>Kiểm phương pháp:</strong> tháng 6/2026
-            <strong>chưa trọn</strong> ở mốc chụp 29/06, nên cả hai tỷ lệ đều so tháng chưa trọn này với một
-            tháng trọn; đánh giá viết muộn còn được bổ sung (tháng 9/2025 tăng thêm 21% sau chín tháng).
-            <strong>Phán quyết:</strong> chưa thể kiểm chứng xu hướng từ một mốc chụp; cần chờ mốc chụp
-            sau.</p>
-        </section>
+<section id="consistent">
+<h2>Thống nhất nhưng không lặp lại</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<ul>
+<li>Cùng một nhóm, cùng một màu trong suốt báo cáo.</li>
+<li>Cùng thang đo khi so sánh các hình với nhau (Bài 12).</li>
+<li>Không dùng một dạng hình cho mọi phân tích: mỗi câu hỏi, một dạng phù hợp.</li>
+</ul>
+<aside class="notes"><p>Wilke §29.5 Be consistent but don't be repetitive. Khai báo rcParams một lần (Bài 12) giúp các hình thống nhất.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Kết luận KL4 — "metro làm giảm giá"</h2>
-          <div class="question-box">
-            <div class="question-title">Trích báo cáo AI</div>
-            <div class="question-content">
-              "Phòng gần metro rẻ hơn 11% — <strong>vị trí gần metro làm giảm giá</strong>
-              cho thuê."
-            </div>
-          </div>
-          <p style="margin-top:0.7em"><strong>Truy số:</strong> chênh lệch quan sát được là 10,8% ✓;
-            sau khi kiểm soát loại phòng, mức chênh lệch ở hai loại phổ biến là khoảng 17–18% (xem notebook).
-            <strong>Kiểm diễn giải:</strong> tên có nhắc đến metro chỉ là tín hiệu do chủ nhà tự chọn,
-            không phải thước đo khoảng cách. <strong>Phán quyết:</strong> chỉ có thể nói hai yếu tố
-            "đi kèm"; muốn kết luận về vị trí, cần đo khoảng cách thực tế.</p>
-        </section>
+<section id="exercise-title">
+<h2>Bài tập 2: Tiêu đề và hai câu diễn giải</h2>
+<figure class="fig">
+<img src="img/lecture-12/subplots-loai.svg" alt="Hai histogram giá theo loại phòng" style="width:710px">
+</figure>
+<p><strong>Viết tiêu đề nêu kết luận và hai câu diễn giải: một câu kết luận, một câu giới hạn.</strong></p>
+<aside class="notes"><p>Đáp án mẫu. Tiêu đề: "Giá trung vị của phòng riêng bằng khoảng một nửa nguyên căn". Kết luận: "Giá trung vị phòng riêng là
+34.235 CLP/đêm, nguyên căn 64.900 (Santiago, mốc chụp 29/06/2026)." Giới hạn: "Số liệu chỉ tính các chỗ ở có giá (3.148 phòng riêng,
+14.425 nguyên căn); giá của hai loại chồng lấn nhau khá nhiều." Các số này tính bằng code (median, count theo room_type), không đọc
+được từ histogram log10. 34.235 / 64.900 = 0,53; 28% phòng riêng đắt hơn P25 của nguyên căn (46.788).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Bảng phán quyết — kết quả thẩm định</h2>
-          <table class="compact-table">
-            <thead>
-              <tr>
-                <th>Kết luận AI</th>
-                <th>Số liệu</th>
-                <th>Phương pháp</th>
-                <th>Diễn giải</th>
-                <th>Phán quyết</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>KL2: trung bình 118k</td>
-                <td>✓</td>
-                <td>✗ (ngoại lai)</td>
-                <td>✗</td>
-                <td class="text-red">dùng trung vị</td>
-              </tr>
-              <tr>
-                <td>KL3: giảm 28%</td>
-                <td>✓</td>
-                <td>✗ (tháng chưa trọn)</td>
-                <td>✗</td>
-                <td class="text-orange"><strong>chưa thể kiểm chứng</strong> từ một mốc chụp</td>
-              </tr>
-              <tr>
-                <td>KL4: metro giảm giá</td>
-                <td>✓</td>
-                <td>△ (đo gián tiếp)</td>
-                <td>✗ (nhân quả)</td>
-                <td class="text-red">đổi thành "đi kèm"</td>
-              </tr>
-              <tr>
-                <td>KL1, KL5 (xem notebook)</td>
-                <td>✓</td>
-                <td>✓</td>
-                <td>✓</td>
-                <td class="text-green">giữ nguyên</td>
-              </tr>
-            </tbody>
-          </table>
-        </section>
+</section>
 
-        <section>
-          <h2>Số đúng chưa đủ</h2>
-          <div class="key-box">
-            <span class="box-title">Quan trọng</span>
-            Trong ba ví dụ này, các con số đều đúng; lỗi nằm ở phương pháp và diễn giải.
-            Vì vậy, thẩm định không chỉ kiểm phép tính mà còn phải kiểm cách chọn thước đo và lập luận.
-            Xác nhận KL1 và KL5 đúng cũng là một kết quả thẩm định.
-          </div>
-        </section>
+<section>
+<section id="traps-sec">
+<h1><span class="text-light">3.</span><br>Lỗi thường gặp<br>khi diễn giải số liệu</h1>
+<p class="text-light">Xem xét nhân quả, cơ cấu nhóm, kỳ gốc và mốc chụp trước khi kết luận.</p>
+</section>
 
-        <section>
-          <h2>Liên hệ với vấn đáp bài tập lớn</h2>
-          <ul>
-            <li>Vấn đáp BTL = giảng viên <strong>thẩm định</strong> sản phẩm của nhóm:
-              truy số, kiểm phương pháp, kiểm diễn giải — theo đúng bốn bước này.</li>
-            <li>Cách ôn tốt nhất: nhóm tự thẩm định chéo báo cáo của nhau trước khi nộp
-              và kiểm tra cả những nội dung do AI hỗ trợ viết. Kết quả này có thể dùng cho mục
-              "AI sai ở đâu" trong <code>AI_USAGE.md</code>.</li>
-          </ul>
-        </section>
-      </section>
+<section id="correlation">
+<h2>Tương quan và nhân quả</h2>
+<table class="compact-table">
+<thead><tr><th>Nhóm</th><th>Số chỗ ở</th><th>Giá trung vị (CLP/đêm)</th></tr></thead>
+<tbody>
+<tr><td>Có "metro"</td><td>2.959</td><td>53.926,5</td></tr>
+<tr><td>Không có "metro"</td><td>15.575</td><td>60.478,5</td></tr>
+<tr><td><strong>Chênh lệch</strong></td><td></td><td><strong>−10,8%</strong></td></tr>
+</tbody>
+</table>
+<p class="caption">Nhóm có "metro" gồm các chỗ ở có chữ metro trong tên (<code>str.contains</code>, Bài 7).</p>
+<p><strong>Chỗ ở có chữ "metro" trong tên rẻ hơn. Vậy gần metro làm giá rẻ hơn?</strong></p>
+<aside class="notes"><p>Đáp: chưa. Hai yếu tố đi kèm nhau, chưa chứng minh được yếu tố này gây ra yếu tố kia. Tên do chủ nhà tự đặt, không đo
+khoảng cách tới ga. 40 trong 2.959 tên chứa "metros": phần lớn nghĩa là "cách vài mét" hoặc "mét vuông", nhưng cũng có tên nói về tàu điện. Muốn nói về vị trí, cần toạ độ các ga metro.
+Calling Bullshit tuần 4 (Causality).</p>
+</aside>
+</section>
 
-      <!-- ====== Kết ====== -->
-      <section>
-        <section>
-          <h2>Tổng kết</h2>
-          <ul>
-            <li>Trình bày theo thứ tự kết luận → bằng chứng → phương pháp; dùng kết luận làm tiêu đề.</li>
-            <li>Đặt số liệu trong quan hệ so sánh dễ hiểu và chủ động nêu giới hạn của phân tích.</li>
-            <li>Tránh suy diễn nhân quả, chọn kỳ gốc có lợi, bỏ qua thay đổi cơ cấu mẫu và dùng lời quá mức.</li>
-            <li>Thẩm định từng kết luận qua bốn bước: truy số → kiểm phương pháp → kiểm diễn giải → phán quyết.</li>
-          </ul>
-        </section>
+<section id="composition">
+<h2>Cơ cấu nhóm làm thay đổi con số gộp</h2>
+<table class="compact-table">
+<thead><tr><th>Quận</th><th>Giá trung vị (CLP/đêm)</th><th>Có "metro"</th><th>Không có "metro"</th></tr></thead>
+<tbody>
+<tr><td>Santiago</td><td>47.755</td><td>44,0%</td><td>37,7%</td></tr>
+<tr><td>Ñuñoa</td><td>60.981</td><td>15,8%</td><td>8,6%</td></tr>
+<tr><td>Providencia</td><td>72.845</td><td>13,1%</td><td>16,8%</td></tr>
+<tr><td>Las Condes</td><td>97.460</td><td>10,1%</td><td>16,5%</td></tr>
+<tr><td>Lo Barnechea</td><td>426.230</td><td>0,1%</td><td>5,3%</td></tr>
+</tbody>
+</table>
+<p class="caption">Tỷ lệ chỗ ở của mỗi nhóm nằm trong từng quận.</p>
+<p>Nhóm có "metro" tập trung ở quận rẻ. So với giá trung vị của chính quận mình, hai nhóm gần như bằng nhau (chênh −0,1%, khi gộp là −10,8%).</p>
+<aside class="notes"><p>Nhóm có "metro" dồn vào quận rẻ: 44,0% ở quận Santiago (so với 37,7%), gấp gần đôi ở Ñuñoa; ít hơn ở Providencia,
+Las Condes và gần như không có ở Lo Barnechea (3 chỗ ở) hay Vitacura (0). Giá mỗi chỗ ở chia cho giá trung vị của quận nó:
+trung vị 0,999 (có "metro", 2.860 chỗ ở có giá) so với 1,000 (không có). Vậy gần như toàn bộ chênh lệch −10,8% đến từ vị trí quận,
+không phải từ chữ "metro". Trong từng quận chênh lệch không cùng chiều: Santiago −2,4%, Ñuñoa +6,8%, Providencia +8,5%,
+Las Condes −17,4% (quận rộng, vị trí trong quận vẫn có thể khác; cần toạ độ để kiểm tra).
+Ngược lại, tách theo loại phòng thì chênh lệch còn lớn hơn (nguyên căn −17,2%, phòng riêng −17,8%), vì nhóm có "metro" nhiều
+nguyên căn hơn (91,5% so với 79,0%): chọn sai biến để tách có thể đưa tới kết luận sai. Biến gây nhiễu thật ở đây là vị trí.
+Calling Bullshit tuần 5 (Statistical traps).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Làm việc với AI thì sao?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <div class="good-box">
-            <span class="box-title">AI làm tốt</span>
-            Đề xuất cấu trúc báo cáo, hỗ trợ biên tập và dịch thuật; gợi ý cách trình bày từ bảng chỉ số.
-          </div>
-          <div class="warn-box">
-            <span class="box-title">AI hay sai</span>
-            Có thể dùng đúng số nhưng diễn giải sai; phóng đại mức độ của kết quả;
-            tạo trích dẫn hoặc bối cảnh không có trong dữ liệu.
-          </div>
-        </section>
+<section id="simpson">
+<h2>Nghịch lý Simpson</h2>
+<div class="slide-badge-row"><span class="self-study-badge">📖 Tự học</span></div>
+<table class="compact-table">
+<thead><tr><th>Giá trung vị (nghìn, số minh hoạ)</th><th>Kỳ A</th><th>Kỳ B</th></tr></thead>
+<tbody>
+<tr><td>Nguyên căn</td><td>60</td><td>66</td></tr>
+<tr><td>Phòng riêng</td><td>30</td><td>33</td></tr>
+<tr><td><strong>Cả thị trường</strong></td><td><strong>55</strong></td><td><strong>52</strong></td></tr>
+</tbody>
+</table>
+<p>Cả hai nhóm đều tăng nhưng con số gộp giảm, vì kỳ B có nhiều phòng riêng hơn.</p>
+<aside class="notes"><p>Đây là số minh hoạ, không phải dữ liệu Santiago. Ở dữ liệu thật giữa hai mốc chụp 27/09/2025 và 29/06/2026, trung vị
+chung tăng từ 40.690 lên 59.000 và mọi loại phòng đều tăng: không có nghịch lý. Calling Bullshit tuần 5 có ví dụ kinh điển.</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Kiểm chứng thế nào?</h2>
-          <div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
-          <ul>
-            <li>Áp dụng <strong>quy trình thẩm định bốn bước</strong> cho mọi đoạn văn do AI viết
-              về dữ liệu của bạn.</li>
-            <li>Người đứng tên báo cáo chịu trách nhiệm về từng con số và từng mối quan hệ được khẳng định.</li>
-          </ul>
-        </section>
+<section id="base-period">
+<h2>Ảnh hưởng của kỳ gốc</h2>
+<table class="compact-table">
+<thead><tr><th>Phép so sánh</th><th>Tỷ số</th></tr></thead>
+<tbody>
+<tr><td>Tháng 5/2026 so với tháng 4/2020 (đáy COVID-19)</td><td>69,5 lần</td></tr>
+<tr><td>Tháng 5/2026 so với trung bình tháng năm 2019</td><td>11,0 lần</td></tr>
+<tr><td>Năm 2025 so với năm 2020</td><td>16,2 lần</td></tr>
+<tr><td>Năm 2025 so với năm 2019</td><td>8,7 lần</td></tr>
+</tbody>
+</table>
+<p class="caption">Số đánh giá, Santiago, mốc chụp 29/06/2026.</p>
+<p>Cùng một dữ liệu cho bốn con số khác nhau; luôn ghi rõ kỳ gốc và tránh kỳ gốc bất thường.</p>
+<aside class="notes"><p>Tháng 4/2020 là đáy COVID-19 (321 đánh giá). Trung bình tháng năm 2019 là 2.024,9. Lab 13: chọn năm 2020 làm kỳ gốc
+thì gấp 16,2 lần, so với 2019 thì 8,7 lần. Mọi tỷ số ở đây đều lớn hơn thực tế vì reviews.csv thiếu đánh giá của chỗ ở đã ngừng đăng trên Airbnb.
+Hỏi lớp: tiêu đề nào trung thực nhất? (đáp: so với 2019, ghi rõ kỳ gốc và giới hạn).</p>
+</aside>
+</section>
 
-        <section>
-          <h2>Đọc thêm và chuẩn bị vấn đáp</h2>
-          <ul>
-            <li>Cole Nussbaumer Knaflic, <em>Storytelling with Data</em> — chương 1–2, 7.</li>
-            <li>Carl Bergstrom và Jevin West, <em>Calling Bullshit</em> — các chương về thiên lệch
-              lựa chọn và trực quan hoá dữ liệu.</li>
-            <li><strong>Vấn đáp BTL:</strong> slide hướng dẫn và danh sách kiểm tra trước khi nộp
-              đã có trên website. Nộp bản cuối trước 23:59 Chủ nhật tuần 10 (ngày cụ thể: xem
-              Canvas Portal). Chúc các nhóm hoàn thành tốt bài tập lớn.</li>
-          </ul>
-        </section>
-      </section>
+<section id="censoring">
+<h2>Số liệu thay đổi theo mốc chụp</h2>
+<table class="compact-table">
+<thead><tr><th>Tháng</th><th>Mốc 27/09/2025</th><th>Mốc 29/06/2026</th><th>Thay đổi</th></tr></thead>
+<tbody>
+<tr><td>6/2025</td><td>18.321</td><td>15.192</td><td>−17,1%</td></tr>
+<tr><td>7/2025</td><td>26.478</td><td>21.726</td><td>−17,9%</td></tr>
+<tr><td>8/2025</td><td>27.947</td><td>22.904</td><td>−18,0%</td></tr>
+<tr><td>9/2025</td><td>14.264</td><td>17.301</td><td>+21,3%</td></tr>
+</tbody>
+</table>
+<p class="caption">Số đánh giá mỗi tháng, đếm ở hai mốc chụp.</p>
+<p>Tuần cuối trước mốc chụp còn thiếu đánh giá; các tháng cũ giảm 17–18% vì đánh giá của chỗ ở đã ngừng đăng trên Airbnb không còn trong dữ liệu.</p>
+<aside class="notes"><p>Tháng 9/2025: 14.264 ở mốc 27/09/2025, 17.301 ở mốc 29/06/2026. Phần tăng gồm 2.010 đánh giá ngày 28–30/09 (sau mốc chụp)
+và đánh giá bổ sung cho ngày 1–27/09 (14.264 lên 15.291, +7,2%), dồn vào tuần cuối: ngày 21–27/09 từ 1.503 lên 3.239.
+Tháng 6/2025: 18.321 xuống 15.192 (−17,1%); tháng 8: −18,0%. Số của một tháng thay đổi theo mốc chụp, nên so sánh tháng cuối
+với các tháng trước, hay so với cùng tháng năm trước, đều cần thận trọng. Calling Bullshit, case study Musicians and Mortality:
+dữ liệu bị cắt ở đuôi (right-censoring).</p>
+</aside>
+</section>
+
+<section id="wording">
+<h2>Diễn đạt đúng mức</h2>
+<table class="compact-table">
+<thead><tr><th>Số liệu</th><th>Diễn đạt quá mức</th><th>Diễn đạt đúng mức</th></tr></thead>
+<tbody>
+<tr><td>+3% so với cùng tháng năm trước</td><td>"bùng nổ"</td><td>"tăng nhẹ"</td></tr>
+<tr><td>hệ số tương quan 0,2</td><td>"liên hệ chặt chẽ"</td><td>"liên hệ yếu"</td></tr>
+<tr><td>n = 30</td><td>"xu hướng rõ rệt"</td><td>"mẫu còn nhỏ, chưa đủ để kết luận"</td></tr>
+</tbody>
+</table>
+<p>Các cụm như "thường", "có thể", "trong dữ liệu này" thể hiện đúng mức độ chắc chắn.</p>
+<aside class="notes"><p>Ba dòng là ví dụ minh hoạ. Mục 4 sẽ gặp các từ như "chứng minh", "khẳng định", "áp đảo" trong báo cáo của AI.
+Điểm "nguồn và diễn giải" trong năm điểm kiểm tra: lời diễn giải không vượt quá dữ liệu.</p>
+</aside>
+</section>
+
+</section>
+
+<section>
+<section id="audit-sec">
+<h1><span class="text-light">4.</span><br>Thẩm định một bản<br>phân tích do AI viết</h1>
+<p class="text-light">Tính lại số liệu, kiểm tra cách làm và lời diễn giải trong một báo cáo do Gemini viết.</p>
+</section>
+
+<section id="ai-request">
+<h2>Yêu cầu gửi cho Gemini</h2>
+<blockquote class='quote' style='font-size:0.8em'>Viết một báo cáo thị trường Airbnb ngắn, ấn tượng cho nhà đầu tư, gồm 5 gạch đầu dòng. Mỗi gạch đầu dòng là một nhận định kèm con số, dựa trên số liệu dưới đây.</blockquote>
+<ul>
+<li>Kèm bảng tóm tắt tính bằng pandas: số chỗ ở, giá trung bình và trung vị, số đánh giá theo tháng
+(ghi rõ tháng 6/2026 "đến 29/06"), giá theo chữ "metro" trong tên, giá theo quận.</li>
+</ul>
+<p class="caption">Mọi con số trong bảng tóm tắt đều đúng.</p>
+<aside class="notes"><p>Lần gọi thật ngày 02/11/2026 lúc 10:43 (giờ Việt Nam), mô hình gemini-3.5-flash-lite, Interactions API, store=False. Chạy lại có thể ra báo cáo khác. Yêu cầu cố ý xin báo cáo "ngắn, ấn tượng" cho nhà đầu tư, như cách nhiều người hỏi AI.
+Bảng tóm tắt có ghi "06/2026 (đến 29/06)" để xem mô hình có để ý không.</p>
+</aside>
+</section>
+
+<section id="ai-report">
+<h2>Báo cáo Gemini trả về</h2>
+<ol><li>Quy mô lớn và tập trung vào phân khúc nguyên căn</li><li>Khoảng cách lớn giữa giá trung bình và trung vị phản ánh phân hóa mạnh</li><li>Thanh khoản và lượng khách ổn định ngay cả trong mùa thấp điểm</li><li>Định giá sát nút hệ thống giao thông công cộng</li><li>Biên độ giá cực kỳ rộng giữa các quận trung tâm và ngoại ô</li></ol>
+<p class="caption">Tiêu đề năm ý, nguyên văn; toàn văn trong notebook.</p>
+<p><strong>Ý nào giữ được nguyên văn?</strong></p>
+<aside class="notes"><p>Lần gọi thật ngày 02/11/2026 lúc 10:43 (giờ Việt Nam), mô hình gemini-3.5-flash-lite, Interactions API, store=False. Chạy lại có thể ra báo cáo khác. Đáp: không ý nào giữ được nguyên văn, dù mọi con số đều đúng (xem bảng kết quả thẩm định).
+Cho lớp đoán trước, rồi đi qua ý 2, 3, 4; ý 1 và 5 là Bài tập 3.</p>
+</aside>
+</section>
+
+<section id="audit-steps">
+<h2>Bốn bước thẩm định</h2>
+<div class="pipeline">
+<div class="stage"><div class="stage-title">1. Tính lại số liệu</div><div class="stage-desc">từ dữ liệu gốc</div></div>
+<div class="arrow">→</div>
+<div class="stage"><div class="stage-title">2. Kiểm tra phương pháp</div><div class="stage-desc">thước đo, kỳ gốc, tháng trọn, cỡ mẫu</div></div>
+<div class="arrow">→</div>
+<div class="stage"><div class="stage-title">3. Kiểm tra diễn giải</div><div class="stage-desc">lời có đúng mức, có suy ra nhân quả?</div></div>
+<div class="arrow">→</div>
+<div class="stage stage-highlight"><div class="stage-title">4. Kết luận</div><div class="stage-desc">giữ, sửa hoặc chưa đủ căn cứ</div></div>
+</div>
+<p>Bước 2 và 3 dùng lại năm điểm kiểm tra của Bài 12: trục, cỡ mẫu, nguồn và diễn giải.</p>
+<aside class="notes"><p>Mỗi ý cần một kết luận riêng: một ý đúng không làm cả báo cáo đúng. Calling Bullshit tuần 12 (Refuting bullshit):
+phản bác bằng bằng chứng và cách tính, không bằng ý kiến.</p>
+</aside>
+</section>
+
+<section id="audit-price">
+<h2>Thẩm định ý về giá</h2>
+<blockquote class='quote ai' style='font-size:0.68em'><strong>Khoảng cách lớn giữa giá trung bình và trung vị phản ánh phân hóa mạnh:</strong> Mức giá trung bình đạt <strong>118.200 CLP/đêm</strong>, nhưng giá trung vị chỉ là <strong>59.000 CLP/đêm</strong> (trên tổng số 17.688 chỗ ở có giá), chứng minh thị trường bị kéo tăng mạnh bởi một lượng nhỏ bất động sản siêu cao cấp.</blockquote>
+<div class="audit"><span class="audit-tag">Tính lại</span><span>Trung bình 118.200, trung vị 59.000 CLP/đêm: đúng. Phân vị 99 là 686.144, giá lớn nhất <span style="white-space:nowrap">97.000.045 CLP/đêm</span>.</span><span class="audit-tag">Nhận xét</span><span>Phần đuôi có giá bất thường chưa được xác minh, nên "chứng minh… siêu cao cấp" là quá mức.</span><span class="audit-tag">Kết luận</span><span class="audit-verdict">Sửa</span></div>
+<div class="sample good"><span class="sample-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><span class="sample-label">Sửa thành</span><p class="quote">Giá trung bình gấp đôi giá trung vị vì một số ít giá rất cao kéo lên, trong đó có giá bất thường chưa được xác minh.</p></div></div>
+<aside class="notes"><p>Giá lớn nhất 97.000.045 CLP/đêm thuộc một căn hộ ở quận Santiago (21 đánh giá, điểm 4,71). Bài 10 đã gắn cờ giá này là bất thường
+nhưng chưa đủ căn cứ để kết luận là lỗi nhập, nên không viết "giá nhập sai"; 177 giá cao hơn P99 = 686.144. Bỏ 177 giá này thì trung bình
+còn 82.298. Trung vị 59.000 hầu như không đổi. Chênh lệch giữa trung bình và trung vị cho thấy phân phối lệch phải, không
+"chứng minh" có bất động sản siêu cao cấp. Kết luận: sửa.</p>
+</aside>
+</section>
+
+<section id="audit-june">
+<h2>Thẩm định ý về số đánh giá tháng 6</h2>
+<blockquote class='quote ai' style='font-size:0.68em'><strong>Thanh khoản và lượng khách ổn định ngay cả trong mùa thấp điểm:</strong> Số lượng đánh giá tháng 06/2026 đạt <strong>16.112</strong> (tính đến ngày 29/06), tăng trưởng so với mức <strong>15.192</strong> của cùng kỳ năm 2025, cho thấy nhu cầu lưu trú duy trì sức hút tốt bất chấp thời điểm giao mùa.</blockquote>
+<div class="audit"><span class="audit-tag">Tính lại</span><span>Tháng 6/2026 có 16.112 đánh giá tính đến 29/06: đúng. Tháng 6/2025 có 18.321 đánh giá ở mốc 27/09/2025, nhưng chỉ 15.192 ở mốc 29/06/2026.</span><span class="audit-tag">Nhận xét</span><span>So sánh tháng chưa trọn với tháng trọn; số của tháng 6/2025 đổi theo mốc chụp; "thanh khoản" không có trong dữ liệu.</span><span class="audit-tag">Kết luận</span><span class="audit-verdict">Chưa đủ căn cứ</span></div>
+<aside class="notes"><p>16.112 (đến 29/06/2026) so với 15.192 (tháng 6/2025 ở mốc 29/06/2026): +6,1%. Nhưng ở mốc 27/09/2025, tháng 6/2025 có
+18.321, khi đó lại là −12,1%: hai nguồn khác nhau cho hai kết quả trái dấu. So sánh chặt hơn với cùng khoảng ngày trong mốc 29/06/2026
+(1–29/06/2025: 14.612) cho +10,3%. Bảng tóm tắt có ghi "đến 29/06" mà mô hình vẫn so sánh như
+tháng trọn. Số đánh giá không phải thanh khoản. Dữ liệu có thể xem theo mùa (năm 2025, tháng 6 thấp hơn tháng 7–8), nhưng một tháng chưa trọn không đủ để nói "ổn định". Kết luận: chưa đủ căn cứ.</p>
+</aside>
+</section>
+
+<section id="audit-metro">
+<h2>Thẩm định ý về metro</h2>
+<blockquote class='quote ai' style='font-size:0.68em'><strong>Định giá sát nút hệ thống giao thông công cộng:</strong> Các chỗ ở có từ "metro" trong tên có giá trung vị <strong>53.926 CLP/đêm</strong> (với <strong>2.959</strong> căn), thấp hơn không đáng kể so với mức <strong>60.478 CLP/đêm</strong> của phần còn lại, khẳng định lợi thế vị trí sát tàu điện nhưng chưa được định giá quá cao.</blockquote>
+<div class="audit"><span class="audit-tag">Tính lại</span><span>53.926,5 so với 60.478,5 CLP/đêm (−10,8%): đúng. So với giá trung vị của chính quận, hai nhóm gần như bằng nhau (−0,1%).</span><span class="audit-tag">Nhận xét</span><span>10,8% không phải "không đáng kể". Chênh lệch đến từ vị trí quận, và chữ trong tên không đo khoảng cách tới ga.</span><span class="audit-tag">Kết luận</span><span class="audit-verdict">Sửa</span></div>
+<div class="sample good"><span class="sample-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><div><span class="sample-label">Sửa thành</span><p class="quote">Chỗ ở có chữ metro trong tên có giá trung vị thấp hơn 10,8%, chủ yếu vì tập trung ở các quận rẻ.</p></div></div>
+<aside class="notes"><p>Đã tính ở slide "Tương quan và nhân quả" và "Cơ cấu nhóm làm thay đổi con số gộp". Mô hình vừa coi nhẹ độ lớn (gọi −10,8% là
+"không đáng kể") vừa suy ra nhân quả ("khẳng định lợi thế vị trí") mà chưa tách theo quận: so với giá trung vị của chính quận,
+hai nhóm chênh −0,1%. Chữ trong tên cũng không đo khoảng cách tới ga. Câu sửa có thể thêm vế "trong cùng quận, giá hai nhóm gần như bằng nhau". Kết luận: sửa.</p>
+</aside>
+</section>
+
+<section id="exercise-audit">
+<h2>Bài tập 3: Thẩm định ý 1 và ý 5</h2>
+<blockquote class='quote ai' style='font-size:0.68em'><strong>Quy mô lớn và tập trung vào phân khúc nguyên căn:</strong> Thị trường hiện có <strong>18.534</strong> chỗ ở, trong đó loại hình cho thuê nguyên căn áp đảo với tỷ lệ <strong>81,0%</strong>, cho thấy tiềm năng khai thác dòng tiền từ khách du lịch tìm kiếm sự riêng tư.</blockquote>
+<blockquote class='quote ai' style='font-size:0.68em'><strong>Biên độ giá cực kỳ rộng giữa các quận trung tâm và ngoại ô:</strong> Giá trung vị dao động mạnh theo khu vực (từ <strong>500</strong> chỗ ở trở lên), từ mức bình dân <strong>47.755 CLP</strong> tại quận Santiago (<strong>7.182</strong> căn) lên đến phân khúc siêu sang <strong>426.230 CLP</strong> tại Lo Barnechea (<strong>824</strong> căn).</blockquote>
+<p><strong>Áp dụng bốn bước; kết luận giữ, sửa hay chưa đủ căn cứ.</strong></p>
+<aside class="notes"><p>Đáp. Ý 1: số đúng (18.534; 81,0%); "tiềm năng khai thác dòng tiền từ khách… riêng tư" là suy diễn, dữ liệu không có doanh thu
+hay mục đích của khách. Sửa thành: "Santiago có 18.534 chỗ ở trên Airbnb, 81,0% là nguyên căn". Ý 5: số đúng; "(từ 500 chỗ ở trở lên)" là điều kiện lọc, chỉ 5 quận đạt;
+"trung tâm và ngoại ô" chưa đúng: 657/824 chỗ ở của Lo Barnechea nằm ở kinh độ lớn hơn −70,35, vùng núi có khu trượt tuyết
+(Farellones, La Parva, Valle Nevado), mốc chụp 29/06 là đầu mùa đông; 791/824 chỗ ở có giá. Sửa thành: "Trong năm quận có từ 500 chỗ ở, giá trung vị thấp nhất ở quận Santiago (47.755 CLP/đêm) và cao nhất ở Lo Barnechea (426.230 CLP/đêm), nơi phần lớn chỗ ở nằm ở vùng núi có khu trượt tuyết".</p>
+</aside>
+</section>
+
+<section id="audit-table">
+<h2>Bảng kết quả thẩm định</h2>
+<table class="compact-table">
+<thead><tr><th>Ý</th><th>Số liệu</th><th>Phương pháp</th><th>Diễn giải</th><th>Kết luận</th></tr></thead>
+<tbody>
+<tr><td>1. Quy mô, nguyên căn</td><td>✓</td><td>✓</td><td>✗ suy diễn dòng tiền</td><td>sửa</td></tr>
+<tr><td>2. Giá trung bình</td><td>✓</td><td>✗ thước đo</td><td>✗ "chứng minh"</td><td>sửa</td></tr>
+<tr><td>3. Đánh giá tháng 6</td><td>✓</td><td>✗ tháng chưa trọn</td><td>✗ "thanh khoản"</td><td>chưa đủ căn cứ</td></tr>
+<tr><td>4. Metro</td><td>✓</td><td>✗ chưa tách theo quận</td><td>✗ nhân quả</td><td>sửa</td></tr>
+<tr><td>5. Theo quận</td><td>✓</td><td>✓</td><td>✗ bối cảnh</td><td>sửa</td></tr>
+</tbody>
+</table>
+<p><strong>Mọi con số đều đúng, nhưng không ý nào giữ được nguyên văn.</strong></p>
+<aside class="notes"><p>Tính lại số liệu chỉ là bước 1. Lỗi của AI nằm ở thước đo, kỳ so sánh và lời diễn giải: chính các điểm của năm điểm
+kiểm tra. Đây cũng là điều giảng viên hỏi khi vấn đáp bài tập lớn.</p>
+</aside>
+</section>
+
+</section>
+
+<section>
+<section id="summary">
+<h2>Tổng kết</h2>
+<ul>
+<li>Khám phá để tìm điều đáng nói; trình bày cho người đọc, nêu ý chính trong một câu.</li>
+<li>Kết luận trước, tiêu đề nêu kết luận, con số đặt trong phép so sánh, giới hạn cạnh kết luận.</li>
+<li>Tránh các lỗi diễn giải thường gặp: suy ra nhân quả, bỏ qua cơ cấu nhóm, chọn kỳ gốc bất thường, quên mốc chụp, nói quá mức.</li>
+<li>Thẩm định: tính lại số liệu, kiểm tra phương pháp, kiểm tra diễn giải, rồi mới kết luận.</li>
+</ul>
+</section>
+
+<section id="ai">
+<h2>Làm việc với AI thì sao?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
+<div class="good-box">
+<span class="box-title">AI làm tốt</span>
+Viết nháp đoạn diễn giải từ bảng số liệu; đề xuất cách sắp xếp báo cáo; diễn đạt lại cho gọn.
+</div>
+<div class="warn-box">
+<span class="box-title">AI hay sai</span>
+Lời diễn giải vượt quá số liệu, không tính đến ghi chú như "đến 29/06", suy ra nhân quả, thêm thông tin không có trong dữ liệu.
+</div>
+<aside class="notes"><p>Cả năm lỗi ở mục 4 đều xuất hiện trong một lần gọi thật với yêu cầu "ngắn, ấn tượng". Với bài tập lớn, ghi lại một lỗi
+như vậy và cách phát hiện trong AI_USAGE.md.</p>
+</aside>
+</section>
+
+<section id="verify">
+<h2>Kiểm chứng thế nào?</h2>
+<div class="slide-badge-row"><span class="ai-badge">🤖 Làm việc với AI</span></div>
+<ul>
+<li>Yêu cầu AI kèm code cho từng con số, rồi tự chạy lại.</li>
+<li>Hỏi lại kỳ gốc, mẫu số, cỡ mẫu; kiểm tra tháng cuối đã trọn chưa.</li>
+<li>Đọc từng động từ: "chứng minh", "khẳng định", "làm" có được dữ liệu ủng hộ không.</li>
+</ul>
+</section>
+
+<section id="references">
+<h2>Đọc thêm</h2>
+<ol>
+<li><a href="https://clauswilke.com/dataviz/telling-a-story.html" target="_blank" rel="noopener">Wilke, Fundamentals of Data Visualization, chương 29</a>,
+<a href="https://clauswilke.com/dataviz/figure-titles-captions.html" target="_blank" rel="noopener">chương 22</a></li>
+<li>Knaflic, <em>Storytelling with Data</em> (2015), chương 1 và 7</li>
+<li><a href="https://callingbullshit.org/syllabus.html" target="_blank" rel="noopener">Calling Bullshit (Bergstrom và West)</a>,
+<a href="https://callingbullshit.org/case_studies/case_study_musician_mortality.html" target="_blank" rel="noopener">case study Musicians and Mortality</a></li>
+<li><a href="https://ds100.org/course-notes/visualization-2" target="_blank" rel="noopener">Berkeley Data 100: Visualization II</a></li>
+<li><a href="projects/project_airbnb.html" target="_blank" rel="noopener">Bài tập lớn</a>: yêu cầu báo cáo và vấn đáp</li>
+</ol>
+</section>
+
+</section>
 
       <!-- Footer -->
       <div class="footer">
-        LTXLDL (2627-1) · Bài 14: Kể chuyện bằng dữ liệu và thẩm định phân tích AI
+        LTXLDL (2627-1) · Bài 14: Kể chuyện bằng dữ liệu
       </div>
     </div>
   </div>

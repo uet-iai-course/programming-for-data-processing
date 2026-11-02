@@ -534,3 +534,150 @@
     padding-top: .25rem;
     padding-bottom: .25rem
 }
+
+/* ------------------------------------------------------------
+   Câu mẫu: so sánh cách viết chưa tốt / tốt, xếp một cột.
+   <div class="sample bad|good">
+     <span class="sample-icon"><svg>…</svg></span>
+     <div><span class="sample-label">Nhãn</span>
+          <p class="quote">Câu trích</p></div>
+   </div>
+   Icon vẽ bằng SVG (không phụ thuộc font). Không dùng ✅ (đã dành
+   cho ký hiệu chế độ đánh giá "mở").
+   .quote dùng riêng được cho mọi câu trích (thêm ngoặc kép cong).
+   ------------------------------------------------------------ */
+
+.reveal .sample {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5em;
+    margin: 0.5em 0;
+}
+
+.reveal .sample .sample-icon {
+    flex: 0 0 1.25em;
+    height: 1.25em;
+    margin-top: 0.1em;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reveal .sample .sample-icon svg {
+    width: 0.8em;
+    height: 0.8em;
+}
+
+.reveal .sample.bad .sample-icon {
+    background: #E62727;
+}
+
+.reveal .sample.good .sample-icon {
+    background: #2E8B57;
+}
+
+.reveal .sample > div {
+    flex: 1;
+}
+
+.reveal .sample .sample-label {
+    display: block;
+    font-size: 0.7em;
+    font-weight: bold;
+    margin-bottom: 0.15em;
+}
+
+.reveal .sample.bad .sample-label {
+    color: #E62727;
+}
+
+.reveal .sample.good .sample-label {
+    color: #2E8B57;
+}
+
+.reveal .quote {
+    margin: 0;
+    padding: 0.3em 0.7em;
+    border-left: 5px solid #C9C9C9;
+    background: #F6F6F4;
+    border-radius: 0 6px 6px 0;
+    line-height: 1.35;
+    font-size: 0.88em;
+}
+
+.reveal .quote::before {
+    content: "\201C";
+}
+
+.reveal .quote::after {
+    content: "\201D";
+}
+
+.reveal .sample.bad .quote {
+    border-left-color: #E62727;
+    background: #FBEAEA;
+}
+
+.reveal .sample.good .quote {
+    border-left-color: #2E8B57;
+    background: #EAF5EF;
+}
+
+.reveal .sample + p {
+    margin-top: 0.8em;
+}
+
+/* Câu trích dài (vd đoạn do AI viết): bỏ kiểu blockquote mặc định của Reveal
+   (khung hẹp, căn giữa, chữ nghiêng). .ai: viền xanh lam cho văn bản do AI viết. */
+.reveal blockquote.quote {
+    width: auto;
+    margin: 0.4em 0;
+    font-style: normal;
+    box-shadow: none;
+    text-align: left;
+}
+
+.reveal .quote.ai {
+    border-left-color: #1E93AB;
+    background: #EEF7F9;
+}
+
+/* ------------------------------------------------------------
+   Khối thẩm định: các dòng có nhãn (Tính lại / Nhận xét / Kết luận),
+   chữ nhỏ hơn thân slide, nhãn căn thẳng cột.
+   <div class="audit">
+     <span class="audit-tag">Tính lại</span><span>…</span>
+     <span class="audit-tag">Kết luận</span><span class="audit-verdict">Sửa</span>
+   </div>
+   ------------------------------------------------------------ */
+.reveal .audit {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: 0.4em 0.7em;
+    align-items: baseline;
+    font-size: 0.72em;
+    line-height: 1.35;
+    margin: 0.6em 0 0.4em;
+}
+
+.reveal .audit .audit-tag {
+    font-size: 0.85em;
+    font-weight: bold;
+    color: #1E93AB;
+    border: 2px solid #1E93AB;
+    border-radius: 4px;
+    padding: 0.05em 0.45em;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.reveal .audit .audit-verdict {
+    font-weight: bold;
+    color: #C97508;
+}
+
+.reveal .audit + .sample {
+    font-size: 0.85em;
+    margin-top: 0.3em;
+}
