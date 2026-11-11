@@ -51,14 +51,17 @@ for ten, kieu in [("tieu-de-mo-ta.svg", "mo_ta"), ("tieu-de-ket-luan.svg", "ket_
             ax.annotate(f"05/2025: {t5_25:,}".replace(",", "."), (thang.index[16], t5_25),
                         xytext=(0, -26), textcoords="offset points", color=ORANGE, ha="center",
                         bbox=dict(fc="white", ec="none", pad=1))
-            ax.annotate(f"05/2026: {t5_26:,}".replace(",", "."), (thang.index[-1], t5_26),
-                        xytext=(-28, -30), textcoords="offset points", color=ORANGE, ha="center",
-                        bbox=dict(fc="white", ec="none", pad=1))
+            ax.annotate(f"05/2026\n{t5_26:,}".replace(",", "."), (thang.index[-1], t5_26),
+                        xytext=(7, 0), textcoords="offset points", color=ORANGE, ha="left",
+                        va="center", linespacing=1.1)
+            # chừa chỗ bên phải điểm cuối cho nhãn, để nhãn không đè lên đường
+            ax.set_xlim(right=thang.index[-1] + pd.DateOffset(months=7))
             # tiêu đề căn từ mép trái của cả hình (rộng hơn vùng trục) để không bị cắt
-            fig.suptitle(f"Tháng 5/2026 tăng {t5_26 / t5_25 - 1:.0%} so với tháng 5/2025",
+            fig.suptitle(f"Số đánh giá tháng 5/2026 tăng {t5_26 / t5_25 - 1:.0%}\nso với tháng 5/2025",
                          x=0.02, ha="left", fontweight="bold", fontsize=plt.rcParams["axes.titlesize"])
-            ax.set_ylabel("số đánh giá / tháng", color=MUTED)
             ax.grid(axis="y", alpha=0.3)
+        ax.set_xlabel("Tháng", color=INK if kieu == "mo_ta" else MUTED)
+        ax.set_ylabel("Số đánh giá", color=INK if kieu == "mo_ta" else MUTED)
         ax.yaxis.set_major_formatter(VN)
         ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1]))
         ax.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
