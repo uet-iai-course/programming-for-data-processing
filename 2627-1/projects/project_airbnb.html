@@ -1057,10 +1057,11 @@ https://data.insideairbnb.com/&lt;country&gt;/&lt;region&gt;/&lt;city&gt;/&lt;YY
         </ul>
         <div class="callout callout--warn">
           <strong>Bộ test chung.</strong> Khi chấm, giảng viên chạy <em>cùng một bộ kiểm thử</em> trên repo của mọi nhóm:
-          dựng môi trường theo README, chạy quy trình bằng một lệnh trên mốc chụp do giảng viên chọn (có thể là mốc nhóm
-          chưa xử lý, chỉ sửa tệp cấu hình), rồi kiểm tra các tệp đầu ra. <strong>Bước LLM cũng được chạy lại thật</strong>
-          trong lúc test, với khoá API do giảng viên đặt trong biến môi trường; vì vậy mã phải đọc khoá từ biến môi trường
-          và chạy được với khoá bất kỳ. Phần phân tích dùng LLM được chấm thêm trên bộ nhãn tay của nhóm.
+          dựng môi trường theo README, chạy quy trình bằng một lệnh, rồi kiểm tra các tệp đầu ra.
+          <strong>Giảng viên không gọi lại LLM và không đặt khoá API.</strong> Bước LLM phải đọc kết quả đã lưu
+          (commit cache vào repo, ví dụ <code>data/processed/llm_cache.jsonl</code>), nên quy trình phải chạy hết khi
+          không có khoá. Giảng viên có thể chạy thêm các bước không dùng LLM trên một mốc chụp khác (chỉ sửa tệp cấu hình).
+          Phần phân tích dùng LLM được chấm trên kết quả đã lưu và bộ nhãn tay của nhóm.
         </div>
       </div>
 
@@ -1206,8 +1207,8 @@ llm:
 seed: 42</code></pre>
       </div>
       <div class="callout callout--danger" style="margin-top:14px">
-        <strong>Bảo mật:</strong> không commit khoá API (biến môi trường / Colab Secrets). Khi chấm, giảng viên dùng khoá
-        riêng đặt trong biến môi trường.
+        <strong>Bảo mật:</strong> không commit khoá API (biến môi trường / Colab Secrets). Khi chấm, giảng viên không dùng
+        khoá API: bước LLM đọc kết quả đã lưu trong cache.
       </div>
     </section>
 
