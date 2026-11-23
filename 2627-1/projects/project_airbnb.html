@@ -611,6 +611,52 @@
       }
     }
 
+    /* Vấn đáp: bảng quy tắc, cùng giọng phẳng với phần còn lại của trang */
+    .exam-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 6px 0 18px;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .exam-table th,
+    .exam-table td {
+      text-align: left;
+      vertical-align: top;
+      padding: 8px 12px 8px 0;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .exam-table thead th {
+      border-bottom: 2px solid var(--text);
+      font-size: 0.9rem;
+    }
+
+    .exam-table td.num,
+    .exam-table th.num {
+      text-align: right;
+      padding-right: 0;
+      white-space: nowrap;
+    }
+
+    .exam-table tfoot td {
+      border-bottom: 0;
+      border-top: 2px solid var(--text);
+      font-weight: 700;
+    }
+
+    .formula {
+      margin: 6px 0 14px;
+      padding: 10px 0;
+      border-top: 2px solid var(--text);
+      border-bottom: 1px solid var(--line);
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+
+
     @media print {
 
       .hero-actions,
@@ -646,7 +692,8 @@
         <a href="#llm">Phân tích dùng LLM</a><span aria-hidden="true">·</span>
         <a href="#minh-bach">Minh bạch AI</a><span aria-hidden="true">·</span>
         <a href="#san-pham">Sản phẩm</a><span aria-hidden="true">·</span>
-        <a href="#cham-diem">Chấm điểm</a>
+        <a href="#cham-diem">Chấm điểm</a><span aria-hidden="true">·</span>
+        <a href="#van-dap">Vấn đáp</a>
       </nav>
     </section>
 
@@ -698,7 +745,7 @@
         <li>
           <div class="mark"><span class="n">Mốc 3</span></div>
           <p class="due">Theo lịch thi của Trường</p>
-          <p>Vấn đáp khoảng 20 phút. Hỏi riêng từng thành viên trong nhóm.</p>
+          <p>Vấn đáp riêng từng người, 10 phút. Xem <a href="#van-dap">quy tắc vấn đáp</a>.</p>
         </li>
       </ol>
 
@@ -1216,23 +1263,137 @@ seed: 42</code></pre>
     <section id="cham-diem" class="section-anchor">
       <h2 class="section-title">Chấm điểm</h2>
 
-      <div class="panel">
-        <h3 class="subhead" style="margin-top:0">Vấn đáp: hỏi riêng từng thành viên</h3>
-        <ul class="plain-list">
-          <li>Mỗi nhóm khoảng 20 phút, <strong>không có phần trình bày</strong>: vào thẳng <strong>hỏi riêng từng người</strong>
-            (mở ngẫu nhiên <strong>bất kỳ đoạn mã hoặc số liệu</strong> trong sản phẩm mà nhóm nộp).</li>
-          <li>Điểm nhóm là trần; vấn đáp điều chỉnh điểm từng người.
-            <strong>Mỗi thành viên chịu trách nhiệm cho toàn bộ sản phẩm</strong>: không giải thích được phần được hỏi
-            thì cá nhân đó bị trừ điểm, dù phần đó do người khác trong nhóm viết.</li>
-          <li>Dùng AI lúc vấn đáp là gian lận (chế độ 🚫 đóng).</li>
-        </ul>
+      <p class="formula">Điểm BTL của mỗi sinh viên = điểm Project của nhóm (tối đa 5) + điểm vấn đáp cá nhân (tối đa 5)</p>
+      <ul class="plain-list">
+        <li>Điểm Project chung cho cả nhóm, chấm trên commit gắn tag <code>final</code>.</li>
+        <li>Điểm vấn đáp tính riêng từng người và <strong>không trừ vào điểm Project</strong>.</li>
+        <li>Bài tập lớn chiếm <strong>60%</strong> điểm học phần.</li>
+      </ul>
+
+      <h3 class="subhead">Rubric Project (5 điểm)</h3>
+      <p class="fine-print">Phiên bản 23/11/2026, có thể còn điều chỉnh.</p>
+      <div class="table-wrap">
+        <table class="exam-table">
+          <thead>
+            <tr><th>Mã</th><th>Tiêu chí</th><th class="num">Điểm</th></tr>
+          </thead>
+          <tbody>
+            <tr><th colspan="2">A. Thiết kế và tái lập quy trình</th><th class="num">1,25</th></tr>
+            <tr><td>A1</td><td>Dựng được môi trường theo README (ghim phiên bản Python và thư viện), chạy bằng một lệnh.</td><td class="num">0,50</td></tr>
+            <tr><td>A2</td><td>Chạy lại được toàn bộ quy trình bằng cache LLM, không cần khoá API; có xử lý lỗi.</td><td class="num">0,50</td></tr>
+            <tr><td>A3</td><td>Tải đủ bốn bản chụp, kiểm tra tệp và cột khoá; không commit dữ liệu thô.</td><td class="num">0,25</td></tr>
+            <tr><th colspan="2">B. Lưu trữ và thao tác dữ liệu</th><th class="num">2,25</th></tr>
+            <tr><td>B1</td><td>Quy tắc QA nêu rõ điều kiện, lý do, cách xử lý; có báo cáo tác động và từ điển dữ liệu.</td><td class="num">0,75</td></tr>
+            <tr><td>B2</td><td>5–8 KPI phục vụ bên đặt hàng, công thức và mẫu số đúng; có KPI dùng kết quả LLM.</td><td class="num">0,50</td></tr>
+            <tr><td>B3</td><td>Trích xuất bằng LLM ra dữ liệu có cấu trúc, nhãn hợp lệ, ghép đúng đánh giá; có ước tính chi phí.</td><td class="num">0,50</td></tr>
+            <tr><td>B4</td><td>Phương pháp đối chứng không LLM, ít nhất 100 nhãn tay, so sánh accuracy/F1 và phân tích lỗi.</td><td class="num">0,50</td></tr>
+            <tr><th colspan="2">C. Trực quan hoá và phát hiện</th><th class="num">1,00</th></tr>
+            <tr><td>C1</td><td>Hình do code sinh ra, đủ góc không gian, thời gian và LLM; khớp số liệu, chú thích rõ.</td><td class="num">0,50</td></tr>
+            <tr><td>C2</td><td>Báo cáo PDF tối đa 10 trang; kết luận có căn cứ, nêu giới hạn, ghi bản chụp và commit.</td><td class="num">0,50</td></tr>
+            <tr><th colspan="2">D. Làm việc nhóm, đạo đức và minh bạch AI</th><th class="num">0,50</th></tr>
+            <tr><td>D1</td><td>Phân công và tiến độ có minh chứng (README, lịch sử Git, PR); nộp đúng mốc.</td><td class="num">0,25</td></tr>
+            <tr><td>D2</td><td><code>AI_USAGE.md</code> ghi đủ công cụ, prompt chính, lỗi của AI và cách kiểm chứng; không lộ khoá API.</td><td class="num">0,25</td></tr>
+          </tbody>
+          <tfoot>
+            <tr><td colspan="2">Tổng</td><td class="num">5,00</td></tr>
+          </tfoot>
+        </table>
+      </div>
+      <p class="fine-print">Mỗi mục chấm theo năm mức: 100%, 75%, 50%, 25% hoặc 0% số điểm.
+        Một lỗi chỉ bị trừ ở mục gây ra lỗi. Pipeline không chạy hết thì các phần còn chạy được vẫn được chấm.</p>
+    </section>
+
+    <!-- Vấn đáp -->
+    <section id="van-dap" class="section-anchor">
+      <h2 class="section-title">Vấn đáp</h2>
+
+      <div class="callout callout--warn">
+        Danh sách và giờ thi của từng sinh viên sẽ đăng trên <strong>Google Sheets</strong>; link thông báo trên Canvas Portal.
       </div>
 
-      <h3 class="subhead">Rubric</h3>
-      <p>Bốn tiêu chí: <strong>thiết kế và tái lập quy trình</strong> · <strong>lưu trữ và thao tác dữ liệu</strong> ·
-        <strong>trực quan hoá và phát hiện</strong> · <strong>làm việc nhóm, đạo đức và minh bạch AI</strong>.
-        Điểm nhóm (thang 10) được điều chỉnh từng người qua vấn đáp.</p>
-      <p class="fine-print">Trọng số và mô tả các mức điểm: <em>công bố dần</em>.</p>
+      <h3 class="subhead">Hình thức</h3>
+      <ul class="plain-list">
+        <li>Mỗi sinh viên thi riêng <strong>10 phút</strong>, không trình bày nhóm.</li>
+        <li><strong>5 câu, mỗi câu 1 điểm, tối đa 90 giây</strong>, tính cả lúc đọc đề. Hết giờ thì chuyển câu; thời gian thừa không cộng dồn.</li>
+        <li>Người hỏi mở code, số liệu và hình của nhóm tại commit <code>final</code>.</li>
+        <li>Chế độ <strong>🚫 đóng</strong>: không dùng AI, điện thoại, tài liệu, không nhờ người khác.
+          Vi phạm sẽ bị dừng thi và xử lý theo quy chế thi và <a href="../ai-policy.html">chính sách AI của môn</a>.</li>
+        <li>Mỗi người phải hiểu <strong>toàn bộ sản phẩm</strong> của nhóm; "phần đó bạn khác làm" không phải lý do để đổi câu.</li>
+      </ul>
+
+      <h3 class="subhead">Lịch thi</h3>
+      <ul class="plain-list">
+        <li>Mỗi lớp thi trọn vẹn trong <strong>một ca</strong>: sáng <strong>08:00–12:00</strong> hoặc chiều <strong>13:00–17:00</strong>.
+          Có thêm <strong>một ngày dự phòng</strong> để thi bù.</li>
+        <li>Tra ngày, phòng và giờ thi theo mã sinh viên trên Google Sheets. Thành viên cùng nhóm thi nối tiếp nhau.</li>
+        <li>Lịch dự kiến đăng trước; lịch chính thức đăng sau hạn nộp đơn đổi ca thi.
+          Lịch chính thức là <strong>cố định</strong>: không đổi lượt, không thi sớm.</li>
+      </ul>
+
+      <h3 class="subhead">Ngày thi</h3>
+      <ul class="plain-list">
+        <li><strong>Cả nhóm có mặt ở phòng chờ 15 phút trước lượt thi đầu tiên của nhóm</strong>, mang thẻ sinh viên hoặc CCCD.
+          Không xác minh được danh tính thì tính như vắng.</li>
+        <li>Thi xong thì rời khu vực thi, không quay lại phòng chờ.</li>
+        <li>Gọi <strong>T</strong> là giờ bắt đầu lượt thi của bạn:</li>
+      </ul>
+      <div class="table-wrap">
+        <table class="exam-table">
+          <thead>
+            <tr><th>Có mặt ở cửa phòng thi</th><th>Xử lý</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Trước T</td><td>Vào thi đúng giờ T.</td></tr>
+            <tr><td>Từ T đến T + 5 phút</td><td>Vẫn được thi nhưng kết thúc lúc T + 10 phút; câu chưa kịp hỏi tính 0 điểm.</td></tr>
+            <tr><td>Sau T + 5 phút</td><td><strong>Mất lượt thi.</strong></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 class="subhead">Báo vắng và đổi ca thi</h3>
+      <div class="table-wrap">
+        <table class="exam-table">
+          <thead>
+            <tr><th>Trường hợp</th><th>Hạn báo</th><th>Minh chứng</th><th>Thi bù</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Đơn đổi ca thi</strong>: lý do biết trước (trùng lịch thi khác, lịch khám bệnh)</td>
+              <td>23:59 Chủ nhật <strong>29/11/2026</strong></td>
+              <td>Nộp kèm đơn</td>
+              <td>Ca còn lại cùng ngày, hoặc ngày dự phòng</td>
+            </tr>
+            <tr>
+              <td><strong>Báo vắng khẩn cấp</strong>: ốm, tai nạn, tang gia, giấy triệu tập</td>
+              <td><strong>07:00</strong> ngày thi (ca sáng)<br><strong>12:00</strong> ngày thi (ca chiều)</td>
+              <td>Trong 3 ngày sau ngày thi</td>
+              <td>Ngày dự phòng</td>
+            </tr>
+            <tr>
+              <td><strong>Bất khả kháng</strong>: sự cố xảy ra sau hạn trên, ví dụ cấp cứu trên đường đi thi</td>
+              <td>24 giờ sau giờ T</td>
+              <td>Trong 3 ngày sau ngày thi</td>
+              <td>Ngày dự phòng</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <ul class="plain-list">
+        <li>Báo đúng hạn chưa có nghĩa là được thi bù: giảng viên quyết định sau khi xem minh chứng.
+          Thiếu minh chứng thì tính là <strong>vắng không lý do</strong>.</li>
+        <li>Kẹt xe, ngủ quên, nhầm ngày, nhầm ca, nhầm phòng, việc riêng hay vé tàu xe đã đặt <strong>không</strong> phải lý do khẩn cấp.</li>
+        <li>Mỗi người chỉ được thi bù <strong>một lần</strong>.</li>
+        <li>Vắng không lý do hoặc mất lượt thi: vấn đáp 0 điểm, vẫn giữ điểm Project.</li>
+        <li>Cần hỗ trợ đặc biệt (khuyết tật, khó khăn khi nói): nộp đơn đổi ca thi đúng hạn để được thi 20 phút, mỗi câu tối đa 3 phút.</li>
+      </ul>
+
+      <h3 class="subhead">Trong phòng thi</h3>
+      <ul class="plain-list">
+        <li>Câu hỏi sai hoặc khó hiểu: nói ngay, người hỏi ghi lại rồi chuyển câu; giảng viên xem xét sau.</li>
+        <li>Không trao đổi về điểm Project trong phòng thi; thắc mắc gửi qua kênh phúc khảo.</li>
+        <li>Sự cố từ phía tổ chức (mất điện, máy hỏng, câu hỏi chỉ sai chỗ trong code): bạn không bị trừ điểm,
+          sẽ được hỏi câu thay thế hoặc xếp lượt khác.</li>
+      </ul>
     </section>
 
     <p class="closing-line">Hết đề bài. Chúc các nhóm hoàn thành tốt bài tập lớn.</p>
