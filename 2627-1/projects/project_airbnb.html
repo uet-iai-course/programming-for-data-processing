@@ -1263,39 +1263,39 @@ seed: 42</code></pre>
     <section id="cham-diem" class="section-anchor">
       <h2 class="section-title">Chấm điểm</h2>
 
-      <p class="formula">Điểm BTL của mỗi sinh viên = điểm Project của nhóm (tối đa 5) + điểm vấn đáp cá nhân (tối đa 5)</p>
+      <p class="formula">Bài tập lớn (60% điểm học phần) = điểm Project của nhóm (30%) + điểm vấn đáp cá nhân (30%)</p>
       <ul class="plain-list">
+        <li>Mỗi phần chấm trên thang 100.</li>
         <li>Điểm Project chung cho cả nhóm, chấm trên commit gắn tag <code>final</code>.</li>
         <li>Điểm vấn đáp tính riêng từng người và <strong>không trừ vào điểm Project</strong>.</li>
-        <li>Bài tập lớn chiếm <strong>60%</strong> điểm học phần.</li>
       </ul>
 
-      <h3 class="subhead">Rubric Project (5 điểm)</h3>
-      <p class="fine-print">Phiên bản 23/11/2026, có thể còn điều chỉnh.</p>
+      <h3 class="subhead">Rubric Project (100 điểm)</h3>
+      <p class="fine-print">Phiên bản 26/11/2026, có thể còn điều chỉnh.</p>
       <div class="table-wrap">
         <table class="exam-table">
           <thead>
             <tr><th>Mã</th><th>Tiêu chí</th><th class="num">Điểm</th></tr>
           </thead>
           <tbody>
-            <tr><th colspan="2">A. Thiết kế và tái lập quy trình</th><th class="num">1,25</th></tr>
-            <tr><td>A1</td><td>Dựng được môi trường theo README (ghim phiên bản Python và thư viện), chạy bằng một lệnh.</td><td class="num">0,50</td></tr>
-            <tr><td>A2</td><td>Chạy lại được toàn bộ quy trình bằng cache LLM, không cần khoá API; có xử lý lỗi.</td><td class="num">0,50</td></tr>
-            <tr><td>A3</td><td>Tải đủ bốn bản chụp, kiểm tra tệp và cột khoá; không commit dữ liệu thô.</td><td class="num">0,25</td></tr>
-            <tr><th colspan="2">B. Lưu trữ và thao tác dữ liệu</th><th class="num">2,25</th></tr>
-            <tr><td>B1</td><td>Quy tắc QA nêu rõ điều kiện, lý do, cách xử lý; có báo cáo tác động và từ điển dữ liệu.</td><td class="num">0,75</td></tr>
-            <tr><td>B2</td><td>5–8 KPI phục vụ bên đặt hàng, công thức và mẫu số đúng; có KPI dùng kết quả LLM.</td><td class="num">0,50</td></tr>
-            <tr><td>B3</td><td>Trích xuất bằng LLM ra dữ liệu có cấu trúc, nhãn hợp lệ, ghép đúng đánh giá; có ước tính chi phí.</td><td class="num">0,50</td></tr>
-            <tr><td>B4</td><td>Phương pháp đối chứng không LLM, ít nhất 100 nhãn tay, so sánh accuracy/F1 và phân tích lỗi.</td><td class="num">0,50</td></tr>
-            <tr><th colspan="2">C. Trực quan hoá và phát hiện</th><th class="num">1,00</th></tr>
-            <tr><td>C1</td><td>Hình do code sinh ra, đủ góc không gian, thời gian và LLM; khớp số liệu, chú thích rõ.</td><td class="num">0,50</td></tr>
-            <tr><td>C2</td><td>Báo cáo PDF tối đa 10 trang; kết luận có căn cứ, nêu giới hạn, ghi bản chụp và commit.</td><td class="num">0,50</td></tr>
-            <tr><th colspan="2">D. Làm việc nhóm, đạo đức và minh bạch AI</th><th class="num">0,50</th></tr>
-            <tr><td>D1</td><td>Phân công và tiến độ có minh chứng (README, lịch sử Git, PR); nộp đúng mốc.</td><td class="num">0,25</td></tr>
-            <tr><td>D2</td><td><code>AI_USAGE.md</code> ghi đủ công cụ, prompt chính, lỗi của AI và cách kiểm chứng; không lộ khoá API.</td><td class="num">0,25</td></tr>
+            <tr><th colspan="2">A. Thiết kế và tái lập quy trình</th><th class="num">25</th></tr>
+            <tr><td>A1</td><td>Dựng được môi trường theo README (ghim phiên bản Python và thư viện), chạy bằng một lệnh.</td><td class="num">10</td></tr>
+            <tr><td>A2</td><td>Chạy lại được toàn bộ quy trình bằng cache LLM, không cần khoá API; có xử lý lỗi.</td><td class="num">10</td></tr>
+            <tr><td>A3</td><td>Tải đủ bốn bản chụp, kiểm tra tệp và cột khoá; không commit dữ liệu thô.</td><td class="num">5</td></tr>
+            <tr><th colspan="2">B. Lưu trữ và thao tác dữ liệu</th><th class="num">45</th></tr>
+            <tr><td>B1</td><td>Quy tắc QA nêu rõ điều kiện, lý do, cách xử lý; có báo cáo tác động và từ điển dữ liệu.</td><td class="num">15</td></tr>
+            <tr><td>B2</td><td>5–8 KPI phục vụ bên đặt hàng, công thức và mẫu số đúng; có KPI dùng kết quả LLM.</td><td class="num">10</td></tr>
+            <tr><td>B3</td><td>Trích xuất bằng LLM ra dữ liệu có cấu trúc, nhãn hợp lệ, ghép đúng đánh giá; có ước tính chi phí.</td><td class="num">10</td></tr>
+            <tr><td>B4</td><td>Phương pháp đối chứng không LLM, ít nhất 100 nhãn tay, so sánh accuracy/F1 và phân tích lỗi.</td><td class="num">10</td></tr>
+            <tr><th colspan="2">C. Trực quan hoá và phát hiện</th><th class="num">20</th></tr>
+            <tr><td>C1</td><td>Hình do code sinh ra, đủ góc không gian, thời gian và LLM; khớp số liệu, chú thích rõ.</td><td class="num">10</td></tr>
+            <tr><td>C2</td><td>Báo cáo PDF tối đa 10 trang; kết luận có căn cứ, nêu giới hạn, ghi bản chụp và commit.</td><td class="num">10</td></tr>
+            <tr><th colspan="2">D. Làm việc nhóm, đạo đức và minh bạch AI</th><th class="num">10</th></tr>
+            <tr><td>D1</td><td>Phân công và tiến độ có minh chứng (README, lịch sử Git, PR); nộp đúng mốc.</td><td class="num">5</td></tr>
+            <tr><td>D2</td><td><code>AI_USAGE.md</code> ghi đủ công cụ, prompt chính, lỗi của AI và cách kiểm chứng; không lộ khoá API.</td><td class="num">5</td></tr>
           </tbody>
           <tfoot>
-            <tr><td colspan="2">Tổng</td><td class="num">5,00</td></tr>
+            <tr><td colspan="2">Tổng</td><td class="num">100</td></tr>
           </tfoot>
         </table>
       </div>
@@ -1314,7 +1314,7 @@ seed: 42</code></pre>
       <h3 class="subhead">Hình thức</h3>
       <ul class="plain-list">
         <li>Mỗi sinh viên thi riêng <strong>10 phút</strong>, không trình bày nhóm.</li>
-        <li><strong>5 câu, mỗi câu 1 điểm, tối đa 90 giây</strong>, tính cả lúc đọc đề. Hết giờ thì chuyển câu; thời gian thừa không cộng dồn.</li>
+        <li><strong>5 câu, mỗi câu 20 điểm, tối đa 90 giây</strong>, tính cả lúc đọc đề. Hết giờ thì chuyển câu; thời gian thừa không cộng dồn.</li>
         <li>Người hỏi mở code, số liệu và hình của nhóm tại commit <code>final</code>.</li>
         <li>Chế độ <strong>🚫 đóng</strong>: không dùng AI, điện thoại, tài liệu, không nhờ người khác.
           Vi phạm sẽ bị dừng thi và xử lý theo quy chế thi và <a href="../ai-policy.html">chính sách AI của môn</a>.</li>
